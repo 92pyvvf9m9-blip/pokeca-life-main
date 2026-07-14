@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-12T10:00:00+09:00",
+  "coverage": {
+    "広島県": {
+      "knownOfficialCount": 67,
+      "importedCount": 18,
+      "status": "partial",
+      "note": "初期データ。公式掲載店舗と地域専門店を順次追加。"
+    }
+  },
+  "stores": [
+    {
+      "masterId": "jp-hiroshima-pokemon-center-hiroshima",
+      "name": "ポケモンセンターヒロシマ",
+      "aliases": [
+        "ポケモンセンター広島",
+        "ポケセン広島"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市南区",
+      "area": "広島市南区",
+      "address": "広島県広島市南区松原町1-2 ekie 2F",
+      "storeType": "ポケモンセンター",
+      "officialUrl": "https://shop.pokemon.co.jp/ja/shop/pokemoncenter-hiroshima/"
+    },
+    {
+      "masterId": "jp-hiroshima-cardlabo-hiroshima",
+      "name": "カードラボ 広島店",
+      "aliases": [
+        "カードラボ広島店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区大手町2-3-1 アニメイトビル3F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://www.c-labo.jp/shop/hiroshima/"
+    },
+    {
+      "masterId": "jp-hiroshima-cardbox-hiroshima",
+      "name": "カードボックス広島店",
+      "aliases": [
+        "カードボックス 広島店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区大手町1-4-32 大手町ビル1階",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/11233"
+    },
+    {
+      "masterId": "jp-hiroshima-hobby-station-2",
+      "name": "ホビーステーション 広島2号店",
+      "aliases": [
+        "ホビステ広島2号店",
+        "ホビーステーション広島2号店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区大手町1-5-15 本通西ビル1F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/11220"
+    },
+    {
+      "masterId": "jp-hiroshima-repton-sunmall",
+      "name": "レプトン サンモール店",
+      "aliases": [
+        "レプトンサンモール店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区紙屋町2丁目2-18 4F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/19167"
+    },
+    {
+      "masterId": "jp-hiroshima-girafull-donki",
+      "name": "GIRAFULL 広島ドンキ店",
+      "aliases": [
+        "ジラフル広島ドンキ店",
+        "GIRAFULL広島ドンキ店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区新天地5-3 ドン・キホーテ広島八丁堀店5F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/18961"
+    },
+    {
+      "masterId": "jp-hiroshima-mint-games",
+      "name": "MINT GAMES 広島店",
+      "aliases": [
+        "MINT広島店",
+        "ミントゲームズ広島店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区新天地5-3 ドン・キホーテ広島八丁堀店5F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/13119"
+    },
+    {
+      "masterId": "jp-hiroshima-tcg-sunrise",
+      "name": "トレカSunrise広島店",
+      "aliases": [
+        "トレカサンライズ広島店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市中区",
+      "area": "広島市中区",
+      "address": "広島県広島市中区袋町9-5 ハヤマビル2F",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/21966"
+    },
+    {
+      "masterId": "jp-hiroshima-toysrus-ujina",
+      "name": "トイザらス広島宇品店",
+      "aliases": [],
+      "prefecture": "広島県",
+      "city": "広島市南区",
+      "area": "広島市南区",
+      "address": "広島県広島市南区宇品西2-16-51 ベイシティ宇品2F",
+      "storeType": "ポケモンカード取扱店",
+      "officialUrl": "https://map.pokemon-card.com/map/100571"
+    },
+    {
+      "masterId": "jp-hiroshima-toysrus-seifushinto",
+      "name": "トイザらス広島西風新都店",
+      "aliases": [],
+      "prefecture": "広島県",
+      "city": "広島市佐伯区",
+      "area": "広島市佐伯区",
+      "address": "広島県広島市佐伯区石内東4丁目1-1 THE OUTLETS HIROSHIMA 区画1002",
+      "storeType": "ポケモンカード取扱店",
+      "officialUrl": "https://map.pokemon-card.com/map/100667"
+    },
+    {
+      "masterId": "jp-hiroshima-hobby-zone-higashihiroshima",
+      "name": "ホビーゾーン 東広島店",
+      "aliases": [
+        "ホビーゾーン東広島店"
+      ],
+      "prefecture": "広島県",
+      "city": "東広島市",
+      "area": "東広島市",
+      "address": "広島県東広島市西条町御薗宇4405 フジグランSC内",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/12686"
+    },
+    {
+      "masterId": "jp-hiroshima-planet-saijo",
+      "name": "プラネット西条中央店",
+      "aliases": [
+        "プラネット 西条中央店"
+      ],
+      "prefecture": "広島県",
+      "city": "東広島市",
+      "area": "東広島市",
+      "address": "広島県東広島市西条中央4-1-1",
+      "storeType": "ポケモンカード取扱店",
+      "officialUrl": "https://map.pokemon-card.com/map/11242"
+    },
+    {
+      "masterId": "jp-hiroshima-futaba-tera-fuchu",
+      "name": "フタバ図書TERA広島府中店",
+      "aliases": [
+        "フタバ図書ＴＥＲＡ広島府中店"
+      ],
+      "prefecture": "広島県",
+      "city": "安芸郡府中町",
+      "area": "安芸郡府中町",
+      "address": "広島県安芸郡府中町大須2-1-1-3022 イオンモール広島府中3F",
+      "storeType": "ポケモンカード取扱店",
+      "officialUrl": "https://map.pokemon-card.com/map/100829"
+    },
+    {
+      "masterId": "jp-hiroshima-futaba-kaita",
+      "name": "フタバ図書TSUTAYA海田店",
+      "aliases": [],
+      "prefecture": "広島県",
+      "city": "安芸郡海田町",
+      "area": "安芸郡海田町",
+      "address": "広島県安芸郡海田町南大正町3-33",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/20079"
+    },
+    {
+      "masterId": "jp-hiroshima-futaba-kabe",
+      "name": "フタバ図書TSUTAYA可部センター店",
+      "aliases": [],
+      "prefecture": "広島県",
+      "city": "広島市安佐北区",
+      "area": "広島市安佐北区",
+      "address": "広島県広島市安佐北区亀山5-5-18",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/19118"
+    },
+    {
+      "masterId": "jp-hiroshima-futaba-miyoshi",
+      "name": "フタバ図書TSUTAYA三次店",
+      "aliases": [],
+      "prefecture": "広島県",
+      "city": "三次市",
+      "area": "三次市",
+      "address": "広島県三次市南畑敷町504",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/19119"
+    },
+    {
+      "masterId": "jp-hiroshima-hobby-zone-kabe",
+      "name": "ホビーゾーン 可部店",
+      "aliases": [
+        "ホビーゾーン可部店"
+      ],
+      "prefecture": "広島県",
+      "city": "広島市安佐北区",
+      "area": "広島市安佐北区",
+      "address": "広島県広島市安佐北区可部4-1-10",
+      "storeType": "ポケモンカードジム",
+      "officialUrl": "https://map.pokemon-card.com/map/11227"
+    },
+    {
+      "masterId": "jp-hiroshima-otaichi-aeon-hiro",
+      "name": "おたいち（お宝市番館）イオン広店",
+      "aliases": [
+        "おたいち",
+        "おたいちイオン広店",
+        "広のお宝壱番館",
+        "お宝壱番館イオン広店",
+        "お宝市番館イオン広店"
+      ],
+      "prefecture": "広島県",
+      "city": "呉市",
+      "area": "呉市",
+      "address": "広島県呉市広本町2丁目17-1 イオン広店3F",
+      "storeType": "リユース・トレカ取扱店",
+      "officialUrl": "https://otaichi.com/shop/aeonhiro/",
+      "officialX": "https://x.com/otaichikurecard"
+    }
+  ]
+}

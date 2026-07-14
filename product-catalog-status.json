@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "collectorVersion": "1.12.0",
+  "lastRunAt": "2026-07-13T21:37:31.924Z",
+  "mode": "automatic",
+  "schedule": "every-6-hours",
+  "discoveredCandidateCount": 48,
+  "newProductCount": 0,
+  "updatedProductCount": 48,
+  "reviewCount": 0,
+  "totalProducts": 90,
+  "verifiedImages": 90,
+  "imageCoveragePercent": 100
+}
