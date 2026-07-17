@@ -727,6 +727,15 @@ html,body{max-width:100%;overflow-x:hidden}
 .quality-rules span{padding:6px 8px;border-radius:999px;background:#10b98116;color:#86efac;border:1px solid #10b98138;font-size:8px;font-weight:900}
 .data-quality-mark{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;background:#10b98116;color:#86efac;border:1px solid #10b98138;font-size:8px;font-weight:900}
 
+
+.admin-only{display:none!important}
+body.admin-mode .admin-only{display:block!important}
+.admin-section-head{border:1px solid #8b5cf655;background:linear-gradient(135deg,#8b5cf61f,#111117);padding:18px!important}
+.admin-section-head .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.admin-section-head h3{margin:0 0 5px}.admin-section-head p{margin:0;color:var(--muted)}
+.admin-lock-button{white-space:nowrap}
+.general-settings-label{font-size:12px;font-weight:800;color:#c084fc;letter-spacing:.08em;margin:2px 4px -2px}
+.version-owner-trigger{user-select:none;-webkit-user-select:none}
 </style></head><body><div class="app"><header><div><p class="eyebrow">POKECA LIFE</p><h1 id="title">ホーム</h1></div><button class="icon" id="bellButton" aria-label="お知らせを開く">🔔<span id="notificationBadge" class="hide">0</span></button></header><main>
 <section class="screen on" data-screen="home"><div class="hero home-module" data-home-section="tasks"><p class="muted">おかえりなさい</p><h2>今日やることを、すぐ確認。</h2><div id="tasks" class="tasks"></div></div>
 <div class="section home-module today-deadline-section" data-home-section="deadlines">
@@ -906,6 +915,7 @@ html,body{max-width:100%;overflow-x:hidden}
 </section>
 <section class="screen" data-screen="settings"><div class="stack">
 
+<div class="general-settings-label">一般設定</div>
 <div class="item profile-settings-card">
   <div class="collector-card-head">
     <div><h3>ホームの表示地域</h3><p>全国通販に加えて、居住県と必要に応じて近隣県を表示します。</p></div>
@@ -929,17 +939,20 @@ html,body{max-width:100%;overflow-x:hidden}
       <span class="switch-track"></span>
     </label>
   </div>
-  <div class="group sync-endpoint-group">
+  <div class="group sync-endpoint-group admin-only">
     <label>同期先URL</label>
     <input id="syncEndpointInput" class="field" type="url" value="./lottery-feed.json" placeholder="https://.../lottery-feed.json">
   </div>
   <div class="sync-setting-actions">
-    <button id="saveSyncSettings" class="secondary" type="button">設定を保存</button>
+    <button id="saveSyncSettings" class="secondary admin-only" type="button">設定を保存</button>
     <button id="testSyncButton" class="primary" type="button">今すぐ同期</button>
   </div>
-  <p class="sync-help">現在は同梱フィードを使用。サーバー接続後はURLを差し替えるだけで全ユーザーへ配信できます。</p>
+  <p class="sync-help">最新の抽選情報は自動で受信します。通常は設定変更不要です。</p>
 </div>
-<div class="item collector-card">
+<div class="item admin-only admin-section-head" id="adminSectionHeader">
+  <div class="row"><div><h3>管理者設定</h3><p>収集・公開・品質管理など、運営者専用の情報です。</p></div><button id="lockAdminModeButton" class="secondary admin-lock-button" type="button">管理者モードを終了</button></div>
+</div>
+<div class="item collector-card admin-only">
   <div class="collector-card-head">
     <div>
       <h3>自動収集サーバー</h3>
@@ -962,7 +975,7 @@ html,body{max-width:100%;overflow-x:hidden}
   </div>
   <p id="collectorVersionText" class="sync-help">収集エンジン：未接続</p>
 </div>
-<div class="item quality-gate-card">
+<div class="item quality-gate-card admin-only">
   <div class="collector-card-head">
     <div>
       <h3>公開品質ゲート</h3>
@@ -981,7 +994,7 @@ html,body{max-width:100%;overflow-x:hidden}
   </div>
   <p id="qualityGateNote" class="sync-help">検証用・推測日付・応募先不明の情報は公開しません。</p>
 </div>
-<div class="item deploy-card">
+<div class="item deploy-card admin-only">
   <div class="collector-card-head">
     <div>
       <h3>公開フィード接続</h3>
@@ -1012,7 +1025,7 @@ html,body{max-width:100%;overflow-x:hidden}
   </div>
   <p class="sync-help">GitHub Pagesが未公開の場合は接続テストに失敗します。配置後はアプリを更新するだけで新規抽選が反映されます。</p>
 </div>
-<div class="item"><h3>収集設定</h3><p>収集対象と検証経路はサーバー側で管理され、公開画面には配信されません。</p></div>
+<div class="item admin-only"><h3>収集設定</h3><p>収集対象と検証経路はサーバー側で管理され、公開画面には配信されません。</p></div>
 <details class="item app-settings-details" id="displayAdvancedSettings">
   <summary class="app-settings-summary">
     <div>
@@ -1030,7 +1043,7 @@ html,body{max-width:100%;overflow-x:hidden}
     </div>
   </div>
 </details>
-<div class="item product-catalog-sync-card">
+<div class="item product-catalog-sync-card admin-only">
   <div class="collector-card-head">
     <div>
       <h3>新商品・画像の自動更新</h3>
@@ -1047,7 +1060,7 @@ html,body{max-width:100%;overflow-x:hidden}
   <p id="productCatalogSyncNote" class="sync-help">GitHubへ配置すると自動巡回が開始されます。</p>
   <button id="refreshProductCatalogButton" class="secondary wide-button" type="button">最新の商品データを再読込</button>
 </div>
-<div class="item database-status-card">
+<div class="item database-status-card admin-only">
   <div class="collector-card-head">
     <div>
       <h3>店舗・抽選データベース</h3>
@@ -1062,7 +1075,7 @@ html,body{max-width:100%;overflow-x:hidden}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item"><h3>Pokeca Life v1.14.0</h3><p>高速収集・公開品質ゲート版</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.14.1</h3><p>地域・設定分離アップデート</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -4275,6 +4288,44 @@ $('#lotterySearch').oninput=renderLottery;
 $('#lotterySort').onchange=e=>{lotterySort=e.target.value;renderLottery()};
 $('#areaFilter').onchange=e=>{areaFilter=e.target.value;renderLottery()};
 $('#typeFilter').onchange=e=>{typeFilter=e.target.value;renderLottery()};$('#cardSearch').oninput=renderCards;$('#storeSearch').oninput=renderStores;$('#export').onclick=()=>{let blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`beta-backup-${new Date().toISOString().slice(0,10)}.json`;a.click()};$('#import').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.lotteries||!x.cards||!x.stores)throw 0;D=x;save().catch(console.error);toast('復元しました')}catch{alert('読み込めません')}};r.readAsText(f)};$('#reset').onclick=()=>{if(confirm('全データを削除しますか？')){D={lotteries:[],cards:[],stores:[]};assetHistory=[];localStorage.removeItem(ASSET_HISTORY_KEY);save().catch(console.error);toast('削除しました')}};
+
+
+const ADMIN_PIN_KEY='pokeca_life_admin_pin_v1';
+let ownerTapCount=0;
+let ownerTapTimer=null;
+function setAdminMode(enabled){
+  document.body.classList.toggle('admin-mode',enabled);
+  sessionStorage.setItem('pokeca_life_admin_session',enabled?'1':'0');
+  if(enabled)toast('管理者モードを開きました');
+  else toast('一般ユーザーモードに戻りました');
+}
+function normalizeAdminPin(value){return String(value||'').replace(/\D/g,'').slice(0,8)}
+function unlockAdminMode(){
+  const saved=localStorage.getItem(ADMIN_PIN_KEY);
+  if(!saved){
+    const first=normalizeAdminPin(prompt('管理者PINを作成してください（4〜8桁）'));
+    if(first.length<4)return toast('PINは4桁以上で設定してください');
+    const confirmPin=normalizeAdminPin(prompt('確認のため、同じPINをもう一度入力してください'));
+    if(first!==confirmPin)return toast('PINが一致しません');
+    localStorage.setItem(ADMIN_PIN_KEY,first);
+    setAdminMode(true);
+    return;
+  }
+  const entered=normalizeAdminPin(prompt('管理者PINを入力してください'));
+  if(entered===saved)setAdminMode(true);
+  else if(entered)toast('PINが違います');
+}
+function registerOwnerTap(){
+  ownerTapCount+=1;
+  clearTimeout(ownerTapTimer);
+  ownerTapTimer=setTimeout(()=>{ownerTapCount=0},1800);
+  if(ownerTapCount>=5){ownerTapCount=0;unlockAdminMode()}
+}
+const ownerVersionCard=$('#ownerVersionCard');
+if(ownerVersionCard)ownerVersionCard.addEventListener('click',registerOwnerTap);
+const lockAdminModeButton=$('#lockAdminModeButton');
+if(lockAdminModeButton)lockAdminModeButton.onclick=()=>setAdminMode(false);
+if(sessionStorage.getItem('pokeca_life_admin_session')==='1')document.body.classList.add('admin-mode');
 
 const refreshStoreMasterButton=$('#refreshStoreMasterButton');
 if(refreshStoreMasterButton)refreshStoreMasterButton.onclick=refreshStoreMaster;
