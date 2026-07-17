@@ -1,6 +1,6 @@
 name = "pokeca-life-main"
 main = "pokeca-reader-worker.js"
-compatibility_date = "2026-07-18"
+compatibility_date = "2026-07-17"
 workers_dev = true
 
 [observability]
