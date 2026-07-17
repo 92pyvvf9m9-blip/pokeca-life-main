@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "updatedAt": "2026-07-17T18:10:18.813Z",
+  "updatedAt": "2026-07-17T18:11:34.742Z",
   "lotteries": [
     {
       "externalId": "manual-1f79809c-2fce-43ee-98ce-0acb945ad2a6",
@@ -9,7 +9,7 @@
       "type": "店舗",
       "area": "広島県",
       "status": "open",
-      "url": "https://livepocket.jp/e/0n96b",
+      "url": "https://livepocket.jp/e/eq0_2",
       "applyStartDate": "2026-07-17",
       "applyStartTime": "12:00",
       "applyEndDate": "2026-07-23",
@@ -34,8 +34,8 @@
       "verified": true,
       "confidence": 0.99,
       "collectedAt": "2026-07-17T17:31:04.205Z",
-      "createdAt": "2026-07-17T18:10:18.530Z",
-      "updatedAt": "2026-07-17T18:10:18.530Z"
+      "createdAt": "2026-07-17T18:11:34.431Z",
+      "updatedAt": "2026-07-17T18:11:34.431Z"
     }
   ],
   "deleted": []
