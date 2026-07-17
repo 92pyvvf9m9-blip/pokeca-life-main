@@ -74,6 +74,7 @@ async function run() {
       sourceKind: "manual",
       sourceType: "Administrator manual entry",
       manualEntry: true,
+      adminPublished: true,
       confidence: Math.max(0.99, Number(item.confidence || 0)),
       collectedAt: item.collectedAt || item.createdAt || startedAt,
       updatedAt: item.updatedAt || startedAt,
@@ -162,6 +163,36 @@ async function run() {
 
   for (const rawCandidate of merged) {
     let candidate = { ...rawCandidate };
+
+    if (candidate.sourceKind === "manual" || candidate.manualEntry === true) {
+      const gate = evaluateCandidate(candidate, productCatalog, new Date(startedAt), { blockedDestinationDomains });
+      if (gate.catalogProduct) {
+        candidate.product = gate.catalogProduct.name;
+        candidate.productCatalogId = gate.catalogProduct.id;
+        catalogMatchedCount += 1;
+      }
+      const hasMinimum = Boolean(candidate.shop && candidate.product && (candidate.applyEndDate || candidate.deadline) && (candidate.resultStartDate || candidate.resultDate));
+      if (hasMinimum) {
+        published.push(sanitizeForPublic({
+          ...candidate,
+          manualEntry: true,
+          adminPublished: true,
+          verified: true,
+          qualityVersion: 2,
+          confidence: 0.99,
+          verificationChecks: { ...gate.checks, administratorApproved: true },
+        }));
+      } else {
+        reviewQueue.push({
+          ...candidate,
+          qualityVersion: 2,
+          reviewReasons: ["管理者入力の必須項目不足"],
+          reviewReason: "管理者入力の必須項目不足",
+        });
+      }
+      continue;
+    }
+
     const intelligence = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence" || candidate.sourceKind === "x";
 
     if (intelligence && candidate.url) {
@@ -226,7 +257,7 @@ async function run() {
     rule: "catalog+deadline+direct-destination",
   };
   const meta = {
-    collectorVersion: "1.15.2",
+    collectorVersion: "1.15.3",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,

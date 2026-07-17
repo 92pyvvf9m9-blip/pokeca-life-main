@@ -807,9 +807,20 @@ nav button{height:52px;min-height:52px;max-height:52px}
 .admin-manual-entry-card{border-color:#8b5cf655;background:linear-gradient(145deg,#7c3aed18,#ffffff05)}
 .admin-manual-entry-card .collector-card-head{align-items:flex-start}
 .admin-manual-entry-card .wide-button{margin-top:12px}
-.admin-manual-entry-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.admin-manual-entry-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px}
 .admin-manual-entry-note{margin:10px 0 0!important;color:var(--muted);font-size:10px!important;line-height:1.55}
-.manual-local-badge{background:#f59e0b18!important;color:#fcd34d!important;border-color:#f59e0b44!important}
+.manual-publish-badge{background:#22c55e18!important;color:#86efac!important;border-color:#22c55e44!important}
+.manual-publish-badge.needs-setup{background:#f59e0b18!important;color:#fcd34d!important;border-color:#f59e0b44!important}
+.publish-settings-details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.publish-settings-details summary{cursor:pointer;color:#c4b5fd;font-weight:700;font-size:12px}
+.publish-settings-body{display:grid;gap:10px;padding-top:12px}
+.publish-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.publish-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.publisher-status{min-height:18px;font-size:11px;color:var(--muted);line-height:1.5}
+.publisher-status.success{color:#86efac}.publisher-status.error{color:#fca5a5}.publisher-status.loading{color:#c4b5fd}
+.publish-mode-banner{margin:0 0 12px;padding:12px;border:1px solid #22c55e55;border-radius:14px;background:#22c55e12;color:#dcfce7;font-size:12px;line-height:1.55}
+.publish-mode-banner strong{display:block;margin-bottom:3px;color:#86efac}
+@media(max-width:520px){.publish-settings-grid,.publish-settings-actions{grid-template-columns:1fr}}
 .import-row{grid-template-columns:minmax(0,1fr) auto auto}
 .import-url-paste{padding:0 12px;white-space:nowrap}
 .import-hint{display:block;margin-top:9px;color:var(--muted);font-size:10px;line-height:1.5}
@@ -1049,16 +1060,34 @@ nav button{height:52px;min-height:52px;max-height:52px}
 <div class="item admin-only admin-manual-entry-card">
   <div class="collector-card-head">
     <div>
-      <h3>URLから抽選を手動追加</h3>
-      <p>オープンチャットや店頭QRから開いた応募ページを貼り、店舗・商品・日付を入力します。</p>
+      <h3>抽選を公開追加</h3>
+      <p>オープンチャットや店頭QRの応募URLを貼り、内容を確認して保存します。</p>
     </div>
-    <span class="collector-health manual-local-badge">端末保存</span>
+    <span id="manualPublishBadge" class="collector-health manual-publish-badge needs-setup">初回設定</span>
   </div>
   <div class="admin-manual-entry-actions">
-    <button id="openAdminLotteryImportButton" class="primary" type="button">URLを貼って追加</button>
-    <button id="exportManualLotteriesButton" class="secondary" type="button">公開用JSONを書き出す</button>
+    <button id="openAdminLotteryImportButton" class="primary" type="button">URLを貼って公開追加</button>
   </div>
-  <p class="admin-manual-entry-note">追加直後はこの端末に保存されます。「公開用JSON」をGitHub直下の <b>manual-lotteries.json</b> に上書きすると、自動収集時に共通フィードへ統合されます。</p>
+  <p class="admin-manual-entry-note">保存するとこの端末へ即反映し、そのまま全ユーザー向けの公開処理を開始します。JSONの書き出しやGitHubへの手動アップロードは不要です。</p>
+  <details class="publish-settings-details" id="publishSettingsDetails">
+    <summary>初回だけ：公開保存設定</summary>
+    <div class="publish-settings-body">
+      <div class="publish-settings-grid">
+        <div class="group"><label>GitHubユーザー名</label><input id="publisherOwnerInput" class="field" type="text" autocapitalize="none" placeholder="ユーザー名"></div>
+        <div class="group"><label>リポジトリ名</label><input id="publisherRepoInput" class="field" type="text" autocapitalize="none" placeholder="pokeca-life"></div>
+      </div>
+      <div class="publish-settings-grid">
+        <div class="group"><label>ブランチ</label><input id="publisherBranchInput" class="field" type="text" value="main" autocapitalize="none"></div>
+        <div class="group"><label>GitHubアクセストークン</label><input id="publisherTokenInput" class="field" type="password" autocapitalize="none" autocomplete="off" placeholder="github_pat_…"></div>
+      </div>
+      <div class="publish-settings-actions">
+        <button id="savePublisherSettingsButton" class="secondary" type="button">公開設定を保存</button>
+        <button id="testPublisherSettingsButton" class="primary" type="button">接続確認</button>
+      </div>
+      <p class="admin-manual-entry-note">トークンはこの端末だけに保存します。対象リポジトリ限定で「Contents: Read and write」を付けたFine-grained tokenを使用してください。</p>
+      <div id="publisherStatus" class="publisher-status"></div>
+    </div>
+  </details>
 </div>
 <div class="item collector-card admin-only">
   <div class="collector-card-head">
@@ -1183,7 +1212,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.2</h3><p>URL手動追加・iPhone表示安定化</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.3</h3><p>管理画面からワンタップ公開</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1264,6 +1293,9 @@ const USER_PROFILE_KEY='pokeca_life_user_profile_v1';
 let userProfile={prefecture:'',rangeMode:'auto',onboarded:false};
 const SYNC_SETTINGS_KEY='pokeca_life_sync_settings_v1';
 const SYNC_STATE_KEY='pokeca_life_sync_state_v1';
+const PUBLISH_SETTINGS_KEY='pokeca_life_publish_settings_v1';
+const MANUAL_LOTTERIES_FILE='manual-lotteries.json';
+let publishSettings={owner:'',repo:'',branch:'main',token:''};
 let syncSettings={endpoint:'./lottery-feed.json',autoSync:true,githubUser:'',githubRepo:'pokeca-life'};
 let syncState={lastSyncAt:'',feedUpdatedAt:'',unreadRemoteIds:[],seenRemoteIds:[],collectorMeta:{}};
 const MONITOR_SETTINGS_KEY='pokeca_life_monitor_settings_v1';
@@ -2410,7 +2442,9 @@ function normalizeRemoteLottery(item){
     appUrl:normalizeUrl(item.appUrl||''),
     fallbackUrl:normalizeUrl(item.fallbackUrl||''),
     instructions:item.instructions||'',
-    memo:item.memo||''
+    memo:item.memo||'',
+    manualEntry:Boolean(item.manualEntry),
+    adminPublished:Boolean(item.adminPublished||item.manualEntry)
   };
 }
 function mergeRemoteLottery(remote){
@@ -2729,6 +2763,7 @@ async function useGeneratedFeedUrl(){
 }
 
 function loadSyncSettingsUI(){
+  loadPublisherSettings();
   const toggle=$('#autoSyncToggle');
   const endpoint=$('#syncEndpointInput');
   if(toggle)toggle.checked=syncSettings.autoSync!==false;
@@ -2741,6 +2776,7 @@ function loadSyncSettingsUI(){
   renderFeedConnectionState();
   renderMonitorSources();
   renderProfileUI();
+  renderPublisherSettings();
 }
 function saveSyncSettingsFromUI(){
   const toggle=$('#autoSyncToggle');
@@ -4073,41 +4109,166 @@ function bindLotteryImporter(){
  if(a)a.onclick=importFromUrl;if(b)b.onclick=importFromText;if(c)c.onclick=pasteImportText;if(d)d.onclick=pasteImportUrl;
  if(u)u.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();importFromUrl()}};
 }
-function manualLotteryExportItems(){
- return (D.lotteries||[])
-  .filter(item=>item.manualEntry===true||item.origin==='manual')
-  .map(item=>({
-   externalId:item.externalId||`manual-${item.id}`,
-   manualEntry:true,
-   sourceKind:'manual',
-   confidence:0.99,
-   verified:true,
-   shop:item.shop||'',product:item.product||'',url:item.url||'',
-   applyStartDate:item.applyStartDate||'',applyStartTime:item.applyStartTime||'',
-   applyEndDate:item.applyEndDate||item.deadline||'',applyEndTime:item.applyEndTime||'',
-   resultStartDate:item.resultStartDate||item.resultDate||'',resultStartTime:item.resultStartTime||'',
-   resultEndDate:item.resultEndDate||'',resultEndTime:item.resultEndTime||'',resultNote:item.resultNote||'',
-   purchaseStartDate:item.purchaseStartDate||'',purchaseStartTime:item.purchaseStartTime||'',
-   purchaseEndDate:item.purchaseEndDate||item.purchaseDeadline||'',purchaseEndTime:item.purchaseEndTime||'',
-   type:item.type||'通販',area:item.area||'全国',destinationType:item.destinationType||'direct',
-   appName:item.appName||'',appUrl:item.appUrl||'',fallbackUrl:item.fallbackUrl||'',
-   instructions:item.instructions||'',memo:item.memo||'',
-   collectedAt:item.collectedAt||item.createdAt||new Date().toISOString(),
-   updatedAt:new Date().toISOString()
-  }));
+function manualLotteryPublicItem(item){
+ return{
+  externalId:item.externalId||`manual-${item.id}`,
+  manualEntry:true,adminPublished:true,sourceKind:'manual',confidence:0.99,verified:true,
+  shop:item.shop||'',product:item.product||'',url:item.url||'',
+  applyStartDate:item.applyStartDate||'',applyStartTime:item.applyStartTime||'',
+  applyEndDate:item.applyEndDate||item.deadline||'',applyEndTime:item.applyEndTime||'',
+  resultStartDate:item.resultStartDate||item.resultDate||'',resultStartTime:item.resultStartTime||'',
+  resultEndDate:item.resultEndDate||'',resultEndTime:item.resultEndTime||'',resultNote:item.resultNote||'',
+  purchaseStartDate:item.purchaseStartDate||'',purchaseStartTime:item.purchaseStartTime||'',
+  purchaseEndDate:item.purchaseEndDate||item.purchaseDeadline||'',purchaseEndTime:item.purchaseEndTime||'',
+  type:item.type||'通販',area:item.area||'全国',destinationType:item.destinationType||'direct',
+  appName:item.appName||'',appUrl:item.appUrl||'',fallbackUrl:item.fallbackUrl||'',
+  instructions:item.instructions||'',memo:item.memo||'',
+  collectedAt:item.collectedAt||item.createdAt||new Date().toISOString(),
+  updatedAt:new Date().toISOString()
+ };
 }
-function exportManualLotteries(){
- const lotteries=manualLotteryExportItems();
- if(!lotteries.length){toast('手動追加した抽選がありません');return}
- const payload={version:1,updatedAt:new Date().toISOString(),lotteries};
- const blob=new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json'});
- const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='manual-lotteries.json';link.click();
- setTimeout(()=>URL.revokeObjectURL(link.href),1000);
- toast(`${lotteries.length}件を書き出しました`);
+function inferPublisherTarget(){
+ let owner=String(publishSettings.owner||syncSettings.githubUser||'').trim().replace(/^@/,'');
+ let repo=String(publishSettings.repo||syncSettings.githubRepo||'').trim();
+ if(!owner&&/\.github\.io$/i.test(location.hostname))owner=location.hostname.split('.')[0];
+ const pathRepo=location.pathname.split('/').filter(Boolean)[0]||'';
+ if((!repo||repo==='pokeca-life')&&pathRepo)repo=pathRepo;
+ return{owner,repo:repo||'pokeca-life',branch:String(publishSettings.branch||'main').trim()||'main'};
+}
+function loadPublisherSettings(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(PUBLISH_SETTINGS_KEY)||'null');
+  if(saved&&typeof saved==='object')publishSettings={...publishSettings,...saved};
+ }catch{}
+ const inferred=inferPublisherTarget();
+ publishSettings.owner=publishSettings.owner||inferred.owner;
+ publishSettings.repo=publishSettings.repo||inferred.repo;
+ publishSettings.branch=publishSettings.branch||'main';
+}
+function savePublisherSettings(){
+ try{localStorage.setItem(PUBLISH_SETTINGS_KEY,JSON.stringify(publishSettings))}catch(err){console.warn(err)}
+}
+function setPublisherStatus(message='',state=''){
+ const node=$('#publisherStatus');if(node){node.textContent=message;node.className=`publisher-status ${state}`.trim()}
+}
+function renderPublisherSettings(){
+ const inferred=inferPublisherTarget();
+ const owner=$('#publisherOwnerInput'),repo=$('#publisherRepoInput'),branch=$('#publisherBranchInput'),token=$('#publisherTokenInput');
+ if(owner)owner.value=publishSettings.owner||inferred.owner||'';
+ if(repo)repo.value=publishSettings.repo||inferred.repo||'pokeca-life';
+ if(branch)branch.value=publishSettings.branch||'main';
+ if(token){token.value='';token.placeholder=publishSettings.token?'保存済み（変更時だけ入力）':'github_pat_…'}
+ const badge=$('#manualPublishBadge');
+ if(badge){
+  const ready=Boolean((publishSettings.owner||inferred.owner)&&(publishSettings.repo||inferred.repo)&&publishSettings.token);
+  badge.className=`collector-health manual-publish-badge${ready?'':' needs-setup'}`;
+  badge.textContent=ready?'公開保存OK':'初回設定';
+ }
+}
+function publisherSettingsFromUI({requireToken=false}={}){
+ const inferred=inferPublisherTarget();
+ const tokenInput=String($('#publisherTokenInput')?.value||'').trim();
+ const next={
+  owner:String($('#publisherOwnerInput')?.value||publishSettings.owner||inferred.owner||'').trim().replace(/^@/,''),
+  repo:String($('#publisherRepoInput')?.value||publishSettings.repo||inferred.repo||'').trim(),
+  branch:String($('#publisherBranchInput')?.value||publishSettings.branch||'main').trim()||'main',
+  token:tokenInput||publishSettings.token||''
+ };
+ if(!next.owner)throw new Error('GitHubユーザー名を入力してください');
+ if(!next.repo)throw new Error('リポジトリ名を入力してください');
+ if(requireToken&&!next.token)throw new Error('GitHubアクセストークンを入力してください');
+ return next;
+}
+function encodeBase64Utf8(value){
+ const bytes=new TextEncoder().encode(String(value));let binary='';
+ for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+ return btoa(binary);
+}
+function decodeBase64Utf8(value){
+ const binary=atob(String(value||'').replace(/\s/g,''));const bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ return new TextDecoder().decode(bytes);
+}
+async function githubContentsRequest(url,options={}){
+ const settings=publisherSettingsFromUI({requireToken:true});
+ const response=await fetch(url,{...options,headers:{
+  'Accept':'application/vnd.github+json','Authorization':`Bearer ${settings.token}`,
+  'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json',...(options.headers||{})
+ }});
+ if(response.status===404&&options.allowNotFound)return null;
+ let payload=null;try{payload=await response.json()}catch{}
+ if(!response.ok){
+  const message=response.status===401?'トークンが無効です':response.status===403?'リポジトリへの書き込み権限がありません':response.status===404?'リポジトリまたはファイルが見つかりません':(payload?.message||`GitHub API ${response.status}`);
+  throw new Error(message);
+ }
+ return payload;
+}
+function githubManualFileUrl(settings){
+ return `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/${MANUAL_LOTTERIES_FILE}`;
+}
+async function readPublishedManualFile(){
+ const settings=publisherSettingsFromUI({requireToken:true});
+ const url=`${githubManualFileUrl(settings)}?ref=${encodeURIComponent(settings.branch)}`;
+ const file=await githubContentsRequest(url,{allowNotFound:true});
+ if(!file)return{sha:'',payload:{version:2,updatedAt:new Date().toISOString(),lotteries:[]}};
+ let payload={version:2,lotteries:[]};
+ try{payload=JSON.parse(decodeBase64Utf8(file.content||''))}catch{throw new Error('公開データを読み込めませんでした')}
+ if(Array.isArray(payload))payload={version:2,lotteries:payload};
+ if(!Array.isArray(payload.lotteries))payload.lotteries=[];
+ return{sha:file.sha||'',payload};
+}
+function publishedManualIdentity(item){
+ return String(item?.externalId||canonicalLotteryStateUrl(item?.url||'')||`${item?.shop||''}|${item?.product||''}|${item?.applyEndDate||item?.deadline||''}`);
+}
+async function writePublishedManualFile(payload,sha='',message='admin: update lottery'){
+ const settings=publisherSettingsFromUI({requireToken:true});
+ const body={message,branch:settings.branch,content:encodeBase64Utf8(JSON.stringify(payload,null,2)+'\n')};
+ if(sha)body.sha=sha;
+ return githubContentsRequest(githubManualFileUrl(settings),{method:'PUT',body:JSON.stringify(body)});
+}
+async function publishManualLottery(item,{remove=false}={}){
+ const settings=publisherSettingsFromUI({requireToken:true});
+ publishSettings=settings;savePublisherSettings();renderPublisherSettings();
+ setPublisherStatus(remove?'公開一覧から削除中…':'全ユーザー向けに公開中…','loading');
+ const current=await readPublishedManualFile();
+ const target=manualLotteryPublicItem(item);const key=publishedManualIdentity(target);
+ let lotteries=current.payload.lotteries.filter(entry=>publishedManualIdentity(entry)!==key);
+ if(!remove)lotteries.unshift(target);
+ const payload={version:2,updatedAt:new Date().toISOString(),lotteries};
+ await writePublishedManualFile(payload,current.sha,remove?`admin: remove lottery ${target.shop||target.product}`:`admin: publish lottery ${target.shop||target.product}`);
+ setPublisherStatus(remove?'公開削除を開始しました。反映まで通常1〜3分です。':'公開処理を開始しました。全端末への反映は通常1〜3分です。','success');
+ return true;
+}
+async function savePublisherSettingsFromUI(){
+ try{
+  publishSettings=publisherSettingsFromUI({requireToken:true});savePublisherSettings();renderPublisherSettings();
+  setPublisherStatus('公開設定をこの端末へ保存しました。','success');toast('公開設定を保存しました');
+ }catch(err){setPublisherStatus(err.message||'設定を保存できませんでした','error')}
+}
+async function testPublisherConnection(){
+ const button=$('#testPublisherSettingsButton');if(button){button.disabled=true;button.textContent='確認中…'}
+ try{
+  publishSettings=publisherSettingsFromUI({requireToken:true});savePublisherSettings();
+  setPublisherStatus('GitHubへ接続確認中…','loading');await readPublishedManualFile();renderPublisherSettings();
+  setPublisherStatus('接続OK。管理画面の「保存」だけで公開できます。','success');toast('公開接続を確認しました');
+ }catch(err){setPublisherStatus(err.message||'接続できませんでした','error')}
+ finally{if(button){button.disabled=false;button.textContent='接続確認'}}
+}
+function isAdminPublishedLottery(item){return Boolean(item?.adminPublished||(item?.origin==='remote'&&item?.manualEntry))}
+function enableAdminPublishMode(item=null){
+ const form=$('#form');if(!form)return;
+ form.dataset.publish='1';
+ $('#modalTitle').textContent=item?'公開抽選を編集':'公開抽選を追加';
+ if(!form.querySelector('.publish-mode-banner')){
+  const banner=document.createElement('div');banner.className='publish-mode-banner';
+  banner.innerHTML='<strong>管理者公開モード</strong>「保存」を押すと、この端末へ反映後、そのまま全ユーザー向けの公開処理を開始します。';
+  const error=form.querySelector('#formError');error?.insertAdjacentElement('afterend',banner);
+ }
 }
 function openAdminLotteryImport(){
  go('lottery');
  open('lottery');
+ enableAdminPublishMode();
  setTimeout(()=>$('#autoImportUrl')?.focus(),80);
 }
 
@@ -4292,7 +4453,7 @@ if(type==='card'){
       <div class="group"><label>経度</label><input class="field" type="number" step="any" inputmode="decimal" name="longitude" value="${esc(item?.longitude??'')}"></div>
     </div>
   </details>`+
-  area('メモ','memo',item?.memo)+acts(!!item);if(type==='lottery')bindLotteryImporter()}function close(){$('#backdrop').classList.add('hide')}function listKey(type){return type==='lottery'?'lotteries':type==='card'?'cards':'stores'}document.addEventListener('click',async e=>{
+  area('メモ','memo',item?.memo)+acts(!!item);if(type==='lottery'){bindLotteryImporter();if(item&&isAdminPublishedLottery(item)&&document.body.classList.contains('admin-mode'))enableAdminPublishMode(item)}}function close(){$('#backdrop').classList.add('hide')}function listKey(type){return type==='lottery'?'lotteries':type==='card'?'cards':'stores'}document.addEventListener('click',async e=>{
 const lotteryViewButton=e.target.closest('[data-lottery-view]');
 if(lotteryViewButton){
   setLotteryView(lotteryViewButton.dataset.lotteryView);
@@ -4372,7 +4533,7 @@ if(detailStatus){
   return;
 }
 let de=e.target.closest('[data-detail-edit]');if(de){let item=D.lotteries.find(x=>x.id===de.dataset.detailEdit);closeDetail();return open('lottery',item)}
-let dd=e.target.closest('[data-detail-delete]');if(dd){if(confirm('この抽選を削除しますか？')){D.lotteries=D.lotteries.filter(x=>x.id!==dd.dataset.detailDelete);save().catch(console.error);closeDetail();toast('削除しました')}return}
+let dd=e.target.closest('[data-detail-delete]');if(dd){const item=D.lotteries.find(x=>x.id===dd.dataset.detailDelete);if(item&&confirm('この抽選を削除しますか？')){if(isAdminPublishedLottery(item)&&document.body.classList.contains('admin-mode')){try{await publishManualLottery(item,{remove:true})}catch(err){toast(err.message||'公開削除に失敗しました');return}}D.lotteries=D.lotteries.filter(x=>x.id!==item.id);await save();closeDetail();toast(isAdminPublishedLottery(item)?'公開削除を開始しました':'削除しました')}return}
 let bell=e.target.closest('#bellButton');if(bell)return openNotifications();
 let notifyItem=e.target.closest('[data-notification-lottery]');
 if(notifyItem){
@@ -4380,7 +4541,7 @@ if(notifyItem){
   return openDetail(D.lotteries.find(x=>x.id===notifyItem.dataset.notificationLottery));
 }
 let trackerFilter=e.target.closest('[data-tracker-filter]');if(trackerFilter){lf=trackerFilter.dataset.trackerFilter;return renderLottery()}
-let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.closest('[data-lf]');if(a){lf=a.dataset.lf;return renderLottery()}let b=e.target.closest('[data-cf]');if(b){cf=b.dataset.cf;return renderCards()}let ld=e.target.closest('[data-lottery-detail]');if(ld)return openDetail(D.lotteries.find(x=>x.id===ld.dataset.lotteryDetail));let c=e.target.closest('[data-card-detail]');if(c)return openCardDetail(D.cards.find(x=>x.id===c.dataset.cardDetail));let s=e.target.closest('[data-store]');if(s)return openStoreDetail(D.stores.find(x=>x.id===s.dataset.store));let qs=e.target.closest('[data-quick-status]');if(qs){let sel=$('#form select[name="status"]');if(sel){sel.value=qs.dataset.quickStatus;$$('[data-quick-status]').forEach(b=>b.classList.toggle('active',b===qs))}return;}if(e.target.closest('#addLottery'))open('lottery');if(e.target.closest('#addCard'))open('card');if(e.target.closest('#addStore'))open('store');if(e.target.closest('#close')||e.target.closest('#cancel'))close();if(e.target.closest('#delete')){let f=$('#form'),k=listKey(f.dataset.type);if(confirm('削除しますか？')){D[k]=D[k].filter(x=>x.id!==f.dataset.id);save().catch(console.error);close();toast('削除しました')}}});document.addEventListener('change',async e=>{
+let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.closest('[data-lf]');if(a){lf=a.dataset.lf;return renderLottery()}let b=e.target.closest('[data-cf]');if(b){cf=b.dataset.cf;return renderCards()}let ld=e.target.closest('[data-lottery-detail]');if(ld)return openDetail(D.lotteries.find(x=>x.id===ld.dataset.lotteryDetail));let c=e.target.closest('[data-card-detail]');if(c)return openCardDetail(D.cards.find(x=>x.id===c.dataset.cardDetail));let s=e.target.closest('[data-store]');if(s)return openStoreDetail(D.stores.find(x=>x.id===s.dataset.store));let qs=e.target.closest('[data-quick-status]');if(qs){let sel=$('#form select[name="status"]');if(sel){sel.value=qs.dataset.quickStatus;$$('[data-quick-status]').forEach(b=>b.classList.toggle('active',b===qs))}return;}if(e.target.closest('#addLottery'))open('lottery');if(e.target.closest('#addCard'))open('card');if(e.target.closest('#addStore'))open('store');if(e.target.closest('#close')||e.target.closest('#cancel'))close();if(e.target.closest('#delete')){let f=$('#form'),k=listKey(f.dataset.type),item=D[k].find(x=>x.id===f.dataset.id);if(item&&confirm('削除しますか？')){if(f.dataset.type==='lottery'&&isAdminPublishedLottery(item)&&document.body.classList.contains('admin-mode')){try{await publishManualLottery(item,{remove:true})}catch(err){toast(err.message||'公開削除に失敗しました');return}}D[k]=D[k].filter(x=>x.id!==f.dataset.id);await save();close();toast(f.dataset.type==='lottery'&&isAdminPublishedLottery(item)?'公開削除を開始しました':'削除しました')}}});document.addEventListener('change',async e=>{
   const select=e.target.closest('[data-lottery-status-select]');
   if(!select)return;
   e.stopPropagation();
@@ -4513,11 +4674,13 @@ $('#form').addEventListener('submit',async e=>{
 
       const existingLottery=D[k].find(x=>x.id===id);
       const nowIso=new Date().toISOString();
+      const publishManaged=f.dataset.publish==='1'||Boolean(existingLottery?.adminPublished);
       o={
         ...existingLottery,
         ...o,
-        origin:existingLottery?.origin||'manual',
-        manualEntry:existingLottery?.manualEntry??true,
+        origin:existingLottery?.origin||(publishManaged?'manual-admin':'local'),
+        manualEntry:Boolean(existingLottery?.manualEntry||publishManaged),
+        adminPublished:Boolean(existingLottery?.adminPublished||publishManaged),
         externalId:existingLottery?.externalId||`manual-${id}`,
         collectedAt:existingLottery?.collectedAt||existingLottery?.createdAt||nowIso,
         updatedAt:nowIso,
@@ -4622,8 +4785,18 @@ $('#form').addEventListener('submit',async e=>{
       return;
     }
 
+    const shouldPublish=type==='lottery'&&f.dataset.publish==='1';
+    if(shouldPublish){
+      if(saveButton)saveButton.textContent='公開中…';
+      try{await publishManualLottery(o)}catch(err){
+        showFormMessage(`端末には保存しましたが、公開できませんでした。${err.message||'公開設定を確認してください。'}`,'error');
+        const details=$('#publishSettingsDetails');if(details)details.open=true;
+        return;
+      }
+    }
+
     close();
-    toast(i>=0?'更新しました':'追加しました');
+    toast(shouldPublish?'公開処理を開始しました':(i>=0?'更新しました':'追加しました'));
 
     if(type==='lottery'){
       lf='all';
@@ -4841,8 +5014,10 @@ const refreshProductCatalogButton=$('#refreshProductCatalogButton');
 if(refreshProductCatalogButton)refreshProductCatalogButton.onclick=refreshProductCatalogData;
 const openAdminLotteryImportButton=$('#openAdminLotteryImportButton');
 if(openAdminLotteryImportButton)openAdminLotteryImportButton.onclick=openAdminLotteryImport;
-const exportManualLotteriesButton=$('#exportManualLotteriesButton');
-if(exportManualLotteriesButton)exportManualLotteriesButton.onclick=exportManualLotteries;
+const savePublisherSettingsButton=$('#savePublisherSettingsButton');
+if(savePublisherSettingsButton)savePublisherSettingsButton.onclick=savePublisherSettingsFromUI;
+const testPublisherSettingsButton=$('#testPublisherSettingsButton');
+if(testPublisherSettingsButton)testPublisherSettingsButton.onclick=testPublisherConnection;
 const resetMonitorSourcesButton=$('#resetMonitorSourcesButton');
 if(resetMonitorSourcesButton)resetMonitorSourcesButton.onclick=resetMonitorSources;
 const enableAllMonitorSourcesButton=$('#enableAllMonitorSourcesButton');
@@ -4866,8 +5041,8 @@ const useFeedUrlButton=$('#useFeedUrlButton');
 if(useFeedUrlButton)useFeedUrlButton.onclick=useGeneratedFeedUrl;
 const githubUserInput=$('#githubUserInput');
 const githubRepoInput=$('#githubRepoInput');
-if(githubUserInput)githubUserInput.addEventListener('input',populateGeneratedFeedUrl);
-if(githubRepoInput)githubRepoInput.addEventListener('input',populateGeneratedFeedUrl);
+if(githubUserInput)githubUserInput.addEventListener('input',()=>{populateGeneratedFeedUrl();if(!publishSettings.owner){const p=$('#publisherOwnerInput');if(p)p.value=githubUserInput.value.trim().replace(/^@/,'')}});
+if(githubRepoInput)githubRepoInput.addEventListener('input',()=>{populateGeneratedFeedUrl();if(!publishSettings.repo){const p=$('#publisherRepoInput');if(p)p.value=githubRepoInput.value.trim()}});
 
 const syncNowButton=$('#syncNowButton');
 if(syncNowButton)syncNowButton.onclick=()=>syncRemoteLotteries();
