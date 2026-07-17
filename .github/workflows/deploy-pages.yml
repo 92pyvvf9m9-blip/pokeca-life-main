@@ -1,1 +1,51 @@
- 
+name: Deploy Pokeca Life
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  workflow_run:
+    workflows: ["Collect Pokemon Card Lotteries", "Sync Pokemon Card Product Catalog"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Restore collector configuration
+        run: node scripts/restore-private-config.mjs
+        env:
+          POKECA_COLLECTOR_CONFIG_B64: ${{ secrets.POKECA_COLLECTOR_CONFIG_B64 }}
+
+      - name: Build source-free public artifact
+        run: node scripts/build-public.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
