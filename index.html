@@ -751,6 +751,78 @@ body.admin-mode .admin-only{display:block!important}
 .admin-lock-button{white-space:nowrap}
 .general-settings-label{font-size:12px;font-weight:800;color:#c084fc;letter-spacing:.08em;margin:2px 4px -2px}
 .version-owner-trigger{user-select:none;-webkit-user-select:none}
+
+
+/* v1.15.2 iPhone layout stability + administrator URL entry */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+@supports not (overflow:clip){html,body{overflow-x:hidden}}
+body{overscroll-behavior-x:none}
+.app,main,.screen,.section,.stack{width:100%;min-width:0;max-width:100%}
+.stack{grid-template-columns:minmax(0,1fr)}
+main{padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.lottery-card{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden;
+  content-visibility:visible!important;
+  contain:none!important;
+}
+.lottery-card-main,.lottery-card-content,.lottery-card-title-row,
+.lottery-card-status-control,.lottery-card-footer{min-width:0;max-width:100%}
+.lottery-card-main{width:100%}
+.lottery-card-status-control{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(72px,auto);
+  align-items:end;
+  width:100%;
+}
+.lottery-card-status-control label{min-width:0}
+.lottery-status-select{display:block;width:100%;min-width:0;max-width:100%}
+.lottery-status-updated{max-width:96px;overflow-wrap:anywhere;word-break:break-word}
+.lottery-card-footer{width:100%;flex-wrap:wrap}
+.lottery-apply-button{max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis}
+.lottery-card-home .lottery-card-status-control{grid-template-columns:minmax(0,1fr)}
+.lottery-card-home .lottery-status-updated{max-width:none;text-align:left}
+.lottery-card-home .lottery-card-footer{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+}
+.lottery-card-home .lottery-apply-button,
+.lottery-card-home .lottery-url-missing{margin-left:0;justify-self:end;max-width:100%}
+.lottery-card-home .lottery-card-chevron{justify-self:end}
+nav{
+  height:auto!important;
+  min-height:calc(68px + env(safe-area-inset-bottom));
+  max-height:calc(88px + env(safe-area-inset-bottom));
+  align-items:start;
+  overflow:hidden;
+}
+nav button{height:52px;min-height:52px;max-height:52px}
+.backdrop,.sheet{max-width:100%}
+.admin-manual-entry-card{border-color:#8b5cf655;background:linear-gradient(145deg,#7c3aed18,#ffffff05)}
+.admin-manual-entry-card .collector-card-head{align-items:flex-start}
+.admin-manual-entry-card .wide-button{margin-top:12px}
+.admin-manual-entry-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.admin-manual-entry-note{margin:10px 0 0!important;color:var(--muted);font-size:10px!important;line-height:1.55}
+.manual-local-badge{background:#f59e0b18!important;color:#fcd34d!important;border-color:#f59e0b44!important}
+.import-row{grid-template-columns:minmax(0,1fr) auto auto}
+.import-url-paste{padding:0 12px;white-space:nowrap}
+.import-hint{display:block;margin-top:9px;color:var(--muted);font-size:10px;line-height:1.5}
+@media(max-width:520px){
+  .import-row{grid-template-columns:1fr 1fr}
+  .import-row>input{grid-column:1/-1}
+  .import-button,.import-url-paste{min-height:44px}
+  .admin-manual-entry-actions{grid-template-columns:1fr}
+}
+@media(max-width:390px){
+  .lottery-card-main{gap:8px}
+  .lottery-product-thumb.home{flex-basis:56px;width:56px;height:76px}
+}
 </style></head><body><div class="app"><header><div><p class="eyebrow">POKECA LIFE</p><h1 id="title">ホーム</h1></div><button class="icon" id="bellButton" aria-label="お知らせを開く">🔔<span id="notificationBadge" class="hide">0</span></button></header><main>
 <section class="screen on" data-screen="home"><div class="hero home-module" data-home-section="tasks"><p class="muted">おかえりなさい</p><h2>今日やることを、すぐ確認。</h2><div id="tasks" class="tasks"></div></div>
 <div class="section home-module today-deadline-section" data-home-section="deadlines">
@@ -974,6 +1046,20 @@ body.admin-mode .admin-only{display:block!important}
 <div class="item admin-only admin-section-head" id="adminSectionHeader">
   <div class="row"><div><h3>管理者設定</h3><p>収集・公開・品質管理など、運営者専用の情報です。</p></div><button id="lockAdminModeButton" class="secondary admin-lock-button" type="button">管理者モードを終了</button></div>
 </div>
+<div class="item admin-only admin-manual-entry-card">
+  <div class="collector-card-head">
+    <div>
+      <h3>URLから抽選を手動追加</h3>
+      <p>オープンチャットや店頭QRから開いた応募ページを貼り、店舗・商品・日付を入力します。</p>
+    </div>
+    <span class="collector-health manual-local-badge">端末保存</span>
+  </div>
+  <div class="admin-manual-entry-actions">
+    <button id="openAdminLotteryImportButton" class="primary" type="button">URLを貼って追加</button>
+    <button id="exportManualLotteriesButton" class="secondary" type="button">公開用JSONを書き出す</button>
+  </div>
+  <p class="admin-manual-entry-note">追加直後はこの端末に保存されます。「公開用JSON」をGitHub直下の <b>manual-lotteries.json</b> に上書きすると、自動収集時に共通フィードへ統合されます。</p>
+</div>
 <div class="item collector-card admin-only">
   <div class="collector-card-head">
     <div>
@@ -1097,7 +1183,7 @@ body.admin-mode .admin-only{display:block!important}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.1</h3><p>応募管理・同期保持アップデート</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.2</h3><p>URL手動追加・iPhone表示安定化</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -2353,7 +2439,8 @@ function mergeRemoteLottery(remote){
     purchasedAt:storedState?.purchasedAt||existing.purchasedAt||'',
     skippedAt:storedState?.skippedAt||existing.skippedAt||'',
     createdAt:existing.createdAt||remote.createdAt,
-    memo:existing.memo||remote.memo||''
+    memo:existing.memo||remote.memo||'',
+    manualEntry:Boolean(existing.manualEntry||remote.manualEntry)
   };
   Object.assign(existing,remote,localFields);
   applyLotteryUserState(existing);
@@ -3798,7 +3885,7 @@ function clearFormMessage(){
 }
 
 function render(){renderAllSafely()}const field=(l,n,v='',req='',type='text')=>`<div class="group"><label>${l}${req?' *':''}</label><input class="field" type="${type}" name="${n}" value="${esc(v)}" ${req?'required':''}></div>`;const area=(l,n,v='')=>`<div class="group"><label>${l}</label><textarea class="field" name="${n}" rows="3">${esc(v)}</textarea></div>`;function acts(edit){return `<div class="actions sticky-actions"><button type="button" class="secondary" id="cancel">キャンセル</button><button type="submit" class="primary" id="saveFormButton">保存</button>${edit?'<button type="button" class="danger full" id="delete">削除</button>':''}</div>`}
-const IMPORT_PREFECTURES=['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'];
+const IMPORT_PREFECTURES=['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'];
 function setImportStatus(message,type='info'){const n=$('#autoImportStatus');if(!n)return;n.textContent=message;n.className=`import-status show ${type}`}
 function cleanImportText(t){return String(t||'')
 .replace(/\u00a0/g,' ').replace(/[　\t]+/g,' ').replace(/[：﹕]/g,':')
@@ -3871,7 +3958,33 @@ function rangeAfterLabels(text,labels,kind='generic'){
  };
 }
 function pickupChoiceText(t){return /応募時.{0,30}(受取|受け取り|引取).{0,15}店舗.{0,15}(選択|指定)|受取店舗を選択|受け取り店舗を選択|購入時.{0,30}店舗.{0,15}(選択|指定)/s.test(t)}
-function specifiedStore(t,title=''){const c=`${title}\n${t}`;for(const r of [/((?:ホビーステーション|カードラボ|GIGA|フタバ図書|イオンスタイル|イオン|ヤマダデンキ|ジョーシン|エディオン|ビックカメラ|トイザらス|TSUTAYA|ポケモンセンター)[^\n「」]{0,30}店)/i,/(?:開催店舗|受取店舗|対象店舗|販売店舗)\s*[:：]?\s*([^\n]{2,40}店)/i]){const m=c.match(r);if(m)return m[1].trim()}return''}
+const IMPORT_HOST_SHOPS={
+ 'pokemoncenter-online.com':'ポケモンセンターオンライン',
+ 'amazon.co.jp':'Amazon',
+ 'amiami.jp':'あみあみ',
+ '7net.omni7.jp':'セブンネットショッピング',
+ 'joshinweb.jp':'Joshin web',
+ 'biccamera.com':'ビックカメラ.com',
+ 'yamada-denkiweb.com':'ヤマダウェブコム',
+ 'nojima.co.jp':'ノジマオンライン',
+ 'geo-online.co.jp':'ゲオオンライン',
+ 'rakuten.co.jp':'楽天市場'
+};
+function importShopFromUrl(url){
+ try{
+  const host=new URL(url).hostname.toLowerCase().replace(/^www\./,'');
+  for(const [domain,name] of Object.entries(IMPORT_HOST_SHOPS))if(host===domain||host.endsWith(`.${domain}`))return name;
+ }catch{}
+ return'';
+}
+function specifiedStore(t,title=''){
+ const c=`${title}\n${t}`;
+ const chains='ホビーステーション|ホビステ|カードラボ|GIGA|古本市場|ふるいち|フタバ図書|ブックオフ|BOOKOFF|駿河屋|ゲオ|GEO|イオンスタイル|イオン|ヤマダデンキ|ジョーシン|エディオン|ビックカメラ|トイザらス|TSUTAYA|ポケモンセンター|カードボックス|レプトン|晴れる屋2|ドラゴンスター';
+ for(const r of [new RegExp(`((?:${chains})[^\n「」]{0,36}店)`,'i'),/(?:開催店舗|受取店舗|対象店舗|販売店舗|応募店舗)\s*[:：]?\s*([^\n]{2,48}店)/i]){
+  const m=c.match(r);if(m)return stripImportMarkdown(m[1]).trim();
+ }
+ return'';
+}
 
 function stripImportMarkdown(value){
   return String(value||'')
@@ -3901,17 +4014,24 @@ function productFromText(t,title=''){
 }
 function parseLotteryImport(text,url='',title=''){
  const t=cleanImportText(text),readerTitle=titleFromReader(t),resolvedTitle=title||readerTitle;
- const pickup=pickupChoiceText(t),shop=pickup?'':specifiedStore(t,resolvedTitle),pref=IMPORT_PREFECTURES.find(x=>(shop+'\n'+t).includes(x))||'';
+ const pickup=pickupChoiceText(t);
+ const detectedStore=specifiedStore(t,resolvedTitle);
+ const hostShop=importShopFromUrl(url);
+ const shop=pickup?'':(detectedStore||hostShop);
+ const locationText=`${shop}\n${resolvedTitle}\n${t}`;
+ const pref=IMPORT_PREFECTURES.find(x=>locationText.includes(x))||'';
  const ap=rangeAfterLabels(t,[/応募期間|応募受付期間|応募受付|受付期間|申込期間|お申し込み期間/],'apply');
  const rs=rangeAfterLabels(t,[/当選発表|結果発表|抽選結果|当落発表|当選通知/],'result');
  const pu=rangeAfterLabels(t,[/購入期間|購入期限|受取期間|受け取り期間|引取期間|販売期間/],'purchase');
  const notes=[];if(pickup)notes.push('応募時に受取店舗を選択');
  const resultNote=/営業時間中/.test(rs.section||'')?'営業時間中':(/順次/.test(rs.section||'')?'順次発表':'');
+ const onlineHost=Boolean(hostShop)&&!/店$/.test(hostShop);
+ const storeType=pickup||Boolean(detectedStore)||(!onlineHost&&Boolean(pref));
  return{shop,product:productFromText(t,resolvedTitle),url,
  applyStartDate:ap.startDate||'',applyStartTime:ap.startTime||'',applyEndDate:ap.endDate||'',applyEndTime:ap.endTime||'',
  resultStartDate:rs.startDate||'',resultStartTime:rs.startTime||'',resultEndDate:rs.endDate||'',resultEndTime:rs.endTime||'',resultNote,
  purchaseStartDate:pu.startDate||'',purchaseStartTime:pu.startTime||'',purchaseEndDate:pu.endDate||'',purchaseEndTime:pu.endTime||'',
- type:pickup||shop?'店舗':'通販',area:pickup?'全国':(pref||'全国'),memo:notes.join('\n')}
+ type:storeType?'店舗':'通販',area:pickup?'全国':(storeType?(pref||'全国'):'全国'),memo:notes.join('\n')}
 }
 function fillLotteryImport(d){const f=$('#form');if(!f)return 0;let n=0;for(const k of ['shop','product','url','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','type','area','memo']){const el=f.elements[k];if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];el.dispatchEvent(new Event('change',{bubbles:true}));n++}}const ae=f.elements.area;if(ae){ae.disabled=d.type==='通販';if(d.type==='通販')ae.value='全国'}return n}
 async function fetchWithTimeout(url,options={},ms=15000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{...options,signal:c.signal})}finally{clearTimeout(timer)}}
@@ -3934,7 +4054,62 @@ async function fetchImportPage(url){
 async function importFromUrl(){const b=$('#autoImportButton'),url=normalizeUrl($('#autoImportUrl')?.value||'');if(!url)return setImportStatus('URLを入力してください。','error');b.disabled=true;b.textContent='取得中…';fillLotteryImport({url});try{const pg=await fetchImportPage(url);const parsed=parseLotteryImport(pg.text,url,pg.title);const n=fillLotteryImport(parsed);$('#autoImportText').value=pg.text.slice(0,50000);const missing=[];if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');setImportStatus(`${pg.method}で${n}項目を自動入力しました。${missing.length?'未取得：'+missing.join('・')+'。':''}保存前に日付と店舗を確認してください。`,missing.length?'info':'success')}catch(e){console.warn(e);setImportStatus('URLから自動取得できませんでした。ログイン必須・CAPTCHA・非公開ページの可能性があります。その場合だけ本文貼り付けを使用してください。','error')}finally{b.disabled=false;b.textContent='URLから反映'}}
 function importFromText(){const t=$('#autoImportText')?.value||'',url=normalizeUrl($('#autoImportUrl')?.value||'');if(!t.trim())return setImportStatus('ページ本文または告知文を貼り付けてください。','error');const parsed=parseLotteryImport(t,url,'');const n=fillLotteryImport(parsed);const checks=[];if(parsed.applyStartDate||parsed.applyEndDate)checks.push(`応募 ${parsed.applyStartDate||'?'} ${parsed.applyStartTime||''}〜${parsed.applyEndDate||'?'} ${parsed.applyEndTime||''}`);if(parsed.resultStartDate)checks.push(`結果 ${parsed.resultStartDate}〜${parsed.resultEndDate||parsed.resultStartDate}`);if(parsed.purchaseStartDate||parsed.purchaseEndDate)checks.push(`購入 ${parsed.purchaseStartDate||'?'} ${parsed.purchaseStartTime||''}〜${parsed.purchaseEndDate||'?'} ${parsed.purchaseEndTime||''}`);setImportStatus(`${n}項目を反映しました。${checks.join(' / ')}。保存前に確認してください。`,'success')}
 async function pasteImportText(){try{const t=await navigator.clipboard.readText();if(!t)throw new Error('empty');$('#autoImportText').value=t;setImportStatus('貼り付けました。「本文から反映」を押してください。','info')}catch{setImportStatus('自動貼り付けが許可されませんでした。入力欄を長押ししてペーストしてください。','info')}}
-function bindLotteryImporter(){const a=$('#autoImportButton'),b=$('#textImportButton'),c=$('#pasteImportButton');if(a)a.onclick=importFromUrl;if(b)b.onclick=importFromText;if(c)c.onclick=pasteImportText}
+async function pasteImportUrl(){
+ try{
+  const text=String(await navigator.clipboard.readText()||'').trim();
+  const matched=text.match(/https?:\/\/[^\s<>]+/i);
+  if(!matched)throw new Error('url-not-found');
+  const input=$('#autoImportUrl');
+  input.value=normalizeUrl(matched[0].replace(/[）)】」』、。,.]+$/,''));
+  setImportStatus('URLを貼り付けました。ページ情報を取得します。','info');
+  await importFromUrl();
+ }catch{
+  setImportStatus('URLを自動貼り付けできませんでした。入力欄を長押ししてペーストしてください。','info');
+  $('#autoImportUrl')?.focus();
+ }
+}
+function bindLotteryImporter(){
+ const a=$('#autoImportButton'),b=$('#textImportButton'),c=$('#pasteImportButton'),d=$('#pasteImportUrlButton'),u=$('#autoImportUrl');
+ if(a)a.onclick=importFromUrl;if(b)b.onclick=importFromText;if(c)c.onclick=pasteImportText;if(d)d.onclick=pasteImportUrl;
+ if(u)u.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();importFromUrl()}};
+}
+function manualLotteryExportItems(){
+ return (D.lotteries||[])
+  .filter(item=>item.manualEntry===true||item.origin==='manual')
+  .map(item=>({
+   externalId:item.externalId||`manual-${item.id}`,
+   manualEntry:true,
+   sourceKind:'manual',
+   confidence:0.99,
+   verified:true,
+   shop:item.shop||'',product:item.product||'',url:item.url||'',
+   applyStartDate:item.applyStartDate||'',applyStartTime:item.applyStartTime||'',
+   applyEndDate:item.applyEndDate||item.deadline||'',applyEndTime:item.applyEndTime||'',
+   resultStartDate:item.resultStartDate||item.resultDate||'',resultStartTime:item.resultStartTime||'',
+   resultEndDate:item.resultEndDate||'',resultEndTime:item.resultEndTime||'',resultNote:item.resultNote||'',
+   purchaseStartDate:item.purchaseStartDate||'',purchaseStartTime:item.purchaseStartTime||'',
+   purchaseEndDate:item.purchaseEndDate||item.purchaseDeadline||'',purchaseEndTime:item.purchaseEndTime||'',
+   type:item.type||'通販',area:item.area||'全国',destinationType:item.destinationType||'direct',
+   appName:item.appName||'',appUrl:item.appUrl||'',fallbackUrl:item.fallbackUrl||'',
+   instructions:item.instructions||'',memo:item.memo||'',
+   collectedAt:item.collectedAt||item.createdAt||new Date().toISOString(),
+   updatedAt:new Date().toISOString()
+  }));
+}
+function exportManualLotteries(){
+ const lotteries=manualLotteryExportItems();
+ if(!lotteries.length){toast('手動追加した抽選がありません');return}
+ const payload={version:1,updatedAt:new Date().toISOString(),lotteries};
+ const blob=new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json'});
+ const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='manual-lotteries.json';link.click();
+ setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+ toast(`${lotteries.length}件を書き出しました`);
+}
+function openAdminLotteryImport(){
+ go('lottery');
+ open('lottery');
+ setTimeout(()=>$('#autoImportUrl')?.focus(),80);
+}
 
 function open(type,item){$('#backdrop').classList.remove('hide');clearFormMessage();$('#form').dataset.type=type;$('#form').dataset.id=item?.id||'';$('#modalTitle').textContent=(item?'編集':'追加');if(type==='lottery'){
   const advancedOpen=item?.destinationType==='app';
@@ -3943,9 +4118,11 @@ function open(type,item){$('#backdrop').classList.remove('hide');clearFormMessag
   <h3>URLから自動入力</h3>
   <p>応募ページや告知ページのURLを入れると、店舗・商品・日付を自動入力します。</p>
   <div class="import-row">
-    <input class="field" id="autoImportUrl" type="url" placeholder="https://..." value="${esc(item?.url||'')}">
+    <input class="field" id="autoImportUrl" type="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://..." value="${esc(item?.url||'')}">
+    <button class="secondary import-url-paste" type="button" id="pasteImportUrlButton">URL貼付</button>
     <button class="import-button" type="button" id="autoImportButton">URLから反映</button>
   </div>
+  <small class="import-hint">取得できないページでも応募URLは入力欄へ残ります。店頭QR限定・ログイン必須ページは、本文や告知文を貼り付けて補完できます。</small>
   <details class="text-import-details">
     <summary>本文・X投稿から入力する</summary>
     <textarea class="field import-text" id="autoImportText" placeholder="ページ本文、X投稿、アプリ内告知文などを貼り付け"></textarea>
@@ -4309,10 +4486,12 @@ $('#form').addEventListener('submit',async e=>{
       o.purchaseDeadline=o.purchaseEndDate||'';
 
       const duplicate=D.lotteries.find(x=>
-        x.id!==id &&
-        (x.shop||'').trim()===o.shop &&
-        (x.product||'').trim()===o.product &&
-        (x.applyEndDate||x.deadline||'')===o.applyEndDate
+        x.id!==id && (
+          (o.url&&canonicalLotteryStateUrl(x.url||'')===canonicalLotteryStateUrl(o.url)) ||
+          ((x.shop||'').trim()===o.shop &&
+           (x.product||'').trim()===o.product &&
+           (x.applyEndDate||x.deadline||'')===o.applyEndDate)
+        )
       );
 
       // 既存データが見えなくなっている場合でも、同一抽選を上書き復旧する
@@ -4333,7 +4512,17 @@ $('#form').addEventListener('submit',async e=>{
       }
 
       const existingLottery=D[k].find(x=>x.id===id);
-      o={...existingLottery,...o,createdAt:existingLottery?.createdAt||new Date().toISOString()};
+      const nowIso=new Date().toISOString();
+      o={
+        ...existingLottery,
+        ...o,
+        origin:existingLottery?.origin||'manual',
+        manualEntry:existingLottery?.manualEntry??true,
+        externalId:existingLottery?.externalId||`manual-${id}`,
+        collectedAt:existingLottery?.collectedAt||existingLottery?.createdAt||nowIso,
+        updatedAt:nowIso,
+        createdAt:existingLottery?.createdAt||nowIso
+      };
       const statusChanged=!existingLottery||existingLottery.status!==o.status;
       if(statusChanged){
         const now=o.userStatusUpdatedAt||new Date().toISOString();
@@ -4650,6 +4839,10 @@ if(changeHomeAreaButton)changeHomeAreaButton.onclick=()=>go('settings');
 
 const refreshProductCatalogButton=$('#refreshProductCatalogButton');
 if(refreshProductCatalogButton)refreshProductCatalogButton.onclick=refreshProductCatalogData;
+const openAdminLotteryImportButton=$('#openAdminLotteryImportButton');
+if(openAdminLotteryImportButton)openAdminLotteryImportButton.onclick=openAdminLotteryImport;
+const exportManualLotteriesButton=$('#exportManualLotteriesButton');
+if(exportManualLotteriesButton)exportManualLotteriesButton.onclick=exportManualLotteries;
 const resetMonitorSourcesButton=$('#resetMonitorSourcesButton');
 if(resetMonitorSourcesButton)resetMonitorSourcesButton.onclick=resetMonitorSources;
 const enableAllMonitorSourcesButton=$('#enableAllMonitorSourcesButton');

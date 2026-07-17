@@ -19,7 +19,7 @@ const FIXTURE_PATH = process.env.POKECA_FIXTURE_PATH || "";
 const X_SOURCES_PATH = process.env.POKECA_X_SOURCES_PATH || path.join(ROOT, ".private", "x-sources.json");
 const PRODUCT_CATALOG_PATH = path.join(ROOT, "product-catalog.json");
 const QUALITY_STATUS_PATH = process.env.POKECA_QUALITY_STATUS_PATH || path.join(ROOT, "data-quality-status.json");
-const STORE_MASTER_PATH = process.env.POKECA_STORE_MASTER_PATH || path.join(ROOT, "store-master.json");
+const MANUAL_LOTTERIES_PATH = process.env.POKECA_MANUAL_LOTTERIES_PATH || path.join(ROOT, "manual-lotteries.json");
 
 async function readJson(file, fallback) {
   try {
@@ -65,17 +65,29 @@ async function run() {
     : [];
   const previousFeed = await readJson(FEED_PATH, { lotteries: [] });
   const productCatalog = await loadProductCatalog(PRODUCT_CATALOG_PATH);
-  const trustedPrevious = (previousFeed.lotteries || [])
-    .filter((item) => item.qualityVersion >= 2 && item.verified === true)
+  const trustedPrevious = (previousFeed.lotteries || []).filter((item) => item.qualityVersion >= 2 && item.verified === true);
+  const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
+  const manualLotteries = (Array.isArray(manualPayload) ? manualPayload : manualPayload.lotteries || [])
+    .filter((item) => item && typeof item === "object")
     .map((item) => ({
       ...item,
-      sourceKind: "history",
-      sourceType: "履歴",
-      confidence: Number(Math.min(0.82, Number(item.confidence || 0.82)).toFixed(2)),
+      sourceKind: "manual",
+      sourceType: "Administrator manual entry",
+      manualEntry: true,
+      confidence: Math.max(0.99, Number(item.confidence || 0)),
+      collectedAt: item.collectedAt || item.createdAt || startedAt,
+      updatedAt: item.updatedAt || startedAt,
     }));
 
-  const collected = [];
-  const sourceResults = [];
+  const collected = [...manualLotteries];
+  const sourceResults = [{
+    id: "manual-admin",
+    name: "Administrator manual entries",
+    ok: true,
+    itemCount: manualLotteries.length,
+    discoveredPages: 0,
+    elapsedMs: 0,
+  }];
 
   for (const source of enabledSources) {
     const started = Date.now();
@@ -134,7 +146,6 @@ async function run() {
         configPath: X_SOURCES_PATH,
         bearerToken: process.env.X_API_BEARER_TOKEN || "",
         privateAccountsJson: process.env.X_MONITOR_ACCOUNTS_JSON || "",
-        storeMasterPath: STORE_MASTER_PATH,
       });
   collected.push(...xResult.items);
 
@@ -215,14 +226,14 @@ async function run() {
     rule: "catalog+deadline+direct-destination",
   };
   const meta = {
-    collectorVersion: "1.15.0",
+    collectorVersion: "1.15.2",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
     publishedCount: published.length,
     historyDays: 35,
+    manualEntryCount: manualLotteries.length,
     quality,
-    x: xResult.meta,
   };
 
   await writeJson(FEED_PATH, {
@@ -251,7 +262,8 @@ async function run() {
     published: published.length,
     review: reviewQueue.length,
     rejected: rejected.length,
-    checkedSourceCount: enabledSources.length,
+    manualEntryCount: manualLotteries.length,
+    checkedSourceCount: enabledSources.length + 1,
     successfulSourceCount: successCount,
     failedSourceCount: failedCount,
   }, null, 2));
