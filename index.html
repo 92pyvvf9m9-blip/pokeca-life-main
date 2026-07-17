@@ -1259,19 +1259,51 @@ function homeScopeInfo(){
   // 「自動」は選択した都道府県だけ。件数不足を理由に他県へ拡張しない。
   return {areas:[...new Set(areas)],label,mode};
 }
+const LOTTERY_PLACE_PREFECTURES={
+  '札幌':'北海道','仙台':'宮城県','宇都宮':'栃木県','大宮':'埼玉県','秋葉原':'東京都','池袋':'東京都','新宿':'東京都','渋谷':'東京都','日本橋':'東京都','町田':'東京都','横浜':'神奈川県','川崎':'神奈川県',
+  '金沢':'石川県','浜松':'静岡県','名古屋':'愛知県','京都':'京都府','梅田':'大阪府','難波':'大阪府','なんば':'大阪府','日本橋店':'大阪府','神戸':'兵庫県','岡山':'岡山県','広島':'広島県','福山':'広島県','山口':'山口県','高松':'香川県','松山':'愛媛県','博多':'福岡県','天神':'福岡県','熊本':'熊本県','鹿児島':'鹿児島県','那覇':'沖縄県'
+};
+function lotteryPhysicalPrefecture(item){
+  const explicit=normalizedLotteryArea(item.area);
+  if(explicit!=='全国'&&PREFECTURES.includes(explicit))return explicit;
+  const shop=String(item.shop||'').trim();
+  const matchedStore=(D.stores||[]).find(store=>{
+    const name=String(store.name||'').trim();
+    return name&&(name===shop||name.includes(shop)||shop.includes(name));
+  });
+  const fromStore=matchedStore?inferStorePrefecture(matchedStore):'';
+  if(fromStore)return fromStore;
+  const text=[shop,item.memo,item.instructions,item.destinationType].filter(Boolean).join(' ');
+  for(const [place,pref] of Object.entries(LOTTERY_PLACE_PREFECTURES))if(text.includes(place))return pref;
+  return '';
+}
+function hasExplicitShippingEvidence(item){
+  const text=[item.instructions,item.memo,item.destinationType,item.url].filter(Boolean).join(' ');
+  return /配送|発送|郵送|宅配|オンラインショップ|オンラインストア|ECサイト|通販サイト|全国発送|自宅へお届け|自宅配送/.test(text);
+}
+function hasPickupEvidence(item){
+  const text=[item.type,item.shop,item.instructions,item.memo,item.destinationType].filter(Boolean).join(' ');
+  return /店頭受取|店舗受取|店頭購入|来店購入|来店必須|受取店舗|購入店舗|引取|当選店舗|指定店舗/.test(text);
+}
 function isNationwideShipping(item){
-  const area=normalizedLotteryArea(item.area);
-  if(area!=='全国')return false;
+  if(normalizedLotteryArea(item.area)!=='全国')return false;
+  const physicalPref=lotteryPhysicalPrefecture(item);
+  const shipping=hasExplicitShippingEvidence(item);
+  if(hasPickupEvidence(item)&&!shipping)return false;
+  // 支店名や都市名が付く実店舗抽選は、明確な発送記載がない限り通販扱いにしない。
+  if(physicalPref&&!shipping)return false;
   const type=String(item.type||'').trim();
-  const text=[item.type,item.shop,item.instructions,item.memo,item.destinationType]
-    .filter(Boolean).join(' ');
-  if(/店頭|店舗受取|店頭受取|来店|引取|受け取り店舗|購入店舗/.test(text)&&!/配送|発送|通販|オンライン/.test(text))return false;
-  return /通販|オンライン|配送|発送/.test(type+' '+text);
+  const shop=String(item.shop||'');
+  return shipping||(/通販|オンライン/.test(type)&&!/店|支店|駅前|本店/.test(shop));
 }
 function lotteryMatchesAreas(item,areas){
   const area=normalizedLotteryArea(item.area);
   if(!areas.length)return true;
-  if(area==='全国')return isNationwideShipping(item);
+  if(area==='全国'){
+    if(isNationwideShipping(item))return true;
+    const physicalPref=lotteryPhysicalPrefecture(item);
+    return Boolean(physicalPref&&areas.includes(physicalPref));
+  }
   if(Array.isArray(item.coverage)&&item.coverage.some(v=>areas.includes(normalizedLotteryArea(v))))return true;
   return areas.includes(area);
 }
@@ -4148,7 +4180,8 @@ let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.
     if(type==='lottery'){
       lf='all';
       $('#lotterySearch').value='';
-      $('#areaFilter').value='all';
+      areaFilter='home';
+      $('#areaFilter').value='home';
       $('#typeFilter').value='all';
       $('#lotterySort').value='deadline';
       go('lottery');
