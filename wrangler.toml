@@ -3,5 +3,10 @@ main = "pokeca-reader-worker.js"
 compatibility_date = "2026-07-17"
 workers_dev = true
 
+[vars]
+GITHUB_OWNER = "92pyvvf9m9-blip"
+GITHUB_REPO = "pokeca-life-main"
+GITHUB_BRANCH = "main"
+
 [observability]
 enabled = true

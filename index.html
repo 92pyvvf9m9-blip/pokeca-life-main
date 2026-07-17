@@ -1072,19 +1072,15 @@ nav button{height:52px;min-height:52px;max-height:52px}
   <details class="publish-settings-details" id="publishSettingsDetails">
     <summary>初回だけ：公開保存設定</summary>
     <div class="publish-settings-body">
-      <div class="publish-settings-grid">
-        <div class="group"><label>GitHubユーザー名</label><input id="publisherOwnerInput" class="field" type="text" autocapitalize="none" placeholder="ユーザー名"></div>
-        <div class="group"><label>リポジトリ名</label><input id="publisherRepoInput" class="field" type="text" autocapitalize="none" placeholder="pokeca-life"></div>
-      </div>
-      <div class="publish-settings-grid">
-        <div class="group"><label>ブランチ</label><input id="publisherBranchInput" class="field" type="text" value="main" autocapitalize="none"></div>
-        <div class="group"><label>GitHubアクセストークン</label><input id="publisherTokenInput" class="field" type="password" autocapitalize="none" autocomplete="off" placeholder="github_pat_…"></div>
+      <div class="group">
+        <label>公開用管理キー</label>
+        <input id="publisherAdminKeyInput" class="field" type="password" autocapitalize="none" autocomplete="off" placeholder="Cloudflareに登録した管理キー">
       </div>
       <div class="publish-settings-actions">
-        <button id="savePublisherSettingsButton" class="secondary" type="button">公開設定を保存</button>
-        <button id="testPublisherSettingsButton" class="primary" type="button">接続確認</button>
+        <button id="savePublisherSettingsButton" class="secondary" type="button">管理キーを保存</button>
+        <button id="testPublisherSettingsButton" class="primary" type="button">公開接続を確認</button>
       </div>
-      <p class="admin-manual-entry-note">トークンはこの端末だけに保存します。対象リポジトリ限定で「Contents: Read and write」を付けたFine-grained tokenを使用してください。</p>
+      <p class="admin-manual-entry-note">GitHubトークンはアプリへ入力しません。Cloudflare Workerの暗号化シークレットだけに保管します。この端末には公開用管理キーだけを保存します。</p>
       <div id="publisherStatus" class="publisher-status"></div>
     </div>
   </details>
@@ -1311,11 +1307,12 @@ const USER_PROFILE_KEY='pokeca_life_user_profile_v1';
 let userProfile={prefecture:'',rangeMode:'auto',onboarded:false};
 const SYNC_SETTINGS_KEY='pokeca_life_sync_settings_v1';
 const SYNC_STATE_KEY='pokeca_life_sync_state_v1';
-const PUBLISH_SETTINGS_KEY='pokeca_life_publish_settings_v1';
+const PUBLISH_SETTINGS_KEY='pokeca_life_publish_settings_v2';
+const LEGACY_PUBLISH_SETTINGS_KEY='pokeca_life_publish_settings_v1';
 const IMPORT_API_SETTINGS_KEY='pokeca_life_import_api_v1';
-const MANUAL_LOTTERIES_FILE='manual-lotteries.json';
-let publishSettings={owner:'',repo:'',branch:'main',token:''};
-let importApiSettings={endpoint:''};
+const DEFAULT_IMPORT_API_ENDPOINT='https://pokeca-life-main.92pyvvf9m9-e39.workers.dev';
+let publishSettings={adminKey:''};
+let importApiSettings={endpoint:DEFAULT_IMPORT_API_ENDPOINT};
 let syncSettings={endpoint:'./lottery-feed.json',autoSync:true,githubUser:'',githubRepo:'pokeca-life'};
 let syncState={lastSyncAt:'',feedUpdatedAt:'',unreadRemoteIds:[],seenRemoteIds:[],collectorMeta:{}};
 const MONITOR_SETTINGS_KEY='pokeca_life_monitor_settings_v1';
@@ -2660,11 +2657,23 @@ async function syncRemoteLotteries({silent=false}={}){
 
   try{
     const payload=await fetchJsonWithTimeout(endpoint);
-    const feed=Array.isArray(payload)?payload:(Array.isArray(payload.lotteries)?payload.lotteries:[]);
+    const baseFeed=Array.isArray(payload)?payload:(Array.isArray(payload.lotteries)?payload.lotteries:[]);
+    let manualPayload={lotteries:[],deleted:[]};
+    try{
+      const manualEndpoint=normalizeImportApiEndpoint(importApiSettings.endpoint||DEFAULT_IMPORT_API_ENDPOINT);
+      if(manualEndpoint)manualPayload=await fetchJsonWithTimeout(`${manualEndpoint}/manual`,12000);
+    }catch(manualError){console.warn('管理者公開データ同期エラー',manualError)}
+    const manualFeed=Array.isArray(manualPayload)?manualPayload:(Array.isArray(manualPayload?.lotteries)?manualPayload.lotteries:[]);
+    const feed=[...baseFeed,...manualFeed];
+    const deletedManualKeys=new Set((Array.isArray(manualPayload?.deleted)?manualPayload.deleted:[]).map(entry=>String(entry?.key||entry||''))); 
+    if(deletedManualKeys.size){
+      D.lotteries=D.lotteries.filter(item=>!(item?.manualEntry&&item?.adminPublished&&deletedManualKeys.has(publishedManualIdentity(item))));
+    }
     let added=0;
     let updated=0;
 
     for(const raw of feed){
+      if(deletedManualKeys.has(publishedManualIdentity(raw)))continue;
       const normalized=normalizeRemoteLottery(raw);
       const key=remoteIdentity(normalized);
       if(!key)continue;
@@ -2680,7 +2689,7 @@ async function syncRemoteLotteries({silent=false}={}){
     }
 
     syncState.lastSyncAt=new Date().toISOString();
-    syncState.feedUpdatedAt=payload.updatedAt||syncState.lastSyncAt;
+    syncState.feedUpdatedAt=manualPayload?.updatedAt||payload.updatedAt||syncState.lastSyncAt;
     syncState.collectorMeta=(payload.meta&&typeof payload.meta==='object')?payload.meta:{};
     syncState.unreadRemoteIds=[...new Set(syncState.unreadRemoteIds)].slice(0,300);
     syncState.seenRemoteIds=[...new Set(syncState.seenRemoteIds)].slice(-1000);
@@ -4084,7 +4093,7 @@ function loadImportApiSettings(){
   const saved=JSON.parse(localStorage.getItem(IMPORT_API_SETTINGS_KEY)||'null');
   if(saved&&typeof saved==='object')importApiSettings={...importApiSettings,...saved};
  }catch{}
- importApiSettings.endpoint=normalizeImportApiEndpoint(importApiSettings.endpoint);
+ importApiSettings.endpoint=normalizeImportApiEndpoint(importApiSettings.endpoint)||DEFAULT_IMPORT_API_ENDPOINT;
 }
 function saveImportApiSettings(){
  try{localStorage.setItem(IMPORT_API_SETTINGS_KEY,JSON.stringify(importApiSettings))}catch(err){console.warn(err)}
@@ -4099,7 +4108,7 @@ function renderImportApiSettings(message=''){
 function saveImportApiFromUI(){
  const endpoint=normalizeImportApiEndpoint($('#importApiEndpointInput')?.value||'');
  if(!endpoint){toast('正しいhttps://のWorker URLを入力してください');return false}
- importApiSettings.endpoint=endpoint;saveImportApiSettings();renderImportApiSettings('API URLを保存しました。');toast('URL自動読取APIを保存しました');return true
+ importApiSettings.endpoint=endpoint;saveImportApiSettings();renderImportApiSettings('API URLを保存しました。');renderPublisherSettings();toast('URL自動読取APIを保存しました');return true
 }
 async function testImportApiConnection(){
  if(!saveImportApiFromUI())return;
@@ -4263,132 +4272,83 @@ function manualLotteryPublicItem(item){
   updatedAt:new Date().toISOString()
  };
 }
-function inferPublisherTarget(){
- let owner=String(publishSettings.owner||syncSettings.githubUser||'').trim().replace(/^@/,'');
- let repo=String(publishSettings.repo||syncSettings.githubRepo||'').trim();
- if(!owner&&/\.github\.io$/i.test(location.hostname))owner=location.hostname.split('.')[0];
- const pathRepo=location.pathname.split('/').filter(Boolean)[0]||'';
- if((!repo||repo==='pokeca-life')&&pathRepo)repo=pathRepo;
- return{owner,repo:repo||'pokeca-life',branch:String(publishSettings.branch||'main').trim()||'main'};
-}
 function loadPublisherSettings(){
  try{
   const saved=JSON.parse(localStorage.getItem(PUBLISH_SETTINGS_KEY)||'null');
-  if(saved&&typeof saved==='object')publishSettings={...publishSettings,...saved};
+  if(saved&&typeof saved==='object')publishSettings={adminKey:String(saved.adminKey||'')};
  }catch{}
- const inferred=inferPublisherTarget();
- publishSettings.owner=publishSettings.owner||inferred.owner;
- publishSettings.repo=publishSettings.repo||inferred.repo;
- publishSettings.branch=publishSettings.branch||'main';
+ // v1で端末に保存していたGitHubトークンは移行せず削除する。
+ try{localStorage.removeItem(LEGACY_PUBLISH_SETTINGS_KEY)}catch{}
 }
 function savePublisherSettings(){
- try{localStorage.setItem(PUBLISH_SETTINGS_KEY,JSON.stringify(publishSettings))}catch(err){console.warn(err)}
+ try{localStorage.setItem(PUBLISH_SETTINGS_KEY,JSON.stringify({adminKey:publishSettings.adminKey||''}))}catch(err){console.warn(err)}
 }
 function setPublisherStatus(message='',state=''){
  const node=$('#publisherStatus');if(node){node.textContent=message;node.className=`publisher-status ${state}`.trim()}
 }
 function renderPublisherSettings(){
- const inferred=inferPublisherTarget();
- const owner=$('#publisherOwnerInput'),repo=$('#publisherRepoInput'),branch=$('#publisherBranchInput'),token=$('#publisherTokenInput');
- if(owner)owner.value=publishSettings.owner||inferred.owner||'';
- if(repo)repo.value=publishSettings.repo||inferred.repo||'pokeca-life';
- if(branch)branch.value=publishSettings.branch||'main';
- if(token){token.value='';token.placeholder=publishSettings.token?'保存済み（変更時だけ入力）':'github_pat_…'}
+ const keyInput=$('#publisherAdminKeyInput');
+ if(keyInput){keyInput.value='';keyInput.placeholder=publishSettings.adminKey?'保存済み（変更時だけ入力）':'Cloudflareに登録した管理キー'}
  const badge=$('#manualPublishBadge');
  if(badge){
-  const ready=Boolean((publishSettings.owner||inferred.owner)&&(publishSettings.repo||inferred.repo)&&publishSettings.token);
+  const ready=Boolean(importApiSettings.endpoint&&publishSettings.adminKey);
   badge.className=`collector-health manual-publish-badge${ready?'':' needs-setup'}`;
   badge.textContent=ready?'公開保存OK':'初回設定';
  }
 }
-function publisherSettingsFromUI({requireToken=false}={}){
- const inferred=inferPublisherTarget();
- const tokenInput=String($('#publisherTokenInput')?.value||'').trim();
+function publisherSettingsFromUI({requireKey=false}={}){
+ const keyInput=String($('#publisherAdminKeyInput')?.value||'').trim();
  const next={
-  owner:String($('#publisherOwnerInput')?.value||publishSettings.owner||inferred.owner||'').trim().replace(/^@/,''),
-  repo:String($('#publisherRepoInput')?.value||publishSettings.repo||inferred.repo||'').trim(),
-  branch:String($('#publisherBranchInput')?.value||publishSettings.branch||'main').trim()||'main',
-  token:tokenInput||publishSettings.token||''
+  endpoint:normalizeImportApiEndpoint(importApiSettings.endpoint||DEFAULT_IMPORT_API_ENDPOINT),
+  adminKey:keyInput||publishSettings.adminKey||''
  };
- if(!next.owner)throw new Error('GitHubユーザー名を入力してください');
- if(!next.repo)throw new Error('リポジトリ名を入力してください');
- if(requireToken&&!next.token)throw new Error('GitHubアクセストークンを入力してください');
+ if(!next.endpoint)throw new Error('Cloudflare Worker URLを設定してください');
+ if(requireKey&&!next.adminKey)throw new Error('公開用管理キーを入力してください');
  return next;
 }
-function encodeBase64Utf8(value){
- const bytes=new TextEncoder().encode(String(value));let binary='';
- for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
- return btoa(binary);
-}
-function decodeBase64Utf8(value){
- const binary=atob(String(value||'').replace(/\s/g,''));const bytes=new Uint8Array(binary.length);
- for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
- return new TextDecoder().decode(bytes);
-}
-async function githubContentsRequest(url,options={}){
- const settings=publisherSettingsFromUI({requireToken:true});
- const response=await fetch(url,{...options,headers:{
-  'Accept':'application/vnd.github+json','Authorization':`Bearer ${settings.token}`,
-  'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json',...(options.headers||{})
- }});
- if(response.status===404&&options.allowNotFound)return null;
- let payload=null;try{payload=await response.json()}catch{}
- if(!response.ok){
-  const message=response.status===401?'トークンが無効です':response.status===403?'リポジトリへの書き込み権限がありません':response.status===404?'リポジトリまたはファイルが見つかりません':(payload?.message||`GitHub API ${response.status}`);
+async function workerPublishRequest(path,body={}){
+ const settings=publisherSettingsFromUI({requireKey:true});
+ const response=await fetchWithTimeout(`${settings.endpoint}${path}`,{
+  method:'POST',
+  headers:{'Accept':'application/json','Content-Type':'application/json','X-Pokeca-Admin-Key':settings.adminKey},
+  body:JSON.stringify(body),
+  cache:'no-store',
+  credentials:'omit'
+ },20000);
+ const payload=await response.json().catch(()=>null);
+ if(!response.ok||!payload?.ok){
+  const message=response.status===401?'公開用管理キーが違います':response.status===503?'Cloudflare側のGitHub保存設定が未完了です':(payload?.error||`公開API HTTP ${response.status}`);
   throw new Error(message);
  }
  return payload;
 }
-function githubManualFileUrl(settings){
- return `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/${MANUAL_LOTTERIES_FILE}`;
-}
-async function readPublishedManualFile(){
- const settings=publisherSettingsFromUI({requireToken:true});
- const url=`${githubManualFileUrl(settings)}?ref=${encodeURIComponent(settings.branch)}`;
- const file=await githubContentsRequest(url,{allowNotFound:true});
- if(!file)return{sha:'',payload:{version:2,updatedAt:new Date().toISOString(),lotteries:[]}};
- let payload={version:2,lotteries:[]};
- try{payload=JSON.parse(decodeBase64Utf8(file.content||''))}catch{throw new Error('公開データを読み込めませんでした')}
- if(Array.isArray(payload))payload={version:2,lotteries:payload};
- if(!Array.isArray(payload.lotteries))payload.lotteries=[];
- return{sha:file.sha||'',payload};
-}
 function publishedManualIdentity(item){
  return String(item?.externalId||canonicalLotteryStateUrl(item?.url||'')||`${item?.shop||''}|${item?.product||''}|${item?.applyEndDate||item?.deadline||''}`);
 }
-async function writePublishedManualFile(payload,sha='',message='admin: update lottery'){
- const settings=publisherSettingsFromUI({requireToken:true});
- const body={message,branch:settings.branch,content:encodeBase64Utf8(JSON.stringify(payload,null,2)+'\n')};
- if(sha)body.sha=sha;
- return githubContentsRequest(githubManualFileUrl(settings),{method:'PUT',body:JSON.stringify(body)});
-}
 async function publishManualLottery(item,{remove=false}={}){
- const settings=publisherSettingsFromUI({requireToken:true});
- publishSettings=settings;savePublisherSettings();renderPublisherSettings();
+ const settings=publisherSettingsFromUI({requireKey:true});
+ publishSettings={adminKey:settings.adminKey};savePublisherSettings();renderPublisherSettings();
  setPublisherStatus(remove?'公開一覧から削除中…':'全ユーザー向けに公開中…','loading');
- const current=await readPublishedManualFile();
- const target=manualLotteryPublicItem(item);const key=publishedManualIdentity(target);
- let lotteries=current.payload.lotteries.filter(entry=>publishedManualIdentity(entry)!==key);
- if(!remove)lotteries.unshift(target);
- const payload={version:2,updatedAt:new Date().toISOString(),lotteries};
- await writePublishedManualFile(payload,current.sha,remove?`admin: remove lottery ${target.shop||target.product}`:`admin: publish lottery ${target.shop||target.product}`);
- setPublisherStatus(remove?'公開削除を開始しました。反映まで通常1〜3分です。':'公開処理を開始しました。全端末への反映は通常1〜3分です。','success');
- return true;
+ const target=manualLotteryPublicItem(item);
+ const result=await workerPublishRequest('/publish',{item:target,remove});
+ setPublisherStatus(remove?'公開一覧から削除しました。':'公開しました。ほかの端末にも次回同期で反映されます。','success');
+ return result;
 }
 async function savePublisherSettingsFromUI(){
  try{
-  publishSettings=publisherSettingsFromUI({requireToken:true});savePublisherSettings();renderPublisherSettings();
-  setPublisherStatus('公開設定をこの端末へ保存しました。','success');toast('公開設定を保存しました');
+  const settings=publisherSettingsFromUI({requireKey:true});publishSettings={adminKey:settings.adminKey};savePublisherSettings();renderPublisherSettings();
+  setPublisherStatus('公開用管理キーをこの端末へ保存しました。','success');toast('公開設定を保存しました');
  }catch(err){setPublisherStatus(err.message||'設定を保存できませんでした','error')}
 }
 async function testPublisherConnection(){
  const button=$('#testPublisherSettingsButton');if(button){button.disabled=true;button.textContent='確認中…'}
  try{
-  publishSettings=publisherSettingsFromUI({requireToken:true});savePublisherSettings();
-  setPublisherStatus('GitHubへ接続確認中…','loading');await readPublishedManualFile();renderPublisherSettings();
-  setPublisherStatus('接続OK。管理画面の「保存」だけで公開できます。','success');toast('公開接続を確認しました');
+  const settings=publisherSettingsFromUI({requireKey:true});publishSettings={adminKey:settings.adminKey};savePublisherSettings();
+  setPublisherStatus('Cloudflare経由で公開接続を確認中…','loading');
+  const payload=await workerPublishRequest('/admin-check',{});renderPublisherSettings();
+  setPublisherStatus(`接続OK。公開データ${Number(payload.count||0)}件を管理できます。`,'success');toast('公開接続を確認しました');
  }catch(err){setPublisherStatus(err.message||'接続できませんでした','error')}
- finally{if(button){button.disabled=false;button.textContent='接続確認'}}
+ finally{if(button){button.disabled=false;button.textContent='公開接続を確認'}}
 }
 function isAdminPublishedLottery(item){return Boolean(item?.adminPublished||(item?.origin==='remote'&&item?.manualEntry))}
 function enableAdminPublishMode(item=null){
@@ -5181,8 +5141,8 @@ const useFeedUrlButton=$('#useFeedUrlButton');
 if(useFeedUrlButton)useFeedUrlButton.onclick=useGeneratedFeedUrl;
 const githubUserInput=$('#githubUserInput');
 const githubRepoInput=$('#githubRepoInput');
-if(githubUserInput)githubUserInput.addEventListener('input',()=>{populateGeneratedFeedUrl();if(!publishSettings.owner){const p=$('#publisherOwnerInput');if(p)p.value=githubUserInput.value.trim().replace(/^@/,'')}});
-if(githubRepoInput)githubRepoInput.addEventListener('input',()=>{populateGeneratedFeedUrl();if(!publishSettings.repo){const p=$('#publisherRepoInput');if(p)p.value=githubRepoInput.value.trim()}});
+if(githubUserInput)githubUserInput.addEventListener('input',populateGeneratedFeedUrl);
+if(githubRepoInput)githubRepoInput.addEventListener('input',populateGeneratedFeedUrl);
 
 const syncNowButton=$('#syncNowButton');
 if(syncNowButton)syncNowButton.onclick=()=>syncRemoteLotteries();

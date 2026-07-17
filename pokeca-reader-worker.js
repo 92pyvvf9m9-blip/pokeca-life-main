@@ -16,7 +16,7 @@ const ALLOWED_HOSTS = new Set([
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Pokeca-Admin-Key',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -347,44 +347,302 @@ async function fetchLivePocket(url) {
   return { html, finalUrl: response.url || url };
 }
 
+
+function normalizeHttpsUrl(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return '';
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
+function utf8ToBase64(value) {
+  const bytes = new TextEncoder().encode(String(value));
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binary);
+}
+
+function base64ToUtf8(value) {
+  const binary = atob(String(value || '').replace(/\s/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function cleanShort(value, max = 300) {
+  return cleanLine(value).slice(0, max);
+}
+
+function normalizeManualLottery(input) {
+  const now = new Date().toISOString();
+  const item = input && typeof input === 'object' ? input : {};
+  const normalized = {
+    externalId: cleanShort(item.externalId || item.remoteId || '', 160),
+    shop: cleanShort(item.shop, 120),
+    product: cleanShort(item.product, 180),
+    type: item.type === '通販' ? '通販' : '店舗',
+    area: cleanShort(item.area || '全国', 20) || '全国',
+    status: 'open',
+    url: normalizeHttpsUrl(item.url),
+    applyStartDate: cleanShort(item.applyStartDate, 10),
+    applyStartTime: cleanShort(item.applyStartTime, 5),
+    applyEndDate: cleanShort(item.applyEndDate || item.deadline, 10),
+    applyEndTime: cleanShort(item.applyEndTime, 5),
+    resultStartDate: cleanShort(item.resultStartDate || item.resultDate, 10),
+    resultStartTime: cleanShort(item.resultStartTime, 5),
+    resultEndDate: cleanShort(item.resultEndDate, 10),
+    resultEndTime: cleanShort(item.resultEndTime, 5),
+    resultNote: cleanShort(item.resultNote, 100),
+    purchaseStartDate: cleanShort(item.purchaseStartDate, 10),
+    purchaseStartTime: cleanShort(item.purchaseStartTime, 5),
+    purchaseEndDate: cleanShort(item.purchaseEndDate || item.purchaseDeadline, 10),
+    purchaseEndTime: cleanShort(item.purchaseEndTime, 5),
+    destinationType: cleanShort(item.destinationType || 'direct', 30),
+    appName: cleanShort(item.appName, 100),
+    appUrl: normalizeHttpsUrl(item.appUrl),
+    fallbackUrl: normalizeHttpsUrl(item.fallbackUrl),
+    instructions: cleanShort(item.instructions, 2000),
+    memo: cleanShort(item.memo, 2000),
+    manualEntry: true,
+    adminPublished: true,
+    verified: true,
+    confidence: 0.99,
+    collectedAt: item.collectedAt || item.createdAt || now,
+    createdAt: item.createdAt || now,
+    updatedAt: now,
+  };
+
+  if (!normalized.externalId) {
+    normalized.externalId = normalized.url || `${normalized.shop}|${normalized.product}|${normalized.applyEndDate}`;
+  }
+  if (!normalized.shop) throw new Error('店舗名がありません');
+  if (!normalized.product) throw new Error('商品名がありません');
+  if (!normalized.applyEndDate) throw new Error('応募締切日がありません');
+  if (!normalized.resultStartDate) throw new Error('結果発表日がありません');
+  if (!normalized.url) throw new Error('応募URLが正しくありません');
+  return normalized;
+}
+
+function manualIdentity(item) {
+  return String(
+    item?.externalId ||
+    normalizeHttpsUrl(item?.url || '') ||
+    `${item?.shop || ''}|${item?.product || ''}|${item?.applyEndDate || item?.deadline || ''}`
+  );
+}
+
+function githubSettings(env) {
+  const owner = cleanShort(env.GITHUB_OWNER || '', 100);
+  const repo = cleanShort(env.GITHUB_REPO || '', 100);
+  const branch = cleanShort(env.GITHUB_BRANCH || 'main', 100) || 'main';
+  const token = String(env.POKECA_GITHUB_TOKEN || '').trim();
+  if (!owner || !repo || !token) throw new Error('Cloudflare側のGitHub保存設定が未完了です');
+  return { owner, repo, branch, token };
+}
+
+function githubFileUrl(settings) {
+  return `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/manual-lotteries.json`;
+}
+
+async function githubRequest(settings, url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${settings.token}`,
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json',
+      'User-Agent': 'Pokeca-Life-Worker',
+      ...(options.headers || {}),
+    },
+  });
+  if (response.status === 404 && options.allowNotFound) return null;
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = response.status === 401
+      ? 'Cloudflareに登録したGitHubトークンが無効です'
+      : response.status === 403
+        ? 'GitHubトークンにContents書き込み権限がありません'
+        : response.status === 409
+          ? '別の更新と競合しました。もう一度保存してください'
+          : response.status === 404
+            ? 'GitHubリポジトリまたはmanual-lotteries.jsonを確認してください'
+            : (payload?.message || `GitHub API ${response.status}`);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
+  return payload;
+}
+
+async function readManualPayload(env) {
+  const settings = githubSettings(env);
+  const url = `${githubFileUrl(settings)}?ref=${encodeURIComponent(settings.branch)}`;
+  const file = await githubRequest(settings, url, { allowNotFound: true });
+  if (!file) {
+    return {
+      settings,
+      sha: '',
+      payload: { version: 3, updatedAt: new Date().toISOString(), lotteries: [], deleted: [] },
+    };
+  }
+  let payload;
+  try {
+    payload = JSON.parse(base64ToUtf8(file.content || ''));
+  } catch {
+    throw new Error('manual-lotteries.jsonを読み込めませんでした');
+  }
+  if (Array.isArray(payload)) payload = { version: 3, lotteries: payload, deleted: [] };
+  if (!Array.isArray(payload.lotteries)) payload.lotteries = [];
+  if (!Array.isArray(payload.deleted)) payload.deleted = [];
+  return { settings, sha: file.sha || '', payload };
+}
+
+async function writeManualPayload(settings, payload, sha, message) {
+  const body = {
+    message,
+    branch: settings.branch,
+    content: utf8ToBase64(`${JSON.stringify(payload, null, 2)}\n`),
+  };
+  if (sha) body.sha = sha;
+  return githubRequest(settings, githubFileUrl(settings), {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+function safeEqual(left, right) {
+  const a = new TextEncoder().encode(String(left || ''));
+  const b = new TextEncoder().encode(String(right || ''));
+  if (a.length !== b.length || a.length === 0) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+function requireAdmin(request, env) {
+  const configured = String(env.POKECA_ADMIN_KEY || '').trim();
+  const supplied = String(request.headers.get('X-Pokeca-Admin-Key') || '').trim();
+  if (!configured) {
+    const error = new Error('Cloudflare側の公開用管理キーが未設定です');
+    error.status = 503;
+    throw error;
+  }
+  if (!safeEqual(configured, supplied)) {
+    const error = new Error('公開用管理キーが違います');
+    error.status = 401;
+    throw error;
+  }
+}
+
+async function handleManualRead(env) {
+  const current = await readManualPayload(env);
+  return jsonResponse({
+    ok: true,
+    version: current.payload.version || 3,
+    updatedAt: current.payload.updatedAt || '',
+    lotteries: current.payload.lotteries,
+    deleted: current.payload.deleted,
+  });
+}
+
+async function handlePublish(request, env) {
+  requireAdmin(request, env);
+  const body = await request.json();
+  const remove = body?.remove === true;
+  const target = normalizeManualLottery(body?.item);
+  const key = manualIdentity(target);
+  const current = await readManualPayload(env);
+  let lotteries = current.payload.lotteries.filter((entry) => manualIdentity(entry) !== key);
+  let deleted = current.payload.deleted.filter((entry) => String(entry?.key || entry || '') !== key);
+
+  if (remove) {
+    deleted.unshift({ key, deletedAt: new Date().toISOString() });
+    deleted = deleted.slice(0, 500);
+  } else {
+    lotteries.unshift(target);
+  }
+
+  const payload = {
+    version: 3,
+    updatedAt: new Date().toISOString(),
+    lotteries,
+    deleted,
+  };
+  await writeManualPayload(
+    current.settings,
+    payload,
+    current.sha,
+    remove ? `admin: remove lottery ${target.shop || target.product}` : `admin: publish lottery ${target.shop || target.product}`,
+  );
+  return jsonResponse({ ok: true, removed: remove, count: lotteries.length, updatedAt: payload.updatedAt });
+}
+
+async function handleAdminCheck(request, env) {
+  requireAdmin(request, env);
+  const current = await readManualPayload(env);
+  return jsonResponse({ ok: true, count: current.payload.lotteries.length, updatedAt: current.payload.updatedAt || '' });
+}
+
+async function handleReader(request) {
+  const body = await request.json();
+  const target = normalizeTarget(body?.url);
+  const { html, finalUrl } = await fetchLivePocket(target);
+  const title = htmlTitle(html);
+  const text = buildReadableText(html);
+  const parsed = parseLivePocketFromText(text, finalUrl, title);
+
+  if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
+    return jsonResponse({
+      ok: false,
+      error: 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした',
+      debug: { title, textPreview: text.slice(0, 1500) },
+    }, 422);
+  }
+
+  return jsonResponse({
+    ok: true,
+    source: 'livepocket-server',
+    title,
+    data: parsed.data,
+    missing: parsed.missing,
+    sections: parsed.sections,
+    text: text.slice(0, 50000),
+  });
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
 
     const incoming = new URL(request.url);
-    if (request.method === 'GET' && (incoming.pathname === '/health' || incoming.pathname === '/')) {
-      return jsonResponse({ ok: true, service: 'pokeca-life-reader', version: '1.0.0' });
-    }
-
-    if (request.method !== 'POST') return jsonResponse({ ok: false, error: 'POSTで送信してください' }, 405);
+    const path = incoming.pathname.replace(/\/+$/, '') || '/';
 
     try {
-      const body = await request.json();
-      const target = normalizeTarget(body?.url);
-      const { html, finalUrl } = await fetchLivePocket(target);
-      const title = htmlTitle(html);
-      const text = buildReadableText(html);
-      const parsed = parseLivePocketFromText(text, finalUrl, title);
-
-      if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
+      if (request.method === 'GET' && (path === '/health' || path === '/')) {
         return jsonResponse({
-          ok: false,
-          error: 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした',
-          debug: { title, textPreview: text.slice(0, 1500) },
-        }, 422);
+          ok: true,
+          service: 'pokeca-life-reader',
+          version: '1.1.0',
+          publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
+        });
       }
-
-      return jsonResponse({
-        ok: true,
-        source: 'livepocket-server',
-        title,
-        data: parsed.data,
-        missing: parsed.missing,
-        sections: parsed.sections,
-        text: text.slice(0, 50000),
-      });
+      if (request.method === 'GET' && path === '/manual') return await handleManualRead(env);
+      if (request.method === 'POST' && path === '/admin-check') return await handleAdminCheck(request, env);
+      if (request.method === 'POST' && path === '/publish') return await handlePublish(request, env);
+      if (request.method === 'POST' && (path === '/read' || path === '/')) return await handleReader(request);
+      return jsonResponse({ ok: false, error: '対応していない操作です' }, 405);
     } catch (error) {
-      return jsonResponse({ ok: false, error: error?.message || '取得に失敗しました' }, 400);
+      const status = Number(error?.status || 0) || (/未完了|未設定/.test(error?.message || '') ? 503 : 400);
+      return jsonResponse({ ok: false, error: error?.message || '処理に失敗しました' }, status);
     }
   },
 };
