@@ -1,10 +1,10 @@
 {
   "name": "pokeca-life",
   "private": true,
-  "version": "1.14.0",
+  "version": "1.15.0",
   "type": "module",
   "scripts": {
-    "test": "node collector/tests/parser.test.mjs && node collector/tests/x-parser.test.mjs && node collector/tests/privacy-dedupe.test.mjs && node collector/tests/hobby-search.test.mjs && node collector/tests/product-catalog-parser.test.mjs && node collector/tests/listing-intelligence.test.mjs && node collector/tests/quality-gate.test.mjs",
+    "test": "node --test collector/tests/*.test.mjs",
     "collect": "node collector/collector.mjs",
     "sync:products": "node collector/sync-product-catalog.mjs"
   },
