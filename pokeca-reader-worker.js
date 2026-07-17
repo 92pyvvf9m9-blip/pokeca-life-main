@@ -182,44 +182,96 @@ function lineCandidates(text) {
   return normalizeText(text).split('\n').map(cleanLine).filter(Boolean);
 }
 
-function findProduct(text, title = '') {
-  const candidates = [title, ...lineCandidates(text)].map(compact).filter(Boolean);
-  const bad = /注意事項|応募期間|受付期間|当選発表|結果発表|購入制限|購入期間|お問い合わせ|Each person|apply for one BOX|Language|イベント検索/i;
-  const strong = /ポケモンカードゲーム|ポケモンカード|拡張パック|強化拡張パック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|BOX/i;
-  const hit = candidates.find(line => strong.test(line) && !bad.test(line) && line.length >= 4 && line.length <= 180);
-  if (!hit) return '';
-  const quoted = hit.match(/[「『]([^」』]{3,160})[」』]/)?.[1];
-  const product = compact(quoted || hit)
-    .replace(/^.*?(?=ポケモンカードゲーム|ポケモンカード|拡張パック|強化拡張パック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット)/, '')
+function candidateQuality(line) {
+  const value = compact(line);
+  if (!value) return -9999;
+  let score = 0;
+  if (/ポケモンカードゲーム/.test(value)) score += 80;
+  else if (/ポケモンカード/.test(value)) score += 55;
+  if (/MEGA|スカーレット|バイオレット|ソード|シールド|サン|ムーン/i.test(value)) score += 12;
+  if (/拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|デッキビルドBOX|BOX/i.test(value)) score += 55;
+  if (/抽選会のお知らせ|抽選販売のお知らせ|抽選受付のお知らせ|予約受付のお知らせ/.test(line)) score += 4;
+  if (/注意事項|応募期間|受付期間|当選発表|結果発表|購入制限|購入期間|お問い合わせ|Each person|apply for one BOX|Language|イベント検索/i.test(value)) score -= 180;
+  if (/\.\.\.|…/.test(value)) score -= 100;
+  if (value.length < 10) score -= 30;
+  if (value.length > 220) score -= 40;
+  score += Math.min(value.length, 120) / 8;
+  return score;
+}
+
+function extractProductCore(value) {
+  let product = compact(value);
+  const quoted = product.match(/[「『]([^」』]{3,220})[」』]/)?.[1];
+  if (quoted && /ポケモンカード|拡張パック|デッキ|BOX/i.test(quoted)) product = quoted;
+  product = product
+    .replace(/^.*?(?=ポケモンカードゲーム|ポケモンカード|拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|デッキビルドBOX)/, '')
+    .replace(/\s*(?:抽選会のお知らせ|抽選販売のお知らせ|抽選受付のお知らせ|予約受付のお知らせ).*$/g, '')
+    .replace(/\s*[|｜]\s*.*$/g, '')
     .trim();
-  return product.slice(0, 160);
+  return product.slice(0, 220);
+}
+
+function findProduct(text, title = '') {
+  const rawCandidates = [
+    ...lineCandidates(text),
+    title,
+  ].map(cleanLine).filter(Boolean);
+
+  // A truncated meta title must never beat a complete title found in the page body.
+  const ranked = rawCandidates
+    .map((raw, index) => ({ raw, product: extractProductCore(raw), score: candidateQuality(raw), index }))
+    .filter(item => item.product && /ポケモンカード|拡張パック|デッキ|BOX/i.test(item.product))
+    .sort((a, b) => b.score - a.score || b.product.length - a.product.length || a.index - b.index);
+
+  const complete = ranked.find(item => !/\.\.\.|…/.test(item.product));
+  return (complete || ranked[0])?.product || '';
+}
+
+function normalizeShopCandidate(value) {
+  return compact(value)
+    .replace(/^(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?\s*/i, '')
+    .replace(/\s*(?:ポケモンカードゲーム|ポケモンカード|抽選会のお知らせ|抽選販売のお知らせ).*$/i, '')
+    .replace(/[|｜].*$/g, '')
+    .trim();
+}
+
+function shopQuality(value) {
+  const line = normalizeShopCandidate(value);
+  if (!line || line.length > 120) return -9999;
+  let score = 0;
+  const chain = /古本市場|ふるいち|フタバ図書|TSUTAYA|蔦屋書店|BOOKOFF|ブックオフ|カードラボ|ホビーステーション|ホビステ|レプトン|駿河屋|ゲオ|GEO|イオン|ヤマダデンキ|ジョーシン|エディオン|ビックカメラ|トイザらス|カードボックス|晴れる屋2|ドラゴンスター|ポケモンセンター/i;
+  if (chain.test(line)) score += 60;
+  if (/店|店舗|センター|本店|支店/.test(line)) score += 35;
+  if (/販売元|主催者|開催店舗|販売店舗|受取店舗|対象店舗/.test(value)) score += 50;
+  if (/ポケモンカード|拡張パック|抽選|応募期間|当選発表|注意事項/i.test(line)) score -= 120;
+  if (/\.\.\.|…/.test(line)) score -= 100;
+  score += Math.min(line.length, 80) / 3;
+  return score;
 }
 
 function findShop(text, title = '') {
-  const combined = normalizeText(`${title}\n${text}`);
-  const lines = lineCandidates(combined);
-  const chainNames = '古本市場|ふるいち|フタバ図書|TSUTAYA|蔦屋書店|BOOKOFF|ブックオフ|カードラボ|ホビーステーション|ホビステ|レプトン|駿河屋|ゲオ|GEO|イオン|ヤマダデンキ|ジョーシン|エディオン|ビックカメラ|トイザらス|カードボックス|晴れる屋2|ドラゴンスター|ポケモンセンター';
-  const chainPattern = new RegExp(`(${chainNames})[^\n「」]{0,50}店`, 'i');
-  const standaloneChain = new RegExp(`^(?:${chainNames})(?:[（(][^）)]{1,30}[）)])?$`, 'i');
-
-  const standalone = lines.find(line => line.length <= 60 && standaloneChain.test(line) && !/ポケモンカード|拡張パック|抽選/.test(line));
-  if (standalone) return compact(standalone);
+  const lines = lineCandidates(normalizeText(`${text}\n${title}`));
+  const candidates = [];
+  const push = value => {
+    const normalized = normalizeShopCandidate(value);
+    if (normalized && !candidates.includes(normalized)) candidates.push(normalized);
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const inline = line.match(/(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?\s*(.{2,80})/i)?.[1];
-    if (inline) {
-      const value = compact(inline).split(/(?:注意事項|応募期間|当選発表|購入期間)/)[0].trim();
-      if (value && value.length <= 80 && !/LivePocket|ポケモンカードゲーム/.test(value)) return value;
+    const inline = line.match(/(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?\s*(.{2,120})/i)?.[1];
+    if (inline) push(inline);
+    if (/^(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?$/.test(line)) push(lines[i + 1] || '');
+
+    // Keep the entire line, not only the first chain-name fragment.
+    if (/古本市場|ふるいち|フタバ図書|TSUTAYA|蔦屋書店|BOOKOFF|ブックオフ|カードラボ|ホビーステーション|ホビステ|レプトン|駿河屋|ゲオ|GEO|イオン|ヤマダデンキ|ジョーシン|エディオン|ビックカメラ|トイザらス|カードボックス|晴れる屋2|ドラゴンスター|ポケモンセンター/i.test(line)) {
+      push(line);
     }
-    if (/^(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?$/.test(line)) {
-      const next = compact(lines[i + 1] || '');
-      if (next && next.length <= 80 && !/LivePocket|ポケモンカードゲーム/.test(next)) return next;
-    }
-    const chain = line.match(chainPattern)?.[0];
-    if (chain) return compact(chain);
   }
-  return '';
+
+  return candidates
+    .map(value => ({ value, score: shopQuality(value) }))
+    .sort((a, b) => b.score - a.score || b.value.length - a.value.length)[0]?.value || '';
 }
 
 function section(text, labels, nextLabels) {
@@ -631,7 +683,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.1.0',
+          version: '1.1.1',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
