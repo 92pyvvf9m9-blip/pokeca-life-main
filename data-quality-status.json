@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-07-17T16:48:10.563Z",
+  "updatedAt": "2026-07-17T20:16:29.228Z",
   "qualityVersion": 2,
-  "candidateCount": 57,
-  "publishedCount": 42,
+  "candidateCount": 66,
+  "publishedCount": 51,
   "reviewCount": 15,
   "rejectedCount": 0,
-  "directVerifiedCount": 42,
-  "catalogMatchedCount": 57,
+  "directVerifiedCount": 51,
+  "catalogMatchedCount": 66,
   "rule": "catalog+deadline+direct-destination"
 }
