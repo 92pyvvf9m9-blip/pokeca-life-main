@@ -753,7 +753,7 @@ body.admin-mode .admin-only{display:block!important}
 .version-owner-trigger{user-select:none;-webkit-user-select:none}
 
 
-/* v1.15.2 iPhone layout stability + administrator URL entry */
+/* v1.15.5 iPhone layout stability + LivePocket server-side reader */
 html,body{width:100%;max-width:100%;overflow-x:clip}
 @supports not (overflow:clip){html,body{overflow-x:hidden}}
 body{overscroll-behavior-x:none}
@@ -1089,6 +1089,24 @@ nav button{height:52px;min-height:52px;max-height:52px}
     </div>
   </details>
 </div>
+<div class="item admin-only sync-settings-card api-reader-card">
+  <div class="collector-card-head">
+    <div>
+      <h3>URL自動読取API</h3>
+      <p>LivePocketをサーバー側で読み取り、店舗・商品・日付を自動入力します。初回だけ設定します。</p>
+    </div>
+    <span id="importApiBadge" class="collector-health idle">未設定</span>
+  </div>
+  <div class="group">
+    <label>Cloudflare Worker URL</label>
+    <input id="importApiEndpointInput" class="field" type="url" inputmode="url" autocapitalize="none" autocomplete="off" placeholder="https://pokeca-life-reader.xxxx.workers.dev">
+  </div>
+  <div class="sync-setting-actions">
+    <button id="saveImportApiButton" class="secondary" type="button">API設定を保存</button>
+    <button id="testImportApiButton" class="primary" type="button">接続確認</button>
+  </div>
+  <p id="importApiStatus" class="sync-help">未設定です。設定後はLivePocket URLを貼るだけで読み取れます。</p>
+</div>
 <div class="item collector-card admin-only">
   <div class="collector-card-head">
     <div>
@@ -1212,7 +1230,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.3</h3><p>管理画面からワンタップ公開</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.5</h3><p>LivePocket専用API読取</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1294,8 +1312,10 @@ let userProfile={prefecture:'',rangeMode:'auto',onboarded:false};
 const SYNC_SETTINGS_KEY='pokeca_life_sync_settings_v1';
 const SYNC_STATE_KEY='pokeca_life_sync_state_v1';
 const PUBLISH_SETTINGS_KEY='pokeca_life_publish_settings_v1';
+const IMPORT_API_SETTINGS_KEY='pokeca_life_import_api_v1';
 const MANUAL_LOTTERIES_FILE='manual-lotteries.json';
 let publishSettings={owner:'',repo:'',branch:'main',token:''};
+let importApiSettings={endpoint:''};
 let syncSettings={endpoint:'./lottery-feed.json',autoSync:true,githubUser:'',githubRepo:'pokeca-life'};
 let syncState={lastSyncAt:'',feedUpdatedAt:'',unreadRemoteIds:[],seenRemoteIds:[],collectorMeta:{}};
 const MONITOR_SETTINGS_KEY='pokeca_life_monitor_settings_v1';
@@ -2764,6 +2784,7 @@ async function useGeneratedFeedUrl(){
 
 function loadSyncSettingsUI(){
   loadPublisherSettings();
+  loadImportApiSettings();
   const toggle=$('#autoSyncToggle');
   const endpoint=$('#syncEndpointInput');
   if(toggle)toggle.checked=syncSettings.autoSync!==false;
@@ -2777,6 +2798,7 @@ function loadSyncSettingsUI(){
   renderMonitorSources();
   renderProfileUI();
   renderPublisherSettings();
+  renderImportApiSettings();
 }
 function saveSyncSettingsFromUI(){
   const toggle=$('#autoSyncToggle');
@@ -4048,7 +4070,89 @@ function productFromText(t,title=''){
    ? stripImportMarkdown(line.replace(/抽選販売のお知らせ|予約受付|抽選受付|Title:\s*/g,'')).slice(0,120)
    : '';
 }
+
+function normalizeImportApiEndpoint(value=''){
+ try{
+  const u=new URL(String(value||'').trim());
+  if(u.protocol!=='https:')return'';
+  u.hash='';u.search='';u.pathname=u.pathname.replace(/\/+$/,'');
+  return u.toString().replace(/\/$/,'');
+ }catch{return''}
+}
+function loadImportApiSettings(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(IMPORT_API_SETTINGS_KEY)||'null');
+  if(saved&&typeof saved==='object')importApiSettings={...importApiSettings,...saved};
+ }catch{}
+ importApiSettings.endpoint=normalizeImportApiEndpoint(importApiSettings.endpoint);
+}
+function saveImportApiSettings(){
+ try{localStorage.setItem(IMPORT_API_SETTINGS_KEY,JSON.stringify(importApiSettings))}catch(err){console.warn(err)}
+}
+function renderImportApiSettings(message=''){
+ const input=$('#importApiEndpointInput'),badge=$('#importApiBadge'),status=$('#importApiStatus');
+ if(input)input.value=importApiSettings.endpoint||'';
+ const ready=Boolean(importApiSettings.endpoint);
+ if(badge){badge.textContent=ready?'API接続設定済':'未設定';badge.className=`collector-health ${ready?'ok':'idle'}`}
+ if(status)status.textContent=message||(ready?'設定済みです。「接続確認」で動作を確認できます。':'未設定です。設定後はLivePocket URLを貼るだけで読み取れます。');
+}
+function saveImportApiFromUI(){
+ const endpoint=normalizeImportApiEndpoint($('#importApiEndpointInput')?.value||'');
+ if(!endpoint){toast('正しいhttps://のWorker URLを入力してください');return false}
+ importApiSettings.endpoint=endpoint;saveImportApiSettings();renderImportApiSettings('API URLを保存しました。');toast('URL自動読取APIを保存しました');return true
+}
+async function testImportApiConnection(){
+ if(!saveImportApiFromUI())return;
+ const button=$('#testImportApiButton');if(button){button.disabled=true;button.textContent='確認中…'}
+ try{
+  const response=await fetchWithTimeout(`${importApiSettings.endpoint}/health`,{headers:{Accept:'application/json'}},15000);
+  const payload=await response.json().catch(()=>null);
+  if(!response.ok||!payload?.ok)throw new Error(payload?.error||`HTTP ${response.status}`);
+  renderImportApiSettings(`API接続OK（${payload.version||'稼働中'}）`);toast('URL自動読取APIに接続できました');
+ }catch(error){
+  renderImportApiSettings(`接続失敗：${error.message||'APIへ接続できません'}`);toast('APIへ接続できませんでした');
+ }finally{if(button){button.disabled=false;button.textContent='接続確認'}}
+}
+function livePocketHost(url=''){
+ try{return /(^|\.)livepocket\.jp$/i.test(new URL(url).hostname)}catch{return false}
+}
+function livePocketSection(text,labelPattern,nextPattern){
+ const t=cleanImportText(text).replace(/\n+/g,' ');
+ const m=t.match(new RegExp(`(?:【|\\[)?(?:${labelPattern})(?:】|\\])?\\s*[:：]?\\s*([\\s\\S]*?)(?=(?:【|\\[)?(?:${nextPattern})(?:】|\\])?|$)`,'i'));
+ return m?m[1].trim():'';
+}
+function livePocketTitle(text,title=''){
+ const sources=[stripImportMarkdown(title),...cleanImportText(text).split('\n').map(stripImportMarkdown)];
+ const bad=/応募期間|当選発表|購入制限|注意事項|お問い合わせ|受付・チケット情報|Each person|apply for one BOX/i;
+ const hit=sources.find(x=>x && /ポケモンカードゲーム|拡張パック|スタートデッキ|プレミアムトレーナーボックス/i.test(x) && !bad.test(x));
+ if(!hit)return'';
+ return hit
+  .replace(/^Title:\s*/i,'')
+  .replace(/[「『](.*?)[」』]/,'$1')
+  .replace(/抽選会のお知らせ|抽選販売のお知らせ|抽選受付のお知らせ|予約受付のお知らせ/g,'')
+  .replace(/\s{2,}/g,' ')
+  .trim().slice(0,120);
+}
+function parseLivePocketImport(text,url='',title=''){
+ const t=cleanImportText(text);
+ const product=livePocketTitle(t,title);
+ const applyText=livePocketSection(t,'応募期間|応募受付期間|受付期間','当選発表|結果発表|購入制限|購入期間|注意事項');
+ const resultText=livePocketSection(t,'当選発表|結果発表|抽選結果','購入制限|購入期間|購入期限|注意事項');
+ const purchaseText=livePocketSection(t,'購入制限|購入期間|購入期限|受取期間','注意事項|お問い合わせ|$');
+ const apTokens=dateTokens(applyText),rsTokens=dateTokens(resultText),puTokens=dateTokens(purchaseText);
+ const ap=apTokens.length?{startDate:apTokens[0].date,startTime:apTokens[0].time,endDate:apTokens.at(-1).date,endTime:apTokens.at(-1).time}:{};
+ const rs=rsTokens.length?{startDate:rsTokens[0].date,startTime:rsTokens[0].time,endDate:rsTokens.length>1?rsTokens.at(-1).date:'',endTime:rsTokens.length>1?rsTokens.at(-1).time:''}:{};
+ const pu=puTokens.length?{startDate:puTokens[0].date,startTime:puTokens[0].time,endDate:puTokens.at(-1).date,endTime:puTokens.at(-1).time}:{};
+ const detectedStore=specifiedStore(t,title);
+ const pref=IMPORT_PREFECTURES.find(x=>`${detectedStore}\n${title}\n${t}`.includes(x))||'';
+ return{shop:detectedStore,product,url,
+  applyStartDate:ap.startDate||'',applyStartTime:ap.startTime||'',applyEndDate:ap.endDate||'',applyEndTime:ap.endTime||'',
+  resultStartDate:rs.startDate||'',resultStartTime:rs.startTime||'',resultEndDate:rs.endDate||'',resultEndTime:rs.endTime||'',resultNote:/予定/.test(resultText)?'予定':'',
+  purchaseStartDate:pu.startDate||'',purchaseStartTime:pu.startTime||'',purchaseEndDate:pu.endDate||'',purchaseEndTime:pu.endTime||'',
+  type:'店舗',area:pref||'全国',memo:'LivePocketから自動取得'};
+}
 function parseLotteryImport(text,url='',title=''){
+ if(livePocketHost(url))return parseLivePocketImport(text,url,title||titleFromReader(text));
  const t=cleanImportText(text),readerTitle=titleFromReader(t),resolvedTitle=title||readerTitle;
  const pickup=pickupChoiceText(t);
  const detectedStore=specifiedStore(t,resolvedTitle);
@@ -4071,13 +4175,22 @@ function parseLotteryImport(text,url='',title=''){
 }
 function fillLotteryImport(d){const f=$('#form');if(!f)return 0;let n=0;for(const k of ['shop','product','url','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','type','area','memo']){const el=f.elements[k];if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];el.dispatchEvent(new Event('change',{bubbles:true}));n++}}const ae=f.elements.area;if(ae){ae.disabled=d.type==='通販';if(d.type==='通販')ae.value='全国'}return n}
 async function fetchWithTimeout(url,options={},ms=15000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{...options,signal:c.signal})}finally{clearTimeout(timer)}}
+async function fetchImportApi(url){
+ const endpoint=normalizeImportApiEndpoint(importApiSettings.endpoint);
+ if(!endpoint){const error=new Error('URL自動読取APIが未設定です');error.code='IMPORT_API_NOT_CONFIGURED';throw error}
+ const response=await fetchWithTimeout(endpoint,{
+  method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({url})
+ },30000);
+ const payload=await response.json().catch(()=>null);
+ if(!response.ok||!payload?.ok)throw new Error(payload?.error||`読取API HTTP ${response.status}`);
+ return{parsed:payload.data||{},text:payload.text||'',title:payload.title||'',method:'専用API',missing:payload.missing||[]};
+}
 async function fetchImportPage(url){
- const attempts=[];
+ if(livePocketHost(url))return fetchImportApi(url);
  try{
    const r=await fetchWithTimeout(url,{credentials:'omit'},10000);
    if(r.ok){const raw=await r.text(),doc=new DOMParser().parseFromString(raw,'text/html');doc.querySelectorAll('script,style,noscript,svg').forEach(x=>x.remove());const text=doc.body?.innerText||'';if(text.trim().length>80)return{text,title:doc.querySelector('meta[property="og:title"]')?.content||doc.title||'',method:'直接取得'}}
- }catch(e){attempts.push('direct')}
- // Jina Reader経由。通常のブラウザCORSを回避し、公開ページを読みやすい本文へ変換する。
+ }catch{}
  try{
    const readerUrl='https://r.jina.ai/'+url;
    const r=await fetchWithTimeout(readerUrl,{headers:{'Accept':'text/plain','X-Return-Format':'markdown','X-No-Cache':'true'}},20000);
@@ -4085,9 +4198,32 @@ async function fetchImportPage(url){
    const text=await r.text();
    if(text.trim().length<80)throw new Error('Reader empty');
    return{text,title:titleFromReader(text),method:'Reader取得'};
- }catch(e){attempts.push('reader');throw new Error('公開ページを取得できませんでした')}
+ }catch{throw new Error('公開ページを取得できませんでした')}
 }
-async function importFromUrl(){const b=$('#autoImportButton'),url=normalizeUrl($('#autoImportUrl')?.value||'');if(!url)return setImportStatus('URLを入力してください。','error');b.disabled=true;b.textContent='取得中…';fillLotteryImport({url});try{const pg=await fetchImportPage(url);const parsed=parseLotteryImport(pg.text,url,pg.title);const n=fillLotteryImport(parsed);$('#autoImportText').value=pg.text.slice(0,50000);const missing=[];if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');setImportStatus(`${pg.method}で${n}項目を自動入力しました。${missing.length?'未取得：'+missing.join('・')+'。':''}保存前に日付と店舗を確認してください。`,missing.length?'info':'success')}catch(e){console.warn(e);setImportStatus('URLから自動取得できませんでした。ログイン必須・CAPTCHA・非公開ページの可能性があります。その場合だけ本文貼り付けを使用してください。','error')}finally{b.disabled=false;b.textContent='URLから反映'}}
+function clearImportedLotteryFields(){
+ const f=$('#form');if(!f)return;
+ for(const key of ['shop','product','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','memo']){
+  const field=f.elements[key];if(field)field.value='';
+ }
+}
+async function importFromUrl(){
+ const b=$('#autoImportButton'),url=normalizeUrl($('#autoImportUrl')?.value||'');
+ if(!url)return setImportStatus('URLを入力してください。','error');
+ b.disabled=true;b.textContent='取得中…';fillLotteryImport({url});
+ try{
+  const pg=await fetchImportPage(url);
+  const parsed=pg.parsed||parseLotteryImport(pg.text,url,pg.title);
+  clearImportedLotteryFields();
+  const n=fillLotteryImport({...parsed,url});
+  if($('#autoImportText'))$('#autoImportText').value=(pg.text||'').slice(0,50000);
+  const missing=[];if(!parsed.shop)missing.push('店舗名');if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');
+  setImportStatus(`${pg.method}で読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。そのまま保存できます。'}`,missing.length?'info':'success');
+ }catch(e){
+  console.warn(e);
+  if(e?.code==='IMPORT_API_NOT_CONFIGURED')setImportStatus('LivePocketの自動読取APIが未設定です。設定画面の管理者設定から、Cloudflare Worker URLを1回だけ登録してください。','error');
+  else setImportStatus(`URLを読み取れませんでした：${e?.message||'取得エラー'}`,'error');
+ }finally{b.disabled=false;b.textContent='URLから反映'}
+}
 function importFromText(){const t=$('#autoImportText')?.value||'',url=normalizeUrl($('#autoImportUrl')?.value||'');if(!t.trim())return setImportStatus('ページ本文または告知文を貼り付けてください。','error');const parsed=parseLotteryImport(t,url,'');const n=fillLotteryImport(parsed);const checks=[];if(parsed.applyStartDate||parsed.applyEndDate)checks.push(`応募 ${parsed.applyStartDate||'?'} ${parsed.applyStartTime||''}〜${parsed.applyEndDate||'?'} ${parsed.applyEndTime||''}`);if(parsed.resultStartDate)checks.push(`結果 ${parsed.resultStartDate}〜${parsed.resultEndDate||parsed.resultStartDate}`);if(parsed.purchaseStartDate||parsed.purchaseEndDate)checks.push(`購入 ${parsed.purchaseStartDate||'?'} ${parsed.purchaseStartTime||''}〜${parsed.purchaseEndDate||'?'} ${parsed.purchaseEndTime||''}`);setImportStatus(`${n}項目を反映しました。${checks.join(' / ')}。保存前に確認してください。`,'success')}
 async function pasteImportText(){try{const t=await navigator.clipboard.readText();if(!t)throw new Error('empty');$('#autoImportText').value=t;setImportStatus('貼り付けました。「本文から反映」を押してください。','info')}catch{setImportStatus('自動貼り付けが許可されませんでした。入力欄を長押ししてペーストしてください。','info')}}
 async function pasteImportUrl(){
@@ -4283,7 +4419,7 @@ function open(type,item){$('#backdrop').classList.remove('hide');clearFormMessag
     <button class="secondary import-url-paste" type="button" id="pasteImportUrlButton">URL貼付</button>
     <button class="import-button" type="button" id="autoImportButton">URLから反映</button>
   </div>
-  <small class="import-hint">取得できないページでも応募URLは入力欄へ残ります。店頭QR限定・ログイン必須ページは、本文や告知文を貼り付けて補完できます。</small>
+  <small class="import-hint" id="importApiHint">${livePocketHost(item?.url||'')||importApiSettings.endpoint?(importApiSettings.endpoint?'LivePocket専用API：接続設定済み':'LivePocket専用API：未設定'):'LivePocketは専用APIで正確に読み取ります。'}</small>
   <details class="text-import-details">
     <summary>本文・X投稿から入力する</summary>
     <textarea class="field import-text" id="autoImportText" placeholder="ページ本文、X投稿、アプリ内告知文などを貼り付け"></textarea>
@@ -5018,6 +5154,10 @@ const savePublisherSettingsButton=$('#savePublisherSettingsButton');
 if(savePublisherSettingsButton)savePublisherSettingsButton.onclick=savePublisherSettingsFromUI;
 const testPublisherSettingsButton=$('#testPublisherSettingsButton');
 if(testPublisherSettingsButton)testPublisherSettingsButton.onclick=testPublisherConnection;
+const saveImportApiButton=$('#saveImportApiButton');
+if(saveImportApiButton)saveImportApiButton.onclick=saveImportApiFromUI;
+const testImportApiButton=$('#testImportApiButton');
+if(testImportApiButton)testImportApiButton.onclick=testImportApiConnection;
 const resetMonitorSourcesButton=$('#resetMonitorSourcesButton');
 if(resetMonitorSourcesButton)resetMonitorSourcesButton.onclick=resetMonitorSources;
 const enableAllMonitorSourcesButton=$('#enableAllMonitorSourcesButton');

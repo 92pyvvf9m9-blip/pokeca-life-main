@@ -1,0 +1,12 @@
+Pokeca Life URL自動読取API 初回設定
+
+1. Cloudflareに無料アカウントでログイン
+2. Workers & Pages → Create → Worker → Start with Hello World
+3. Worker名を「pokeca-life-reader」などにする
+4. Edit codeを開き、既存コードを全部消す
+5. pokeca-reader-worker.js の中身を全部貼り付けて Deploy
+6. 表示された https://xxxx.xxxx.workers.dev をコピー
+7. Pokeca Life → 設定 → 管理者モード →「URL自動読取API」へ貼り付け
+8. 「接続確認」→「API接続OK」になれば完了
+
+以後は抽選追加画面でLivePocket URLを貼って「URLから反映」を押すだけです。
