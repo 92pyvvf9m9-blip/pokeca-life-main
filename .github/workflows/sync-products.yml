@@ -1,1 +1,51 @@
- 
+name: Sync Pokemon Card Product Catalog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "35 0,6,12,18 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pokeca-product-catalog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-products:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Restore private collector configuration
+        run: node scripts/restore-private-config.mjs
+        env:
+          POKECA_COLLECTOR_CONFIG_B64: ${{ secrets.POKECA_COLLECTOR_CONFIG_B64 }}
+
+      - name: Test collectors
+        run: npm test
+
+      - name: Discover and verify product information
+        run: npm run sync:products
+
+      - name: Verify public files contain no provenance fields
+        run: node scripts/check-public-privacy.mjs
+
+      - name: Commit public catalog updates
+        run: |
+          git config user.name "pokeca-life-bot"
+          git config user.email "pokeca-life-bot@users.noreply.github.com"
+          git add product-catalog.json product-image-audit.json product-catalog-status.json index.html assets/product-images
+          if git diff --cached --quiet; then
+            echo "No public product changes"
+          else
+            git commit -m "chore: sync product catalog"
+            git push
+          fi
