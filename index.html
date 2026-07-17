@@ -918,12 +918,12 @@ body.admin-mode .admin-only{display:block!important}
 <div class="general-settings-label">一般設定</div>
 <div class="item profile-settings-card">
   <div class="collector-card-head">
-    <div><h3>ホームの表示地域</h3><p>全国通販に加えて、居住県と必要に応じて近隣県を表示します。</p></div>
+    <div><h3>ホームの表示地域</h3><p>全国配送に加えて、選択した都道府県の店舗抽選だけを表示します。</p></div>
     <span id="profileAreaBadge" class="collector-health idle">未設定</span>
   </div>
   <div class="profile-settings-grid">
     <div class="group"><label>居住都道府県</label><select id="profilePrefectureSelect" class="field"></select></div>
-    <div class="group"><label>表示範囲</label><select id="profileRangeSelect" class="field"><option value="auto">自動（少ない時は近隣へ拡張）</option><option value="prefecture">居住県のみ</option><option value="neighbors">居住県＋隣接県</option><option value="region">地方全体</option></select></div>
+    <div class="group"><label>表示範囲</label><select id="profileRangeSelect" class="field"><option value="auto">居住県のみ（おすすめ）</option><option value="prefecture">居住県のみ</option><option value="neighbors">居住県＋隣接県</option><option value="region">地方全体</option></select></div>
   </div>
   <button id="saveProfileSettingsButton" class="primary wide-button" type="button">表示地域を保存</button>
   <p id="profileScopeHelp" class="sync-help">未設定です。</p>
@@ -1123,7 +1123,7 @@ body.admin-mode .admin-only{display:block!important}
   <div class="onboarding-card">
     <p class="eyebrow">WELCOME TO POKECA LIFE</p>
     <h2>住んでいる都道府県を設定</h2>
-    <p>全国の通販抽選に加えて、あなたの地域の店舗抽選をホームへ表示します。情報が少ない時は近隣県まで自動で広げます。</p>
+    <p>全国配送の抽選に加えて、あなたの都道府県の店舗抽選だけをホームへ表示します。</p>
     <div class="group"><label>都道府県</label><select id="onboardingPrefecture" class="field"><option value="">選択してください</option></select></div>
     <button id="completeOnboardingButton" class="primary onboarding-button" type="button">この地域で始める</button>
     <small>登録後も設定画面から変更できます。</small>
@@ -1256,15 +1256,20 @@ function homeScopeInfo(){
   const mode=userProfile.rangeMode||'auto';let areas=[pref],label=pref;
   if(mode==='neighbors'){areas=[pref,...(PREFECTURE_NEIGHBORS[pref]||[])];label=`${pref}＋隣接県`}
   else if(mode==='region'){const region=profileRegion(pref);areas=[...(REGION_PREFECTURES[region]||[pref])];label=`${region}地方`}
-  else if(mode==='auto'){
-    if(localActiveCount([pref])<4){areas=[pref,...(PREFECTURE_NEIGHBORS[pref]||[])];label=`${pref}＋近隣県`}
-    if(localActiveCount(areas)<4){const region=profileRegion(pref);areas=[...(REGION_PREFECTURES[region]||areas)];label=`${region}地方（自動拡張）`}
-  }
   return {areas:[...new Set(areas)],label,mode};
 }
+function isNationwideShippingLottery(item){
+  if(String(item?.type||'').trim()==='通販')return true;
+  const text=[item?.memo,item?.instructions,item?.resultNote,item?.purchaseNote,item?.notes].filter(Boolean).join(' ');
+  const hasShipping=/(配送|発送|郵送|宅配|オンライン販売|通販)/.test(text);
+  const pickupOnly=/(店頭受取のみ|店舗受取のみ|店頭引取のみ|受取店舗限定|応募店舗で受取)/.test(text);
+  return hasShipping&&!pickupOnly;
+}
 function lotteryMatchesAreas(item,areas){
-  const area=normalizedLotteryArea(item.area);if(area==='全国')return true;if(!areas.length)return true;
+  const area=normalizedLotteryArea(item.area);
+  if(!areas.length)return true;
   if(Array.isArray(item.coverage)&&item.coverage.some(v=>areas.includes(normalizedLotteryArea(v))))return true;
+  if(area==='全国')return isNationwideShippingLottery(item);
   return areas.includes(area);
 }
 function lotteryVisibleOnHome(item){return lotteryMatchesAreas(item,homeScopeInfo().areas)}
