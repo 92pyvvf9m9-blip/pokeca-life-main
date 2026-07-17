@@ -1,1 +1,60 @@
+name: Collect Pokemon Card Lotteries
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pokeca-lottery-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Restore private collector configuration
+        run: node scripts/restore-private-config.mjs
+        env:
+          POKECA_COLLECTOR_CONFIG_B64: ${{ secrets.POKECA_COLLECTOR_CONFIG_B64 }}
+
+      - name: Test parsers
+        run: npm test
+
+      - name: Collect and verify lottery information
+        run: npm run collect
+        env:
+          OPENAI_VALIDATOR_ENDPOINT: ${{ secrets.OPENAI_VALIDATOR_ENDPOINT }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_VALIDATOR_ENDPOINT: ${{ secrets.GEMINI_VALIDATOR_ENDPOINT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          XAI_VALIDATOR_ENDPOINT: ${{ secrets.XAI_VALIDATOR_ENDPOINT }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          X_API_BEARER_TOKEN: ${{ secrets.X_API_BEARER_TOKEN }}
+          X_MONITOR_ACCOUNTS_JSON: ${{ secrets.X_MONITOR_ACCOUNTS_JSON }}
+
+      - name: Verify public feed contains no provenance fields
+        run: node scripts/check-public-privacy.mjs
+
+      - name: Commit updated public feed
+        run: |
+          git config user.name "pokeca-life-bot"
+          git config user.email "pokeca-life-bot@users.noreply.github.com"
+          git add lottery-feed.json collector-status.json data-quality-status.json
+          if git diff --cached --quiet; then
+            echo "No public feed changes"
+          else
+            git commit -m "chore: update lottery feed"
+            git push
+          fi
