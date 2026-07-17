@@ -2004,6 +2004,12 @@ function openDetail(item){
     ${periodBlockHTML('購入期間',p.purchase,item.status==='won')}
     ${item.instructions?`<div class="instructions-box"><strong>応募手順</strong><p>${esc(item.instructions)}</p></div>`:''}
     ${item.memo?`<div class="detailmemo">${esc(item.memo)}</div>`:''}
+    <div class="instructions-box">
+      <strong>自分の応募状況</strong>
+      <div class="quick-status" style="margin-top:10px">
+        ${[['open','未応募'],['applied','応募済'],['waiting','結果待ち'],['won','当選'],['lost','落選'],['done','購入済']].map(([value,label])=>`<button type="button" class="${item.status===value?'active':''}" data-detail-status="${value}" data-detail-status-id="${item.id}">${label}</button>`).join('')}
+      </div>
+    </div>
     <div class="detailactions">
       ${destinationPrimaryUrl(item)
         ? `<button class="primary" data-open-destination="${item.id}">${esc(destinationLabel(item))} ↗</button>`
@@ -3967,6 +3973,18 @@ if(storeEdit){
   return open('store',store);
 }
 let al=e.target.closest('[data-alert-lottery]');if(al)return openDetail(D.lotteries.find(x=>x.id===al.dataset.alertLottery));
+let detailStatus=e.target.closest('[data-detail-status]');
+if(detailStatus){
+  const item=D.lotteries.find(x=>x.id===detailStatus.dataset.detailStatusId);
+  if(item){
+    item.status=detailStatus.dataset.detailStatus;
+    item.userStatusUpdatedAt=new Date().toISOString();
+    await save();
+    openDetail(item);
+    toast(`応募状況を「${st(item.status)}」に更新しました`);
+  }
+  return;
+}
 let de=e.target.closest('[data-detail-edit]');if(de){let item=D.lotteries.find(x=>x.id===de.dataset.detailEdit);closeDetail();return open('lottery',item)}
 let dd=e.target.closest('[data-detail-delete]');if(dd){if(confirm('この抽選を削除しますか？')){D.lotteries=D.lotteries.filter(x=>x.id!==dd.dataset.detailDelete);save().catch(console.error);closeDetail();toast('削除しました')}return}
 let bell=e.target.closest('#bellButton');if(bell)return openNotifications();
