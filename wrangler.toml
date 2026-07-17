@@ -1,0 +1,7 @@
+name = "pokeca-life-reader"
+main = "pokeca-reader-worker.js"
+compatibility_date = "2026-07-18"
+workers_dev = true
+
+[observability]
+enabled = true
