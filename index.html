@@ -37,6 +37,21 @@
 .quick-status{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .quick-status button{padding:10px 6px;border-radius:12px;border:1px solid var(--line);background:#ffffff08;color:var(--muted);font-weight:800;font-size:12px}
 .quick-status button.active{border-color:var(--p);background:#7c3aed33;color:#fff}
+.badge.skipped{background:#71717a33!important;color:#d4d4d8!important;border:1px solid #71717a55}
+.lottery-tracker-panel{margin:0 0 14px;padding:14px;border:1px solid #8b5cf655;border-radius:18px;background:linear-gradient(145deg,#7c3aed18,#ffffff05)}
+.lottery-tracker-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:11px}
+.lottery-tracker-head h2{margin:0;font-size:17px}.lottery-tracker-head p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
+.lottery-tracker-total{flex:0 0 auto;padding:7px 10px;border-radius:999px;background:#ffffff0b;color:#d8b4fe;font-size:11px;font-weight:900}
+.lottery-tracker-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.tracker-stat{min-width:0;padding:10px 5px;border:1px solid #ffffff10;border-radius:13px;background:#ffffff08;color:var(--muted);text-align:center}
+.tracker-stat strong{display:block;color:#fff;font-size:18px;line-height:1.15}.tracker-stat span{display:block;margin-top:4px;font-size:9px;white-space:nowrap}
+.tracker-stat.active{border-color:var(--p);background:#7c3aed35;color:#fff}
+.lottery-card-status-control{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid #ffffff0d}
+.lottery-card-status-control label{flex:1;min-width:0;color:var(--muted);font-size:9px;font-weight:800}
+.lottery-status-select{width:100%;margin-top:4px;padding:8px 30px 8px 9px;border:1px solid #8b5cf655;border-radius:11px;background:#15121e;color:#fff;font-size:11px;font-weight:800}
+.lottery-status-updated{flex:0 0 auto;max-width:80px;color:#71717a;font-size:8px;text-align:right;line-height:1.35}
+.application-status-note{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.5}
+@media(max-width:390px){.lottery-tracker-stats{grid-template-columns:repeat(2,1fr)}}
 
 .detailmodal{max-height:92vh;overflow:auto}
 .detailhero{padding:18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#ffffff0b,#ffffff03);margin-bottom:14px}
@@ -794,7 +809,7 @@ body.admin-mode .admin-only{display:block!important}
     <div id="recentHistoryList" class="history-list"></div>
   </details>
 </div>
-<div class="section home-module" data-home-section="summary"><div class="head"><h2>サマリー</h2></div><div class="grid4"><div class="tile"><span>応募受付中</span><strong id="sOpen">0</strong></div><div class="tile"><span>結果待ち</span><strong id="sWait">0</strong></div><div class="tile"><span>当選</span><strong id="sWon">0</strong></div><div class="tile"><span>カード資産</span><strong id="sAsset">¥0</strong></div></div></div><div class="section home-module" data-home-section="recent"><div class="head"><h2>最近の抽選</h2><button class="link" data-go="lottery">すべて見る</button></div><div id="recent" class="stack"></div></div><div class="section home-module" data-home-section="asset">
+<div class="section home-module" data-home-section="summary"><div class="head"><h2>サマリー</h2></div><div class="grid4"><div class="tile"><span>未応募</span><strong id="sOpen">0</strong></div><div class="tile"><span>応募済・待ち</span><strong id="sWait">0</strong></div><div class="tile"><span>当選</span><strong id="sWon">0</strong></div><div class="tile"><span>カード資産</span><strong id="sAsset">¥0</strong></div></div></div><div class="section home-module" data-home-section="recent"><div class="head"><h2>最近の抽選</h2><button class="link" data-go="lottery">すべて見る</button></div><div id="recent" class="stack"></div></div><div class="section home-module" data-home-section="asset">
   <div class="head"><h2>カード資産</h2><button class="link" data-go="cards">管理する</button></div>
   <div class="panel assets home-assets-panel">
     <span class="muted">現在価値</span>
@@ -812,6 +827,13 @@ body.admin-mode .admin-only{display:block!important}
 <div class="lottery-view-tabs" role="tablist" aria-label="抽選表示">
   <button class="sel" type="button" data-lottery-view="list">抽選一覧</button>
   <button type="button" data-lottery-view="product">商品別</button>
+</div>
+<div class="lottery-tracker-panel" id="lotteryTrackerPanel">
+  <div class="lottery-tracker-head">
+    <div><h2>応募管理</h2><p>応募したら各カードの「応募状況」を変更。同期後も端末に保存されます。</p></div>
+    <span class="lottery-tracker-total" id="lotteryTrackerTotal">0件</span>
+  </div>
+  <div class="lottery-tracker-stats" id="lotteryTrackerStats"></div>
 </div>
 <div class="toolbar"><input id="lotterySearch" class="search" placeholder="店舗名・商品名で検索"></div><div id="lotteryChips" class="chips"></div>
 <div class="filtergrid">
@@ -1075,7 +1097,7 @@ body.admin-mode .admin-only{display:block!important}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.14.1</h3><p>地域・設定分離アップデート</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.15.1</h3><p>応募管理・同期保持アップデート</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1162,7 +1184,10 @@ const MONITOR_SETTINGS_KEY='pokeca_life_monitor_settings_v1';
 const DEFAULT_MONITOR_SOURCES=[];
 let monitorSources=[];
 let syncInProgress=false;
-let lastFocusSyncAttempt=0;const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const yen=v=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Number(v)||0);const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));const date=v=>v?new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric'}).format(new Date(v+'T00:00:00')):'未設定';const st=s=>({open:'応募受付中',applied:'応募済',waiting:'結果待ち',won:'● 当選',lost:'● 落選',done:'購入済',ended:'終了'})[s]||'未設定';const cls=s=>({open:'open',applied:'done',waiting:'waiting',won:'won',lost:'lost',done:'done'})[s]||'open';
+const LOTTERY_USER_STATE_KEY='pokeca_life_lottery_user_state_v1';
+const LOTTERY_USER_STATUSES=['open','applied','waiting','won','lost','done','skipped'];
+let lotteryUserStates={};
+let lastFocusSyncAttempt=0;const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const yen=v=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Number(v)||0);const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));const date=v=>v?new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric'}).format(new Date(v+'T00:00:00')):'未設定';const st=s=>({open:'未応募',applied:'応募済',waiting:'結果待ち',won:'● 当選',lost:'● 落選',done:'購入済',skipped:'見送り',ended:'終了'})[s]||'未設定';const cls=s=>({open:'open',applied:'done',waiting:'waiting',won:'won',lost:'lost',done:'done',skipped:'skipped'})[s]||'open';
 const PREFECTURES=["全国", "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県", "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"];
 
 const REGION_PREFECTURES={
@@ -1518,6 +1543,149 @@ function lotteryIdentity(x){
   ].join('|');
 }
 
+function normalizeLotteryStateKeyText(value){
+  return String(value||'')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/https?:\/\/[^\s]+/g,'')
+    .replace(/[\s　「」『』【】［］\[\]()（）・･\-‐‑‒–—―_]/g,'')
+    .trim();
+}
+function canonicalLotteryStateUrl(value){
+  const normalized=normalizeUrl(value||'');
+  if(!normalized)return '';
+  try{
+    const url=new URL(normalized);
+    for(const key of [...url.searchParams.keys()]){
+      if(/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key))url.searchParams.delete(key);
+    }
+    url.hash='';
+    return `${url.origin}${url.pathname}${url.search}`.replace(/\/$/,'');
+  }catch{return normalized}
+}
+function lotteryUserStateKeys(item){
+  if(!item)return [];
+  const shop=normalizeLotteryStateKeyText(item.shop);
+  const product=normalizeLotteryStateKeyText(displayLotteryProduct(item.product));
+  const deadline=item.applyEndDate||item.deadline||'';
+  const url=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
+  return [...new Set([
+    item.id?`id:${item.id}`:'',
+    item.externalId?`external:${item.externalId}`:'',
+    item.remoteId?`remote:${item.remoteId}`:'',
+    url?`url:${url}`:'',
+    shop&&product&&deadline?`lottery:${shop}|${product}|${deadline}`:''
+  ].filter(Boolean))];
+}
+function loadLotteryUserStates(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(LOTTERY_USER_STATE_KEY)||'{}');
+    lotteryUserStates=saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{};
+  }catch{lotteryUserStates={}}
+}
+function saveLotteryUserStates(){
+  try{
+    const entries=Object.entries(lotteryUserStates)
+      .filter(([,record])=>record&&LOTTERY_USER_STATUSES.includes(record.status))
+      .sort((a,b)=>String(b[1].updatedAt||'').localeCompare(String(a[1].updatedAt||'')))
+      .slice(0,2500);
+    lotteryUserStates=Object.fromEntries(entries);
+    localStorage.setItem(LOTTERY_USER_STATE_KEY,JSON.stringify(lotteryUserStates));
+  }catch(err){console.warn('応募状況の保存に失敗しました',err)}
+}
+function lotteryUserStateRecord(item){
+  const records=lotteryUserStateKeys(item)
+    .map(key=>lotteryUserStates[key])
+    .filter(record=>record&&LOTTERY_USER_STATUSES.includes(record.status));
+  return records.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0]||null;
+}
+function applyLotteryUserState(item){
+  const record=lotteryUserStateRecord(item);
+  if(!record)return false;
+  const currentAt=String(item.userStatusUpdatedAt||'');
+  if(currentAt&&currentAt>String(record.updatedAt||''))return false;
+  item.status=record.status;
+  item.userStatusUpdatedAt=record.updatedAt||item.userStatusUpdatedAt||'';
+  for(const key of ['appliedAt','waitingAt','resolvedAt','purchasedAt','skippedAt']){
+    if(record[key])item[key]=record[key];
+  }
+  return true;
+}
+function rememberLotteryUserState(item){
+  if(!item||!item.userStatusUpdatedAt||!LOTTERY_USER_STATUSES.includes(item.status))return;
+  const record={
+    status:item.status,
+    updatedAt:item.userStatusUpdatedAt,
+    appliedAt:item.appliedAt||'',
+    waitingAt:item.waitingAt||'',
+    resolvedAt:item.resolvedAt||'',
+    purchasedAt:item.purchasedAt||'',
+    skippedAt:item.skippedAt||''
+  };
+  for(const key of lotteryUserStateKeys(item))lotteryUserStates[key]=record;
+}
+function captureAllLotteryUserStates(){
+  for(const item of D.lotteries)rememberLotteryUserState(item);
+  saveLotteryUserStates();
+}
+function applyAllLotteryUserStates(){
+  let changed=false;
+  for(const item of D.lotteries){
+    if(applyLotteryUserState(item))changed=true;
+    if(item.userStatusUpdatedAt)rememberLotteryUserState(item);
+  }
+  saveLotteryUserStates();
+  return changed;
+}
+function migrateLegacyLotteryUserStatuses(){
+  let changed=false;
+  for(const item of D.lotteries){
+    if(!LOTTERY_USER_STATUSES.includes(item.status)){
+      item.status='open';
+      changed=true;
+    }
+    if(item.status!=='open'&&!item.userStatusUpdatedAt){
+      item.userStatusUpdatedAt=item.updatedAt||item.createdAt||new Date().toISOString();
+      changed=true;
+    }
+    if(item.userStatusUpdatedAt)rememberLotteryUserState(item);
+  }
+  saveLotteryUserStates();
+  return changed;
+}
+
+function mergeLotteryUserFields(a,b){
+  const candidates=[a,b]
+    .filter(item=>item&&item.userStatusUpdatedAt&&LOTTERY_USER_STATUSES.includes(item.status))
+    .sort((x,y)=>String(y.userStatusUpdatedAt).localeCompare(String(x.userStatusUpdatedAt)));
+  if(!candidates.length)return {};
+  const source=candidates[0];
+  return Object.fromEntries(['status','userStatusUpdatedAt','appliedAt','waitingAt','resolvedAt','purchasedAt','skippedAt']
+    .filter(key=>source[key]!==undefined)
+    .map(key=>[key,source[key]]));
+}
+async function updateLotteryUserStatus(item,status){
+  if(!item||!LOTTERY_USER_STATUSES.includes(status))return false;
+  const now=new Date().toISOString();
+  item.status=status;
+  item.userStatusUpdatedAt=now;
+  if(status==='applied'&&!item.appliedAt)item.appliedAt=now;
+  if(status==='waiting'&&!item.waitingAt)item.waitingAt=now;
+  if(['won','lost'].includes(status))item.resolvedAt=now;
+  if(status==='done')item.purchasedAt=now;
+  if(status==='skipped')item.skippedAt=now;
+  rememberLotteryUserState(item);
+  saveLotteryUserStates();
+  const saved=await save();
+  return saved!==false;
+}
+function formatStatusUpdatedAt(value){
+  if(!value)return '未変更';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '保存済み';
+  return new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(date);
+}
+
 function repairImportedLotteryData(){
   let changed=false;
   for(const item of D.lotteries){
@@ -1570,7 +1738,10 @@ function repairDuplicateLotteries(){
     const existingScore=Object.values(existing).filter(v=>v!==''&&v!==null&&v!==undefined).length;
     const itemScore=Object.values(item).filter(v=>v!==''&&v!==null&&v!==undefined).length;
 
-    map.set(key,itemScore>=existingScore?{...existing,...item}:{...item,...existing});
+    const merged=itemScore>=existingScore?{...existing,...item}:{...item,...existing};
+    Object.assign(merged,mergeLotteryUserFields(existing,item));
+    applyLotteryUserState(merged);
+    map.set(key,merged);
     changed=true;
   }
 
@@ -1592,6 +1763,7 @@ function migrateLotteryPeriods(){
 }
 async function save(){
   linkLotteriesToStores();
+  captureAllLotteryUserStates();
   const metadata=JSON.parse(JSON.stringify(D,(key,value)=>key==='imageData'?undefined:value));
   try{
     await putAppData(metadata);
@@ -1773,6 +1945,14 @@ function lotteryHTML(x,mode='list'){
           <div class="compact-progress" aria-label="応募期間の進行率 ${Math.round(progress)}%">
             <span style="width:${progress.toFixed(1)}%"></span>
           </div>`:''}
+        <div class="lottery-card-status-control" onclick="event.stopPropagation()">
+          <label>応募状況
+            <select class="lottery-status-select" data-lottery-status-select="${x.id}" aria-label="${esc(x.shop)}の応募状況">
+              ${LOTTERY_USER_STATUSES.map(value=>`<option value="${value}" ${x.status===value?'selected':''}>${st(value)}</option>`).join('')}
+            </select>
+          </label>
+          <span class="lottery-status-updated">${x.userStatusUpdatedAt?`更新 ${esc(formatStatusUpdatedAt(x.userStatusUpdatedAt))}`:'タップして記録'}</span>
+        </div>
       </div>
     </div>
     <div class="lottery-card-footer">
@@ -2007,8 +2187,9 @@ function openDetail(item){
     <div class="instructions-box">
       <strong>自分の応募状況</strong>
       <div class="quick-status" style="margin-top:10px">
-        ${[['open','未応募'],['applied','応募済'],['waiting','結果待ち'],['won','当選'],['lost','落選'],['done','購入済']].map(([value,label])=>`<button type="button" class="${item.status===value?'active':''}" data-detail-status="${value}" data-detail-status-id="${item.id}">${label}</button>`).join('')}
+        ${[['open','未応募'],['applied','応募済'],['waiting','結果待ち'],['won','当選'],['lost','落選'],['done','購入済'],['skipped','見送り']].map(([value,label])=>`<button type="button" class="${item.status===value?'active':''}" data-detail-status="${value}" data-detail-status-id="${item.id}">${label}</button>`).join('')}
       </div>
+      <div class="application-status-note">最終更新：${esc(formatStatusUpdatedAt(item.userStatusUpdatedAt))}。自動同期で情報が更新されても、この応募状況は保持されます。</div>
     </div>
     <div class="detailactions">
       ${destinationPrimaryUrl(item)
@@ -2155,18 +2336,28 @@ function mergeRemoteLottery(remote){
 
   if(!existing){
     remote.id=uid();
+    applyLotteryUserState(remote);
     D.lotteries.unshift(remote);
     return {item:remote,isNew:true};
   }
 
-  const preserveStatus=existing.status&&existing.status!=='open';
+  const storedState=lotteryUserStateRecord(existing)||lotteryUserStateRecord(remote);
+  const hasExplicitUserStatus=Boolean(existing.userStatusUpdatedAt||storedState||(existing.status&&existing.status!=='open'));
   const localFields={
     id:existing.id,
-    status:preserveStatus?existing.status:(remote.status||existing.status||'open'),
+    status:hasExplicitUserStatus?(storedState?.status||existing.status):(remote.status||existing.status||'open'),
+    userStatusUpdatedAt:storedState?.updatedAt||existing.userStatusUpdatedAt||(existing.status&&existing.status!=='open'?(existing.updatedAt||existing.createdAt||new Date().toISOString()):''),
+    appliedAt:storedState?.appliedAt||existing.appliedAt||'',
+    waitingAt:storedState?.waitingAt||existing.waitingAt||'',
+    resolvedAt:storedState?.resolvedAt||existing.resolvedAt||'',
+    purchasedAt:storedState?.purchasedAt||existing.purchasedAt||'',
+    skippedAt:storedState?.skippedAt||existing.skippedAt||'',
     createdAt:existing.createdAt||remote.createdAt,
     memo:existing.memo||remote.memo||''
   };
   Object.assign(existing,remote,localFields);
+  applyLotteryUserState(existing);
+  rememberLotteryUserState(existing);
   return {item:existing,isNew:false};
 }
 function formatSyncTime(value){
@@ -2498,13 +2689,13 @@ function renderHome(){
   renderProfileUI();
   const visible=D.lotteries.filter(lotteryVisibleOnHome);
   const open=visible.filter(x=>x.status==='open'&&!isLotteryHistory(x)).length;
-  const wait=visible.filter(x=>x.status==='waiting').length;
+  const wait=visible.filter(x=>['applied','waiting'].includes(x.status)&&!isLotteryHistory(x)).length;
   const won=visible.filter(x=>x.status==='won').length;
   const totals=recordAssetSnapshot(),now=totals.value,buy=totals.buy;
   $('#sOpen').textContent=open;$('#sWait').textContent=wait;$('#sWon').textContent=won;$('#sAsset').textContent=yen(now);$('#assetNow').textContent=yen(now);$('#assetBuy').textContent=yen(buy);$('#assetProfit').textContent=(now-buy>=0?'+':'')+yen(now-buy);
   renderAssetOverview();
   renderTodayDeadlines();
-  const tasks=visible.filter(x=>['open','waiting','won'].includes(x.status)&&!isLotteryHistory(x)).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
+  const tasks=visible.filter(x=>['open','applied','waiting','won'].includes(x.status)&&!isLotteryHistory(x)).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
   $('#tasks').innerHTML=tasks.length?tasks.map(x=>`<div class="task"><div><strong>${esc(x.shop)}｜${esc(displayLotteryProduct(x.product))}</strong><small>${st(x.status)}・${esc(periodText(x.applyStartDate,x.applyStartTime,x.applyEndDate||x.deadline,x.applyEndTime))}</small></div><button class="secondary" data-lottery-detail="${x.id}">確認</button></div>`).join(''):'<div class="empty">ホーム地域の今日のタスクはありません。</div>';
   const recent=visible.filter(x=>!isLotteryHistory(x)).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
   $('#recent').innerHTML=recent.length?recent.map(item=>{try{return lotteryHTML(item,'home')}catch(err){console.error(err);return''}}).join(''):'<div class="empty">ホーム地域の抽選はありません。抽選検索では全国・他県も確認できます。</div>';
@@ -2841,7 +3032,7 @@ function openProductGroupDetail(id){
           </button>`).join('')}
       </div>`:''}
     <div class="product-detail-section">
-      <h4>応募受付中</h4>
+      <h4>未応募</h4>
       ${openItems.length?openItems.map(productLotteryRowHTML).join(''):'<div class="store-empty-state">現在受付中として登録された抽選はありません。</div>'}
     </div>
     <div class="product-detail-section">
@@ -2865,7 +3056,26 @@ function setLotteryView(view){
   renderLottery();
 }
 
+function renderLotteryTracker(){
+  const container=$('#lotteryTrackerStats');
+  const total=$('#lotteryTrackerTotal');
+  if(!container||!total)return;
+  const items=currentLotteryBaseItems().filter(item=>!isLotteryHistory(item));
+  const config=[
+    ['open','未応募'],
+    ['applied','応募済'],
+    ['waiting','結果待ち'],
+    ['won','当選']
+  ];
+  container.innerHTML=config.map(([status,label])=>{
+    const count=items.filter(item=>item.status===status).length;
+    return `<button type="button" class="tracker-stat ${lf===status?'active':''}" data-tracker-filter="${status}"><strong>${count}</strong><span>${label}</span></button>`;
+  }).join('');
+  total.textContent=`${items.length}件`;
+}
+
 function renderLottery(){
+  renderLotteryTracker();
   $$('[data-lottery-view]').forEach(button=>{
     button.classList.toggle('sel',button.dataset.lotteryView===lotteryView);
   });
@@ -2889,12 +3099,13 @@ function renderLottery(){
 
   const filters=[
     ['all','すべて'],
-    ['open','応募受付中'],
+    ['open','未応募'],
     ['applied','応募済'],
     ['waiting','結果待ち'],
     ['won','当選'],
     ['lost','落選'],
     ['done','購入済'],
+    ['skipped','見送り'],
     ['history','終了・履歴']
   ];
 
@@ -3760,7 +3971,7 @@ field('応募URL','url',item?.url,'','url')+
 <div class="group">
   <label>状態</label>
   <select class="field" name="status">
-    ${['open','applied','waiting','won','lost','done'].map(s=>`<option value="${s}" ${item?.status===s?'selected':''}>${st(s)}</option>`).join('')}
+    ${LOTTERY_USER_STATUSES.map(s=>`<option value="${s}" ${item?.status===s?'selected':''}>${st(s)}</option>`).join('')}
   </select>
 </div>
 <details class="advanced-fields" id="lotteryAdvancedFields" ${advancedOpen?'open':''}>
@@ -3977,9 +4188,7 @@ let detailStatus=e.target.closest('[data-detail-status]');
 if(detailStatus){
   const item=D.lotteries.find(x=>x.id===detailStatus.dataset.detailStatusId);
   if(item){
-    item.status=detailStatus.dataset.detailStatus;
-    item.userStatusUpdatedAt=new Date().toISOString();
-    await save();
+    await updateLotteryUserStatus(item,detailStatus.dataset.detailStatus);
     openDetail(item);
     toast(`応募状況を「${st(item.status)}」に更新しました`);
   }
@@ -3993,7 +4202,23 @@ if(notifyItem){
   closeNotifications();
   return openDetail(D.lotteries.find(x=>x.id===notifyItem.dataset.notificationLottery));
 }
-let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.closest('[data-lf]');if(a){lf=a.dataset.lf;return renderLottery()}let b=e.target.closest('[data-cf]');if(b){cf=b.dataset.cf;return renderCards()}let ld=e.target.closest('[data-lottery-detail]');if(ld)return openDetail(D.lotteries.find(x=>x.id===ld.dataset.lotteryDetail));let c=e.target.closest('[data-card-detail]');if(c)return openCardDetail(D.cards.find(x=>x.id===c.dataset.cardDetail));let s=e.target.closest('[data-store]');if(s)return openStoreDetail(D.stores.find(x=>x.id===s.dataset.store));let qs=e.target.closest('[data-quick-status]');if(qs){let sel=$('#form select[name="status"]');if(sel){sel.value=qs.dataset.quickStatus;$$('[data-quick-status]').forEach(b=>b.classList.toggle('active',b===qs))}return;}if(e.target.closest('#addLottery'))open('lottery');if(e.target.closest('#addCard'))open('card');if(e.target.closest('#addStore'))open('store');if(e.target.closest('#close')||e.target.closest('#cancel'))close();if(e.target.closest('#delete')){let f=$('#form'),k=listKey(f.dataset.type);if(confirm('削除しますか？')){D[k]=D[k].filter(x=>x.id!==f.dataset.id);save().catch(console.error);close();toast('削除しました')}}});$('#form').addEventListener('submit',async e=>{
+let trackerFilter=e.target.closest('[data-tracker-filter]');if(trackerFilter){lf=trackerFilter.dataset.trackerFilter;return renderLottery()}
+let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.closest('[data-lf]');if(a){lf=a.dataset.lf;return renderLottery()}let b=e.target.closest('[data-cf]');if(b){cf=b.dataset.cf;return renderCards()}let ld=e.target.closest('[data-lottery-detail]');if(ld)return openDetail(D.lotteries.find(x=>x.id===ld.dataset.lotteryDetail));let c=e.target.closest('[data-card-detail]');if(c)return openCardDetail(D.cards.find(x=>x.id===c.dataset.cardDetail));let s=e.target.closest('[data-store]');if(s)return openStoreDetail(D.stores.find(x=>x.id===s.dataset.store));let qs=e.target.closest('[data-quick-status]');if(qs){let sel=$('#form select[name="status"]');if(sel){sel.value=qs.dataset.quickStatus;$$('[data-quick-status]').forEach(b=>b.classList.toggle('active',b===qs))}return;}if(e.target.closest('#addLottery'))open('lottery');if(e.target.closest('#addCard'))open('card');if(e.target.closest('#addStore'))open('store');if(e.target.closest('#close')||e.target.closest('#cancel'))close();if(e.target.closest('#delete')){let f=$('#form'),k=listKey(f.dataset.type);if(confirm('削除しますか？')){D[k]=D[k].filter(x=>x.id!==f.dataset.id);save().catch(console.error);close();toast('削除しました')}}});document.addEventListener('change',async e=>{
+  const select=e.target.closest('[data-lottery-status-select]');
+  if(!select)return;
+  e.stopPropagation();
+  const item=D.lotteries.find(x=>x.id===select.dataset.lotteryStatusSelect);
+  if(!item)return;
+  select.disabled=true;
+  try{
+    await updateLotteryUserStatus(item,select.value);
+    toast(`応募状況を「${st(item.status)}」に更新しました`);
+  }finally{
+    select.disabled=false;
+  }
+});
+
+$('#form').addEventListener('submit',async e=>{
   e.preventDefault();
 
   const f=e.currentTarget;
@@ -4031,6 +4256,12 @@ let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.
       o.fallbackUrl=normalizeUrl(o.fallbackUrl);
       o.instructions=String(o.instructions||'').trim();
       o.status=o.status||'open';
+      const previousLottery=D.lotteries.find(item=>item.id===id);
+      if(!previousLottery||previousLottery.status!==o.status){
+        o.userStatusUpdatedAt=new Date().toISOString();
+      }else{
+        o.userStatusUpdatedAt=previousLottery.userStatusUpdatedAt||'';
+      }
       o.type=o.type||'通販';
       o.area=o.type==='通販'?'全国':(o.area||'全国');
 
@@ -4101,7 +4332,17 @@ let g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);let a=e.target.
         return;
       }
 
-      o.createdAt=D[k].find(x=>x.id===id)?.createdAt||new Date().toISOString();
+      const existingLottery=D[k].find(x=>x.id===id);
+      o={...existingLottery,...o,createdAt:existingLottery?.createdAt||new Date().toISOString()};
+      const statusChanged=!existingLottery||existingLottery.status!==o.status;
+      if(statusChanged){
+        const now=o.userStatusUpdatedAt||new Date().toISOString();
+        if(o.status==='applied'&&!o.appliedAt)o.appliedAt=now;
+        if(o.status==='waiting'&&!o.waitingAt)o.waitingAt=now;
+        if(['won','lost'].includes(o.status))o.resolvedAt=now;
+        if(o.status==='done')o.purchasedAt=now;
+        if(o.status==='skipped')o.skippedAt=now;
+      }
     }
 
     let pendingImage='';
@@ -4272,6 +4513,7 @@ function validAppData(x){
 }
 
 async function initializeCardImages(){
+  loadLotteryUserStates();
   loadHomeLayout();
   loadAssetHistory();
   applyHomeLayout();
@@ -4324,9 +4566,11 @@ async function initializeCardImages(){
     if(migrateAreas())migrated=true;
     if(migrateStores())migrated=true;
     if(migrateLotteryPeriods())migrated=true;
+    if(migrateLegacyLotteryUserStatuses())migrated=true;
     if(repairDuplicateLotteries())migrated=true;
     if(repairImportedLotteryData())migrated=true;
     if(linkLotteriesToStores())migrated=true;
+    if(applyAllLotteryUserStates())migrated=true;
 
     if(migrated){
       const metadata=JSON.parse(JSON.stringify(D,(key,value)=>key==='imageData'?undefined:value));
@@ -4346,7 +4590,7 @@ async function initializeCardImages(){
 $('#lotterySearch').oninput=renderLottery;
 $('#lotterySort').onchange=e=>{lotterySort=e.target.value;renderLottery()};
 $('#areaFilter').onchange=e=>{areaFilter=e.target.value;renderLottery()};
-$('#typeFilter').onchange=e=>{typeFilter=e.target.value;renderLottery()};$('#cardSearch').oninput=renderCards;$('#storeSearch').oninput=renderStores;$('#export').onclick=()=>{let blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`beta-backup-${new Date().toISOString().slice(0,10)}.json`;a.click()};$('#import').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.lotteries||!x.cards||!x.stores)throw 0;D=x;save().catch(console.error);toast('復元しました')}catch{alert('読み込めません')}};r.readAsText(f)};$('#reset').onclick=()=>{if(confirm('全データを削除しますか？')){D={lotteries:[],cards:[],stores:[]};assetHistory=[];localStorage.removeItem(ASSET_HISTORY_KEY);save().catch(console.error);toast('削除しました')}};
+$('#typeFilter').onchange=e=>{typeFilter=e.target.value;renderLottery()};$('#cardSearch').oninput=renderCards;$('#storeSearch').oninput=renderStores;$('#export').onclick=()=>{let blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`beta-backup-${new Date().toISOString().slice(0,10)}.json`;a.click()};$('#import').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.lotteries||!x.cards||!x.stores)throw 0;D=x;save().catch(console.error);toast('復元しました')}catch{alert('読み込めません')}};r.readAsText(f)};$('#reset').onclick=()=>{if(confirm('全データを削除しますか？')){D={lotteries:[],cards:[],stores:[]};assetHistory=[];localStorage.removeItem(ASSET_HISTORY_KEY);localStorage.removeItem(LOTTERY_USER_STATE_KEY);lotteryUserStates={};save().catch(console.error);toast('削除しました')}};
 
 
 const ADMIN_PIN_KEY='pokeca_life_admin_pin_v1';
