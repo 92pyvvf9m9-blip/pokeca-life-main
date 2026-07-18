@@ -56,6 +56,59 @@ async function fetchHtml(source) {
   }
 }
 
+async function enrichLivePocketCandidates(items, collectedAt) {
+  const output = [];
+  let enrichedCount = 0;
+  for (const item of items) {
+    let host = "";
+    try { host = new URL(item.url || "").hostname.toLowerCase(); } catch {}
+    if (!(host === "livepocket.jp" || host.endsWith(".livepocket.jp"))) {
+      output.push(item);
+      continue;
+    }
+
+    try {
+      const html = await fetchHtml({ url: item.url });
+      const [parsed] = parseSourceDocument({
+        id: `x-livepocket-${item.xPostId || item.externalId}`,
+        name: item.shop || "LivePocket",
+        shop: item.shop || "",
+        url: item.url,
+        parser: "livepocket",
+        type: item.type || "店舗",
+        area: item.area || "全国",
+        sourceKind: "x",
+        publicSourceType: "LivePocket",
+        officialDomains: ["livepocket.jp"],
+        purchaseStartPolicy: "catalog-release",
+      }, html, collectedAt);
+      if (parsed) {
+        output.push({
+          ...item,
+          ...parsed,
+          externalId: item.externalId,
+          xPostId: item.xPostId,
+          xAuthor: item.xAuthor,
+          sourceUrl: item.sourceUrl,
+          sourceKind: "x",
+          shop: parsed.shop || item.shop,
+          area: parsed.area !== "全国" ? parsed.area : item.area,
+          type: parsed.type || item.type,
+          memo: [item.memo, parsed.memo].filter(Boolean).join("\n"),
+          confidence: Math.max(Number(item.confidence || 0), Number(parsed.confidence || 0), 0.9),
+        });
+        enrichedCount += 1;
+      } else {
+        output.push(item);
+      }
+    } catch {
+      output.push(item);
+    }
+    if (!FIXTURE_PATH) await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  return { items: output, enrichedCount };
+}
+
 function applyCatalogPurchaseStart(candidate, catalogProduct) {
   if (candidate.purchaseStartPolicy !== "catalog-release" || !catalogProduct?.releaseDate) return candidate;
   const context = `${candidate.product || ""}\n${candidate.memo || ""}\n${candidate.rawApplyText || ""}`;
@@ -106,6 +159,8 @@ async function run() {
     discoveredPages: 0,
     elapsedMs: 0,
   }];
+  const seenDocumentUrls = new Set();
+  let livePocketDiscoveredCount = 0;
 
   for (const source of enabledSources) {
     const started = Date.now();
@@ -115,15 +170,23 @@ async function run() {
       const discovered = discoverCandidateLinks(source, html);
 
       for (const candidate of discovered) {
+        if (seenDocumentUrls.has(candidate.url)) continue;
+        seenDocumentUrls.add(candidate.url);
         const childSource = {
           ...source,
           url: candidate.url,
+          parser: candidate.parser || source.discovery?.childParser || source.childParser || source.parser,
+          discoveryParentUrl: source.url,
+          discoveryLinkText: candidate.text || "",
           discovery: { enabled: false },
         };
         try {
           const childHtml = await fetchHtml(childSource);
           if (pageLooksRelevant(source, childHtml)) {
             documents.push({ source: childSource, html: childHtml });
+            let host = "";
+            try { host = new URL(candidate.url).hostname.toLowerCase(); } catch {}
+            if (host === "livepocket.jp" || host.endsWith(".livepocket.jp")) livePocketDiscoveredCount += 1;
           }
         } catch (error) {
           // A failed child page does not fail the parent source.
@@ -165,7 +228,10 @@ async function run() {
         bearerToken: process.env.X_API_BEARER_TOKEN || "",
         privateAccountsJson: process.env.X_MONITOR_ACCOUNTS_JSON || "",
       });
-  collected.push(...xResult.items);
+  const xEnrichment = FIXTURE_PATH
+    ? { items: xResult.items, enrichedCount: 0 }
+    : await enrichLivePocketCandidates(xResult.items, startedAt);
+  collected.push(...xEnrichment.items);
 
   const merged = keepRelevant(dedupeItems([
     ...trustedPrevious,
@@ -292,7 +358,7 @@ async function run() {
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.20.0",
+    collectorVersion: "1.21.0",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
@@ -305,6 +371,8 @@ async function run() {
     sourceHealth,
     autoCollectedCount,
     multiProductExpandedCount,
+    livePocketDiscoveredCount,
+    xLivePocketEnrichedCount: xEnrichment.enrichedCount,
     xCollectorStatus: xResult.meta?.status || "not_configured",
     xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
     xPostCount: Number(xResult.meta?.postCount || 0),
@@ -345,6 +413,8 @@ async function run() {
     successfulSourceCount: successCount,
     failedSourceCount: failedCount,
     sourceHealth,
+    livePocketDiscoveredCount,
+    xLivePocketEnrichedCount: xEnrichment.enrichedCount,
   }, null, 2));
 }
 
