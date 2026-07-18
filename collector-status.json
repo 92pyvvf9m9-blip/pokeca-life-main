@@ -1,9 +1,9 @@
 {
   "collectorVersion": "1.21.0",
-  "lastRunAt": "2026-07-18T20:27:00.494Z",
+  "lastRunAt": "2026-07-18T23:36:19.605Z",
   "status": "partial",
   "reviewCount": 7,
-  "publishedCount": 77,
+  "publishedCount": 78,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 10,
@@ -27,12 +27,12 @@
   "xItemCount": 0,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 84,
-    "publishedCount": 77,
+    "candidateCount": 85,
+    "publishedCount": 78,
     "reviewCount": 7,
     "rejectedCount": 0,
     "directVerifiedCount": 59,
-    "catalogMatchedCount": 84,
+    "catalogMatchedCount": 85,
     "autoCollectedCount": 21,
     "multiProductExpandedCount": 9,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
