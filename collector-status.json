@@ -1,18 +1,18 @@
 {
   "collectorVersion": "1.14.0",
-  "lastRunAt": "2026-07-18T10:49:06.454Z",
+  "lastRunAt": "2026-07-18T12:51:57.777Z",
   "status": "partial",
-  "reviewCount": 15,
+  "reviewCount": 21,
   "publishedCount": 51,
   "historyDays": 35,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 66,
+    "candidateCount": 72,
     "publishedCount": 51,
-    "reviewCount": 15,
+    "reviewCount": 21,
     "rejectedCount": 0,
-    "directVerifiedCount": 51,
-    "catalogMatchedCount": 66,
+    "directVerifiedCount": 58,
+    "catalogMatchedCount": 71,
     "rule": "catalog+deadline+direct-destination"
   }
 }
