@@ -4259,6 +4259,106 @@ function parseLotteryImport(text,url='',title=''){
  type:storeType?'店舗':'通販',area:pickup?'全国':(storeType?(pref||'全国'):'全国'),memo:notes.join('\n')}
 }
 function fillLotteryImport(d){const f=$('#form');if(!f)return 0;let n=0;for(const k of ['shop','product','url','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','type','area','memo']){const el=f.elements[k];if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];el.dispatchEvent(new Event('change',{bubbles:true}));n++}}const ae=f.elements.area;if(ae){ae.disabled=d.type==='通販';if(d.type==='通販')ae.value='全国'}return n}
+
+function appendImportMemo(base,line){
+ const current=String(base||'').trim();
+ const addition=String(line||'').trim();
+ if(!addition||current.split('\n').includes(addition))return current;
+ return current?`${current}\n${addition}`:addition;
+}
+function importIsoDate(value){
+ const hit=String(value||'').match(/^(20\d{2})[-\/](\d{2})[-\/](\d{2})$/);
+ return hit?`${hit[1]}-${hit[2]}-${hit[3]}`:'';
+}
+function importDateBetween(value,min='',max=''){
+ const date=importIsoDate(value),lower=importIsoDate(min),upper=importIsoDate(max);
+ if(!date)return false;
+ if(lower&&date<lower)return false;
+ if(upper&&date>upper)return false;
+ return true;
+}
+function deadlineOnlyPurchaseNotice(text=''){
+ const source=String(text||'').normalize('NFKC');
+ const hasDeadline=/(?:購入|受取|受け取り|引取|引き取り|支払|決済)期限/.test(source);
+ const hasPeriod=/(?:購入|受取|受け取り|引取|引き取り)(?:可能)?期間/.test(source);
+ return hasDeadline&&!hasPeriod;
+}
+function resaleLotteryNotice(text=''){
+ return /再販|再販売|再入荷|追加販売|追加分|キャンセル分|二次抽選|第2次抽選|再抽選|再予約|繰り上げ販売/.test(String(text||'').normalize('NFKC'));
+}
+function enrichImportedPurchaseDates(input,page={}){
+ const data={...(input||{})};
+ const sourceText=`${page?.title||''}\n${page?.text||''}\n${data.product||''}\n${data.memo||''}`;
+ const resultDate=importIsoDate(data.resultStartDate);
+ let purchaseStart=importIsoDate(data.purchaseStartDate);
+ let purchaseEnd=importIsoDate(data.purchaseEndDate);
+ const evidenceDeadline=Boolean(page?.evidence?.purchaseDeadlineOnly);
+ const deadlineOnly=evidenceDeadline||deadlineOnlyPurchaseNotice(sourceText);
+ const notes=[];
+
+ // 防御処理：開始日が結果後なのに期限日だけ結果前へ飛んだ場合は、
+ // 取得済みの開始日を期限へ移す。8/2→2/28のような誤変換を止める。
+ if(purchaseStart&&purchaseEnd&&resultDate&&purchaseStart>=resultDate&&purchaseEnd<resultDate){
+  purchaseEnd=purchaseStart;
+  data.purchaseEndDate=purchaseStart;
+  data.purchaseEndTime=data.purchaseStartTime||data.purchaseEndTime||'';
+  purchaseStart='';
+  data.purchaseStartDate='';
+  data.purchaseStartTime='';
+  notes.push('不整合な購入期限を自動修復');
+ }
+ if(deadlineOnly&&purchaseStart&&!purchaseEnd){
+  purchaseEnd=purchaseStart;
+  data.purchaseEndDate=purchaseStart;
+  data.purchaseEndTime=data.purchaseStartTime||'';
+  purchaseStart='';
+  data.purchaseStartDate='';
+  data.purchaseStartTime='';
+ }
+ if(deadlineOnly&&purchaseStart&&purchaseEnd&&purchaseStart===purchaseEnd){
+  purchaseStart='';
+  data.purchaseStartDate='';
+  data.purchaseStartTime='';
+ }
+
+ const catalogProduct=findCatalogProductForLottery({product:data.product||''});
+ const releaseDate=importIsoDate(catalogProduct?.releaseDate);
+ const applyStart=importIsoDate(data.applyStartDate);
+ const pageEventStart=importIsoDate(page?.evidence?.eventRange?.startDate);
+ const releasePredatesLottery=Boolean(releaseDate&&applyStart&&releaseDate<applyStart);
+ const resale=resaleLotteryNotice(sourceText)||releasePredatesLottery;
+
+ if(!purchaseStart){
+  if(!resale&&releaseDate&&importDateBetween(releaseDate,resultDate,purchaseEnd)){
+   purchaseStart=releaseDate;
+   data.purchaseStartDate=releaseDate;
+   data.purchaseStartTime='';
+   data.memo=appendImportMemo(data.memo,`購入開始：商品カタログの発売日 ${releaseDate.replaceAll('-','/')}`);
+   notes.push(`購入開始を発売日 ${releaseDate.replaceAll('-','/')} で補完`);
+  }else if(resale){
+   const inferredStart=(pageEventStart&&importDateBetween(pageEventStart,resultDate,purchaseEnd))
+    ?pageEventStart
+    :(resultDate&&importDateBetween(resultDate,'',purchaseEnd)?resultDate:'');
+   if(inferredStart){
+    purchaseStart=inferredStart;
+    data.purchaseStartDate=inferredStart;
+    data.purchaseStartTime='';
+    const source=pageEventStart===inferredStart?'ページ開催開始日':'抽選結果発表日';
+    data.memo=appendImportMemo(data.memo,`再販の購入開始は${source} ${inferredStart.replaceAll('-','/')} から推定（店舗告知を優先）`);
+    notes.push(`再販の購入開始を ${inferredStart.replaceAll('-','/')} で推定`);
+   }
+  }else if(pageEventStart&&importDateBetween(pageEventStart,resultDate,purchaseEnd)){
+   purchaseStart=pageEventStart;
+   data.purchaseStartDate=pageEventStart;
+   data.purchaseStartTime='';
+   data.memo=appendImportMemo(data.memo,`購入開始：ページ開催開始日 ${pageEventStart.replaceAll('-','/')}`);
+   notes.push(`購入開始をページ日程 ${pageEventStart.replaceAll('-','/')} で補完`);
+  }
+ }
+
+ if(/営業時間終了まで/.test(sourceText))data.memo=appendImportMemo(data.memo,'購入期限時刻：営業時間終了まで');
+ return{data,notes,catalogProduct,resale,deadlineOnly};
+}
 async function fetchWithTimeout(url,options={},ms=15000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{...options,signal:c.signal})}finally{clearTimeout(timer)}}
 async function fetchImportApi(url){
  const endpoint=normalizeImportApiEndpoint(importApiSettings.endpoint);
@@ -4331,7 +4431,9 @@ async function importFromUrl(){
   if(responseUrl!==requestedUrl)throw new Error('APIの応答URLが入力URLと一致しないため、反映を停止しました');
   const expectedKey=livePocketRecordKey(requestedUrl);
   if(pg.identity?.recordKey&&pg.identity.recordKey!==expectedKey)throw new Error('抽選IDが入力URLと一致しないため、反映を停止しました');
-  const parsed=pg.parsed||parseLotteryImport(pg.text,requestedUrl,pg.title);
+  const rawParsed=pg.parsed||parseLotteryImport(pg.text,requestedUrl,pg.title);
+  const purchaseEnrichment=enrichImportedPurchaseDates(rawParsed,pg);
+  const parsed=purchaseEnrichment.data;
   clearImportedLotteryFields();
   const n=fillLotteryImport({...parsed,url:requestedUrl});
   storeLotteryImportEvidence(pg,requestedUrl);
@@ -4340,7 +4442,8 @@ async function importFromUrl(){
   const confidence=Number(pg.confidence||0);
   const confidenceText=confidence?` 読取確度${Math.round(confidence*100)}%。`:'';
   const warningText=pg.warnings?.length?` ${pg.warnings.join('／')}。`:'';
-  setImportStatus(`${pg.method}でこのURL専用の情報を読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。'}${confidenceText}${warningText}保存前に末尾の商品名を確認してください。`,missing.length?'info':'success');
+  const purchaseText=purchaseEnrichment.notes.length?` ${purchaseEnrichment.notes.join('。')}。`:'';
+  setImportStatus(`${pg.method}でこのURL専用の情報を読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。'}${purchaseText}${confidenceText}${warningText}保存前に商品名と購入期間を確認してください。`,missing.length?'info':'success');
  }catch(e){
   if(requestId!==lotteryImportRequestSequence)return;
   console.warn(e);clearImportedLotteryFields();clearLotteryImportEvidence();fillLotteryImport({url:requestedUrl});
@@ -4351,7 +4454,7 @@ async function importFromUrl(){
  }
 }
 
-function importFromText(){const t=$('#autoImportText')?.value||'',url=normalizeUrl($('#autoImportUrl')?.value||'');if(!t.trim())return setImportStatus('ページ本文または告知文を貼り付けてください。','error');const parsed=parseLotteryImport(t,url,'');const n=fillLotteryImport(parsed);const checks=[];if(parsed.applyStartDate||parsed.applyEndDate)checks.push(`応募 ${parsed.applyStartDate||'?'} ${parsed.applyStartTime||''}〜${parsed.applyEndDate||'?'} ${parsed.applyEndTime||''}`);if(parsed.resultStartDate)checks.push(`結果 ${parsed.resultStartDate}〜${parsed.resultEndDate||parsed.resultStartDate}`);if(parsed.purchaseStartDate||parsed.purchaseEndDate)checks.push(`購入 ${parsed.purchaseStartDate||'?'} ${parsed.purchaseStartTime||''}〜${parsed.purchaseEndDate||'?'} ${parsed.purchaseEndTime||''}`);setImportStatus(`${n}項目を反映しました。${checks.join(' / ')}。保存前に確認してください。`,'success')}
+function importFromText(){const t=$('#autoImportText')?.value||'',url=normalizeUrl($('#autoImportUrl')?.value||'');if(!t.trim())return setImportStatus('ページ本文または告知文を貼り付けてください。','error');const raw=parseLotteryImport(t,url,'');const enriched=enrichImportedPurchaseDates(raw,{text:t,title:'',evidence:null});const parsed=enriched.data;const n=fillLotteryImport(parsed);const checks=[];if(parsed.applyStartDate||parsed.applyEndDate)checks.push(`応募 ${parsed.applyStartDate||'?'} ${parsed.applyStartTime||''}〜${parsed.applyEndDate||'?'} ${parsed.applyEndTime||''}`);if(parsed.resultStartDate)checks.push(`結果 ${parsed.resultStartDate}〜${parsed.resultEndDate||parsed.resultStartDate}`);if(parsed.purchaseStartDate||parsed.purchaseEndDate)checks.push(`購入 ${parsed.purchaseStartDate||'?'} ${parsed.purchaseStartTime||''}〜${parsed.purchaseEndDate||'?'} ${parsed.purchaseEndTime||''}`);const inferred=enriched.notes.length?` ${enriched.notes.join('。')}。`:'';setImportStatus(`${n}項目を反映しました。${checks.join(' / ')}。${inferred}保存前に確認してください。`,'success')}
 async function pasteImportText(){try{const t=await navigator.clipboard.readText();if(!t)throw new Error('empty');$('#autoImportText').value=t;setImportStatus('貼り付けました。「本文から反映」を押してください。','info')}catch{setImportStatus('自動貼り付けが許可されませんでした。入力欄を長押ししてペーストしてください。','info')}}
 async function pasteImportUrl(){
  try{

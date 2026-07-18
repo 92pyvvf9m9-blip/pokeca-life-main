@@ -973,35 +973,30 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   const resultStartTime = structured.result?.time || resultParsed.startTime;
 
   const purchaseBase = resultStartDate || applyEndDate || applyStartDate || pageBase;
-  const purchaseParsed = datesFromSection(purchaseText, 'range', purchaseBase);
-  let purchaseStartDate = structured.purchaseStart?.date || purchaseParsed.startDate;
-  let purchaseStartTime = structured.purchaseStart?.time || purchaseParsed.startTime;
-  let purchaseEndDate = structured.purchaseEnd?.date || purchaseParsed.endDate || purchaseParsed.startDate;
-  let purchaseEndTime = structured.purchaseEnd?.time || purchaseParsed.endTime || purchaseParsed.startTime;
+  const purchaseDeadlineOnly = Boolean(
+    purchaseText
+    && dateLikeCount(purchaseText) === 1
+    && !/[〜～~]|(?:から|より)[^。\n]{0,80}(?:まで|迄)/.test(normalizeDateText(purchaseText))
+    && /購入期限|受取期限|受け取り期限|引取期限|引き取り期限|支払期限|決済期限/.test(normalized)
+  );
+  const purchaseParsed = datesFromSection(purchaseText, purchaseDeadlineOnly ? 'point' : 'range', purchaseBase);
+  let purchaseStartDate = structured.purchaseStart?.date || (purchaseDeadlineOnly ? '' : purchaseParsed.startDate);
+  let purchaseStartTime = structured.purchaseStart?.time || (purchaseDeadlineOnly ? '' : purchaseParsed.startTime);
+  let purchaseEndDate = structured.purchaseEnd?.date || (purchaseDeadlineOnly
+    ? purchaseParsed.startDate
+    : (purchaseParsed.endDate || purchaseParsed.startDate));
+  let purchaseEndTime = structured.purchaseEnd?.time || (purchaseDeadlineOnly
+    ? purchaseParsed.startTime
+    : (purchaseParsed.endTime || purchaseParsed.startTime));
 
-  // Retail lottery pages sometimes state only "購入期限 8/2" in the detail
-  // while the page overview / JSON-LD contains the complete 7/31〜8/2 event
-  // window. Use that range only when its end date agrees with the stated
-  // purchase deadline; this prevents ordinary ticket-event dates from being
-  // mistaken for a purchase period.
+  // The overview dates on LivePocket describe the event window and are not a
+  // reliable purchase-start source. A single "購入期限" date must remain an
+  // end date. The browser app supplements the start from its verified product
+  // release catalog, or from the result date for clearly identified resales.
   const pageRange = pageDateRangeCandidate(text, pageBase);
   const eventStart = structured.eventStart || pageRange?.start || null;
   const eventEnd = structured.eventEnd || pageRange?.end || null;
-  const retailLottery = /抽選販売|抽選会のお知らせ|ポケモンカード/.test(`${title}\n${normalized}`);
-  let purchaseRangeSupplemented = false;
-  if (
-    retailLottery
-    && /購入期限|受取期限|引取期限|営業時間終了/.test(purchaseText)
-    && eventStart?.date
-    && eventEnd?.date
-    && (!purchaseEndDate || purchaseEndDate === eventEnd.date)
-  ) {
-    purchaseStartDate = purchaseStartDate && purchaseStartDate !== purchaseEndDate ? purchaseStartDate : eventStart.date;
-    purchaseStartTime = purchaseStartTime && purchaseStartDate !== eventStart.date ? purchaseStartTime : (eventStart.time || '');
-    purchaseEndDate = purchaseEndDate || eventEnd.date;
-    purchaseEndTime = purchaseEndTime || eventEnd.time || '';
-    purchaseRangeSupplemented = true;
-  }
+  const purchaseRangeSupplemented = false;
 
   const locationSource = `${shop}\n${title}\n${normalized}`;
   const area = PREFECTURES.find(prefecture => locationSource.includes(prefecture)) || '全国';
@@ -1021,11 +1016,11 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
     resultNote: /予定/.test(resultText) ? '予定' : '',
     purchaseStartDate,
     purchaseStartTime,
-    purchaseEndDate: purchaseEndDate || purchaseStartDate,
-    purchaseEndTime: purchaseEndTime || purchaseStartTime,
+    purchaseEndDate: purchaseEndDate || (purchaseDeadlineOnly ? '' : purchaseStartDate),
+    purchaseEndTime: purchaseEndTime || (purchaseDeadlineOnly ? '' : purchaseStartTime),
     type: '店舗',
     area,
-    memo: 'URL本文・構造化データから自動取得',
+    memo: `URL本文・構造化データから自動取得${/営業時間終了まで/.test(purchaseText) ? '\n購入期限時刻：営業時間終了まで' : ''}`, 
   };
 
   const missing = [];
@@ -1037,7 +1032,7 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   const warnings = [];
   if (productResult.hasAlternatives) warnings.push('関連商品名も検出しましたが、ページ上部のイベント名を優先して反映しました');
   if (context?.heading?.hasAlternatives) warnings.push('ページ内に別の商品名もありますが、対象URLのイベント見出しを優先しました');
-  if (purchaseRangeSupplemented) warnings.push('購入期限とページ概要の日程を照合し、購入期間を補完しました');
+  if (purchaseDeadlineOnly) warnings.push('購入期限のみ取得しました。購入開始日は商品カタログまたは再販判定で補完します');
 
   const identityConfidence = Math.min(
     context?.heading?.confidence ?? 0.9,
@@ -1061,7 +1056,7 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
     result: structured.result ? 'structured-fields' : (resultText ? 'labeled-text' : 'none'),
     purchase: structured.purchaseStart || structured.purchaseEnd
       ? 'structured-fields'
-      : (purchaseRangeSupplemented ? 'deadline+event-range' : (purchaseText ? 'labeled-text' : 'none')),
+      : (purchaseDeadlineOnly ? 'deadline-text' : (purchaseText ? 'labeled-text' : 'none')), 
   };
 
   return {
@@ -1076,6 +1071,7 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
       titleCandidates: context?.heading?.candidates || [],
       productSource: productResult.source,
       productCandidates: productResult.candidates,
+      purchaseDeadlineOnly,
       dateSources,
       eventRange: eventStart && eventEnd ? { startDate: eventStart.date, endDate: eventEnd.date } : null,
     },
@@ -1563,7 +1559,7 @@ async function handleReader(request) {
     requestedUrl: target,
     finalUrl,
     representations,
-    readerVersion: '1.4.4',
+    readerVersion: '1.4.5',
     identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
     confidence: parsed.confidence,
     warnings: parsed.warnings,
@@ -1595,7 +1591,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.4',
+          version: '1.4.5',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
