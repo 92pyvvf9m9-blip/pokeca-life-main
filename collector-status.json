@@ -1,18 +1,30 @@
 {
-  "collectorVersion": "1.14.0",
-  "lastRunAt": "2026-07-18T12:51:57.777Z",
+  "collectorVersion": "1.19.0",
+  "lastRunAt": "2026-07-18T13:42:00.969Z",
   "status": "partial",
   "reviewCount": 21,
-  "publishedCount": 51,
+  "publishedCount": 72,
   "historyDays": 35,
+  "manualEntryCount": 9,
+  "checkedSourceCount": 8,
+  "successfulSourceCount": 7,
+  "failedSourceCount": 1,
+  "autoCollectedCount": 50,
+  "multiProductExpandedCount": 9,
+  "xCollectorStatus": "not_configured",
+  "xOfficialAccountCount": 8,
+  "xPostCount": 0,
+  "xItemCount": 0,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 72,
-    "publishedCount": 51,
+    "candidateCount": 93,
+    "publishedCount": 72,
     "reviewCount": 21,
     "rejectedCount": 0,
-    "directVerifiedCount": 58,
-    "catalogMatchedCount": 71,
-    "rule": "catalog+deadline+direct-destination"
+    "directVerifiedCount": 70,
+    "catalogMatchedCount": 93,
+    "autoCollectedCount": 50,
+    "multiProductExpandedCount": 9,
+    "rule": "catalog+deadline+direct-destination-or-official-store-notice"
   }
 }
