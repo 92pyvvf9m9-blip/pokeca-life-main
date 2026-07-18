@@ -268,6 +268,15 @@ async function run() {
 
   const successCount = sourceResults.filter((result) => result.ok).length;
   const failedCount = sourceResults.length - successCount;
+  const webSourceResults = sourceResults.filter((result) => result.id !== "manual-admin");
+  const sourceHealth = {
+    checkedCount: webSourceResults.length,
+    successfulCount: webSourceResults.filter((result) => result.ok).length,
+    failedCount: webSourceResults.filter((result) => !result.ok).length,
+    withItemsCount: webSourceResults.filter((result) => result.ok && Number(result.itemCount || 0) > 0).length,
+    zeroItemsCount: webSourceResults.filter((result) => result.ok && Number(result.itemCount || 0) === 0).length,
+    discoveredPageCount: webSourceResults.reduce((sum, result) => sum + Number(result.discoveredPages || 0), 0),
+  };
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
   const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
   const quality = {
@@ -283,7 +292,7 @@ async function run() {
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.19.0",
+    collectorVersion: "1.20.0",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
@@ -293,6 +302,7 @@ async function run() {
     checkedSourceCount: enabledSources.length,
     successfulSourceCount: sourceResults.filter((result) => result.ok && result.id !== "manual-admin").length,
     failedSourceCount: sourceResults.filter((result) => !result.ok).length,
+    sourceHealth,
     autoCollectedCount,
     multiProductExpandedCount,
     xCollectorStatus: xResult.meta?.status || "not_configured",
@@ -334,6 +344,7 @@ async function run() {
     checkedSourceCount: enabledSources.length + 1,
     successfulSourceCount: successCount,
     failedSourceCount: failedCount,
+    sourceHealth,
   }, null, 2));
 }
 
