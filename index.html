@@ -898,8 +898,8 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <span id="lastSyncText" class="sync-time">最終更新：未実行</span>
   </div>
   <div id="collectorSummary" class="collector-summary">
-    <span><b id="collectorSourceCount">0</b> 監視登録</span>
-    <span><b id="collectorSuccessCount">0</b> Web稼働</span>
+    <span><b id="collectorSourceCount">0</b> 巡回対象</span>
+    <span><b id="collectorSuccessCount">0/0</b> Web成功</span>
     <span><b id="collectorXCount">待機</b> X解析</span>
     <span><b id="collectorReviewCount">0</b> 要確認</span>
   </div>
@@ -1139,9 +1139,9 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <span id="collectorHealthBadge" class="collector-health idle">待機中</span>
   </div>
   <div class="collector-grid">
-    <div><span>公開中</span><strong id="settingsSourceCount">0</strong></div>
-    <div><span>更新状態</span><strong id="settingsSuccessCount">待機</strong></div>
-    <div><span>除外</span><strong id="settingsFailedCount">0</strong></div>
+    <div><span>巡回対象</span><strong id="settingsSourceCount">0</strong></div>
+    <div><span>成功</span><strong id="settingsSuccessCount">0/0</strong></div>
+    <div><span>失敗</span><strong id="settingsFailedCount">0</strong></div>
     <div><span>確認待ち</span><strong id="settingsReviewCount">0</strong></div>
   </div>
   <div class="x-collector-status">
@@ -2671,16 +2671,21 @@ function renderCollectorMeta(){
   const publishedCount=Number(quality.publishedCount||meta.publishedCount||0);
   const reviewCount=Number(quality.reviewCount||meta.reviewCount||0);
   const rejectedCount=Number(quality.rejectedCount||0);
+  const sourceHealth=meta.sourceHealth&&typeof meta.sourceHealth==='object'?meta.sourceHealth:{};
+  const checkedSourceCount=Number(sourceHealth.checkedCount??meta.checkedSourceCount??0);
+  const successfulSourceCount=Number(sourceHealth.successfulCount??meta.successfulSourceCount??0);
+  const failedSourceCount=Number(sourceHealth.failedCount??meta.failedSourceCount??0);
+  const autoCollectedCount=Number(meta.autoCollectedCount||quality.autoCollectedCount||0);
   const setText=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value)};
 
-  setText('#collectorSourceCount',publishedCount);
-  setText('#collectorSuccessCount',meta.status==='partial'?'一部確認中':meta.lastRunAt?'正常':'待機');
+  setText('#collectorSourceCount',checkedSourceCount);
+  setText('#collectorSuccessCount',checkedSourceCount?`${successfulSourceCount}/${checkedSourceCount}`:(meta.lastRunAt?'0/0':'待機'));
   const xCollectorStatus=meta.xCollectorStatus||'not_configured';
   setText('#collectorXCount',xCollectorStatus==='ok'?'稼働':xCollectorStatus==='error'?'エラー':'未接続');
   setText('#collectorReviewCount',reviewCount);
-  setText('#settingsSourceCount',publishedCount);
-  setText('#settingsSuccessCount',meta.status==='partial'?'一部確認中':meta.lastRunAt?'正常':'待機');
-  setText('#settingsFailedCount',rejectedCount);
+  setText('#settingsSourceCount',checkedSourceCount);
+  setText('#settingsSuccessCount',checkedSourceCount?`${successfulSourceCount}/${checkedSourceCount}`:(meta.lastRunAt?'0/0':'待機'));
+  setText('#settingsFailedCount',failedSourceCount);
   setText('#settingsReviewCount',reviewCount);
 
   const badge=$('#collectorHealthBadge');
@@ -2705,7 +2710,7 @@ function renderCollectorMeta(){
   if(version){
     const engine=meta.collectorVersion||'未接続';
     const run=meta.lastRunAt?formatSyncTime(meta.lastRunAt):'未実行';
-    version.textContent=`収集エンジン：${engine}／最終巡回：${run}／履歴35日`;
+    version.textContent=`収集エンジン：${engine}／最終巡回：${run}／自動取得${autoCollectedCount}件／公開${publishedCount}件`;
   }
 
   setText('#qualityCandidateCount',Number(quality.candidateCount||0));
