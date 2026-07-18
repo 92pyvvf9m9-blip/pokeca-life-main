@@ -622,8 +622,9 @@ async function fetchLivePocket(url) {
       'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4',
       'Cache-Control': 'no-cache',
     },
+    // Cloudflare Workersでは `cache: 'no-store'` と `cf.cacheTtl` を
+    // 同時指定すると実行時エラーになるため、標準のno-storeだけを使う。
     cache: 'no-store',
-    cf: { cacheTtl: 0, cacheEverything: false },
   });
   if (!response.ok) throw new Error(`LivePocket取得失敗（HTTP ${response.status}）`);
   const contentType = response.headers.get('content-type') || '';
@@ -1084,7 +1085,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.0',
+          version: '1.4.1',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
