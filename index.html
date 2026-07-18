@@ -753,7 +753,7 @@ body.admin-mode .admin-only{display:block!important}
 .version-owner-trigger{user-select:none;-webkit-user-select:none}
 
 
-/* v1.16.3 URL isolation + non-blocking candidate selection */
+/* v1.16.4 URL isolation + non-blocking candidate selection */
 html,body{width:100%;max-width:100%;overflow-x:clip}
 @supports not (overflow:clip){html,body{overflow-x:hidden}}
 body{overscroll-behavior-x:none}
@@ -1227,7 +1227,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.16.3</h3><p>URL別完全分離・候補名の自動選択</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.16.4</h3><p>URL別完全分離・候補名の自動選択</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -2914,9 +2914,38 @@ function normalizeCatalogText(value){
     .trim();
 }
 
+function catalogProductMatchScore(lottery,product){
+  const lotteryText=normalizeCatalogText(displayLotteryProduct(lottery?.product));
+  if(!lotteryText||isJunkProductName(lotteryText))return -1;
+  let best=-1;
+  for(const candidate of catalogProductSearchTexts(product)){
+    if(!candidate)continue;
+    if(lotteryText===candidate){
+      best=Math.max(best,100000+candidate.length);
+      continue;
+    }
+    if(candidate.length<4)continue;
+    if(lotteryText.includes(candidate)){
+      // 長く具体的な商品名ほど優先。『スターターセットex』のような共通語だけでは勝てない。
+      best=Math.max(best,1000+candidate.length*10);
+      continue;
+    }
+    if(candidate.includes(lotteryText)){
+      const ratio=lotteryText.length/candidate.length;
+      if(ratio>=0.72)best=Math.max(best,500+Math.round(ratio*100)+lotteryText.length);
+    }
+  }
+  return best;
+}
 function findCatalogProductForLottery(lottery){
   const products=productCatalogState?.products||PRODUCT_CATALOG_FALLBACK.products||[];
-  return products.find(product=>lotteryMatchesCatalogProduct(lottery,product))||null;
+  let bestProduct=null;
+  let bestScore=-1;
+  for(const product of products){
+    const score=catalogProductMatchScore(lottery,product);
+    if(score>bestScore){bestScore=score;bestProduct=product;}
+  }
+  return bestScore>=0?bestProduct:null;
 }
 function productImagePath(product){
   if(!product||product.imageVerified===false)return '';
@@ -2927,7 +2956,8 @@ function productImagePath(product){
 function productForLotteryImage(lottery){
   if(lottery?.productCatalogId){
     const byId=(productCatalogState?.products||[]).find(product=>product.id===lottery.productCatalogId);
-    if(byId)return byId;
+    // 古い抽選データに別商品のIDが残っていても、現在の商品名と一致しない画像は使わない。
+    if(byId&&catalogProductMatchScore(lottery,byId)>=0)return byId;
   }
   return findCatalogProductForLottery(lottery);
 }
