@@ -1079,6 +1079,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
       <div class="publish-settings-actions">
         <button id="savePublisherSettingsButton" class="secondary" type="button">管理キーを保存</button>
         <button id="testPublisherSettingsButton" class="primary" type="button">公開接続を確認</button>
+        <button id="repairPublishedLotteriesButton" class="secondary full" type="button">公開データを一括修復</button>
       </div>
       <p class="admin-manual-entry-note">GitHubトークンはアプリへ入力しません。Cloudflare Workerの暗号化シークレットだけに保管します。この端末には公開用管理キーだけを保存します。</p>
       <div id="publisherStatus" class="publisher-status"></div>
@@ -1671,11 +1672,13 @@ function periodBlockHTML(label,data,showProgress=false){
 }
 
 function lotteryIdentity(x){
-  return [
-    (x.shop||'').trim().toLowerCase(),
-    (x.product||'').trim().toLowerCase(),
-    x.applyEndDate||x.deadline||''
-  ].join('|');
+  const url=canonicalLotteryStateUrl(x?.url||x?.appUrl||x?.fallbackUrl||'');
+  if(url)return `url:${url}`;
+  return `fallback:${[
+    (x?.shop||'').trim().toLowerCase(),
+    (x?.product||'').trim().toLowerCase(),
+    x?.applyEndDate||x?.deadline||''
+  ].join('|')}`;
 }
 
 function normalizeLotteryStateKeyText(value){
@@ -1853,36 +1856,57 @@ function repairImportedLotteryData(){
   return changed;
 }
 
+function lotteryRecordScore(item){
+  let score=0;
+  if(item?.adminPublished)score+=60;
+  if(item?.manualEntry)score+=30;
+  if(item?.origin==='remote')score+=20;
+  if(item?.verified)score+=10;
+  if(item?.url)score+=20;
+  if(item?.shop&&!/^name\s*[:：]/i.test(String(item.shop)))score+=15;
+  if(item?.product&&item.product!=='商品名未設定')score+=15;
+  score+=Object.values(item||{}).filter(v=>v!==''&&v!==null&&v!==undefined).length/10;
+  const updated=Date.parse(item?.updatedAt||item?.collectedAt||item?.createdAt||'')||0;
+  score+=updated/1e15;
+  return score;
+}
 function repairDuplicateLotteries(){
   const map=new Map();
+  const order=[];
   let changed=false;
 
-  for(const item of D.lotteries){
+  for(const raw of D.lotteries){
+    const item={...raw};
+    const cleanedShop=String(item.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim();
+    if(cleanedShop!==item.shop){item.shop=cleanedShop;changed=true}
+    const canonical=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
+    if(canonical&&item.url!==canonical){item.url=canonical;changed=true}
+    if(canonical){
+      item.externalId=canonical;
+      item.remoteId=canonical;
+    }
+
     const key=lotteryIdentity(item);
-    if(!key||key==='||'){
-      map.set(item.id,item);
+    if(!map.has(key)){
+      map.set(key,item);
+      order.push(key);
       continue;
     }
 
     const existing=map.get(key);
-    if(!existing){
-      map.set(key,item);
-      continue;
-    }
-
-    const existingScore=Object.values(existing).filter(v=>v!==''&&v!==null&&v!==undefined).length;
-    const itemScore=Object.values(item).filter(v=>v!==''&&v!==null&&v!==undefined).length;
-
-    const merged=itemScore>=existingScore?{...existing,...item}:{...item,...existing};
-    Object.assign(merged,mergeLotteryUserFields(existing,item));
+    const preferred=lotteryRecordScore(item)>=lotteryRecordScore(existing)?item:existing;
+    const other=preferred===item?existing:item;
+    const statusSource=[preferred,other]
+      .filter(Boolean)
+      .sort((a,b)=>(Date.parse(b.userStatusUpdatedAt||'')||0)-(Date.parse(a.userStatusUpdatedAt||'')||0))[0];
+    const merged={...other,...preferred,id:existing.id||preferred.id||other.id};
+    Object.assign(merged,mergeLotteryUserFields(statusSource,preferred===statusSource?other:preferred));
     applyLotteryUserState(merged);
     map.set(key,merged);
     changed=true;
   }
 
-  if(changed){
-    D.lotteries=[...map.values()];
-  }
+  if(changed)D.lotteries=order.map(key=>map.get(key)).filter(Boolean);
   return changed;
 }
 
@@ -2433,7 +2457,7 @@ function normalizeRemoteLottery(item){
     collectedAt:item.collectedAt||item.discoveredAt||now,
     updatedAt:item.updatedAt||now,
     createdAt:item.createdAt||item.collectedAt||now,
-    shop:String(item.shop||'').trim(),
+    shop:String(item.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim(),
     product:cleanImportedDisplayText(item.product||'商品名未設定'),
     status:item.status||'open',
     type:item.type||'通販',
@@ -2688,6 +2712,8 @@ async function syncRemoteLotteries({silent=false}={}){
         updated++;
       }
     }
+
+    if(repairDuplicateLotteries())updated++;
 
     syncState.lastSyncAt=new Date().toISOString();
     syncState.feedUpdatedAt=manualPayload?.updatedAt||payload.updatedAt||syncState.lastSyncAt;
@@ -4260,7 +4286,7 @@ function manualLotteryPublicItem(item){
  return{
   externalId:canonicalUrl||item.externalId||`manual-${item.id}`,
   manualEntry:true,adminPublished:true,sourceKind:'manual',confidence:0.99,verified:true,
-  shop:item.shop||'',product:item.product||'',url:item.url||'',
+  shop:String(item.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim(),product:cleanImportedDisplayText(item.product||''),url:canonicalUrl||item.url||'',
   applyStartDate:item.applyStartDate||'',applyStartTime:item.applyStartTime||'',
   applyEndDate:item.applyEndDate||item.deadline||'',applyEndTime:item.applyEndTime||'',
   resultStartDate:item.resultStartDate||item.resultDate||'',resultStartTime:item.resultStartTime||'',
@@ -4351,6 +4377,23 @@ async function testPublisherConnection(){
   setPublisherStatus(`接続OK。公開データ${Number(payload.count||0)}件を管理できます。`,'success');toast('公開接続を確認しました');
  }catch(err){setPublisherStatus(err.message||'接続できませんでした','error')}
  finally{if(button){button.disabled=false;button.textContent='公開接続を確認'}}
+}
+async function repairPublishedLotteries(){
+ const button=$('#repairPublishedLotteriesButton');
+ if(!confirm('公開済みのLivePocket抽選をURLごとに再読込し、重複・店舗名・商品名を一括修復しますか？'))return;
+ if(button){button.disabled=true;button.textContent='修復中…'}
+ try{
+  const settings=publisherSettingsFromUI({requireKey:true});publishSettings={adminKey:settings.adminKey};savePublisherSettings();
+  setPublisherStatus('公開データをURLごとに再読込しています…','loading');
+  const payload=await workerPublishRequest('/repair',{});
+  setPublisherStatus(`修復完了：${Number(payload.before||0)}件 → ${Number(payload.after||0)}件（更新${Number(payload.repaired||0)}件）`,'success');
+  await syncRemoteLotteries({silent:true});
+  repairDuplicateLotteries();
+  await save();
+  renderAllSafely();
+  toast('公開データの重複と名称を修復しました');
+ }catch(err){setPublisherStatus(err.message||'一括修復に失敗しました','error')}
+ finally{if(button){button.disabled=false;button.textContent='公開データを一括修復'}}
 }
 function isAdminPublishedLottery(item){return Boolean(item?.adminPublished||(item?.origin==='remote'&&item?.manualEntry))}
 function enableAdminPublishMode(item=null){
@@ -4682,8 +4725,8 @@ $('#form').addEventListener('submit',async e=>{
     const errors=[];
 
     if(type==='lottery'){
-      o.shop=(o.shop||'').trim();
-      o.product=(o.product||'').trim();
+      o.shop=String(o.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim();
+      o.product=cleanImportedDisplayText(o.product||'');
       o.area=(o.area||'').trim();
       o.url=normalizeUrl(o.url);
       o.destinationType=String(o.destinationType||'direct');
@@ -4744,14 +4787,16 @@ $('#form').addEventListener('submit',async e=>{
       o.resultDate=o.resultStartDate;
       o.purchaseDeadline=o.purchaseEndDate||'';
 
-      const duplicate=D.lotteries.find(x=>
-        x.id!==id && (
-          (o.url&&canonicalLotteryStateUrl(x.url||'')===canonicalLotteryStateUrl(o.url)) ||
-          ((x.shop||'').trim()===o.shop &&
-           (x.product||'').trim()===o.product &&
-           (x.applyEndDate||x.deadline||'')===o.applyEndDate)
-        )
-      );
+      const canonicalInputUrl=canonicalLotteryStateUrl(o.url||'');
+      const duplicate=D.lotteries.find(x=>{
+        if(x.id===id)return false;
+        const existingUrl=canonicalLotteryStateUrl(x.url||x.appUrl||x.fallbackUrl||'');
+        if(canonicalInputUrl)return existingUrl===canonicalInputUrl;
+        if(existingUrl)return false;
+        return (x.shop||'').trim()===o.shop &&
+          (x.product||'').trim()===o.product &&
+          (x.applyEndDate||x.deadline||'')===o.applyEndDate;
+      });
 
       // 既存データが見えなくなっている場合でも、同一抽選を上書き復旧する
       if(duplicate){
@@ -4867,6 +4912,7 @@ $('#form').addEventListener('submit',async e=>{
 
     if(i>=0)D[k][i]=o;
     else D[k].unshift(o);
+    if(type==='lottery')repairDuplicateLotteries();
 
     const saved=await save();
     if(!saved){
@@ -5116,6 +5162,8 @@ const savePublisherSettingsButton=$('#savePublisherSettingsButton');
 if(savePublisherSettingsButton)savePublisherSettingsButton.onclick=savePublisherSettingsFromUI;
 const testPublisherSettingsButton=$('#testPublisherSettingsButton');
 if(testPublisherSettingsButton)testPublisherSettingsButton.onclick=testPublisherConnection;
+const repairPublishedLotteriesButton=$('#repairPublishedLotteriesButton');
+if(repairPublishedLotteriesButton)repairPublishedLotteriesButton.onclick=repairPublishedLotteries;
 const saveImportApiButton=$('#saveImportApiButton');
 if(saveImportApiButton)saveImportApiButton.onclick=saveImportApiFromUI;
 const testImportApiButton=$('#testImportApiButton');

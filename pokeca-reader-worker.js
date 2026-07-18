@@ -46,6 +46,10 @@ function normalizeTarget(value) {
   if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase())) throw new Error('LivePocketのURLではありません');
   if (!/^\/e\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)) throw new Error('LivePocketの応募ページURLではありません');
   url.hash = '';
+  for (const key of [...url.searchParams.keys()]) {
+    if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
+  }
+  url.pathname = url.pathname.replace(/\/+$/, '');
   return url.toString();
 }
 
@@ -122,6 +126,42 @@ function metaContent(html, key, attr = 'property') {
 
 function htmlTitle(html) {
   return cleanLine(metaContent(html, 'og:title') || metaContent(html, 'twitter:title', 'name') || html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '');
+}
+
+function tagTextCandidates(html, tagName) {
+  const values = [];
+  const pattern = new RegExp(`<${tagName}\b[^>]*>([\s\S]*?)<\/${tagName}>`, 'gi');
+  for (const match of String(html || '').matchAll(pattern)) {
+    const value = cleanLine(stripTags(match[1]));
+    if (value && value.length <= 500 && !values.includes(value)) values.push(value);
+  }
+  return values;
+}
+
+function currentEventHeading(html) {
+  const candidates = [];
+  const push = (value, sourceScore) => {
+    const cleaned = cleanLine(value);
+    if (!cleaned || cleaned.length < 6 || cleaned.length > 500) return;
+    let score = sourceScore;
+    if (/ポケモンカードゲーム|ポケモンカード/.test(cleaned)) score += 120;
+    if (/拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|デッキビルドBOX/i.test(cleaned)) score += 90;
+    if (/抽選|予約販売|販売/.test(cleaned)) score += 20;
+    if (/【[^】]*店】|\[[^\]]*店\]/.test(cleaned)) score += 15;
+    if (/イベント検索|検索結果|おすすめ|関連イベント|Language|注意事項/.test(cleaned)) score -= 220;
+    if (/\.\.\.|…/.test(cleaned)) score -= 90;
+    candidates.push({ value: cleaned, score });
+  };
+
+  tagTextCandidates(html, 'h1').forEach(value => push(value, 220));
+  tagTextCandidates(html, 'h2').forEach(value => push(value, 120));
+  push(metaContent(html, 'og:title'), 180);
+  push(metaContent(html, 'twitter:title', 'name'), 170);
+  push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 130);
+
+  return candidates
+    .filter(item => /ポケモンカード|拡張パック|デッキ|スターターセット|BOX/i.test(item.value))
+    .sort((a, b) => b.score - a.score || b.value.length - a.value.length)[0]?.value || htmlTitle(html);
 }
 
 function collectStructuredStrings(html) {
@@ -205,13 +245,21 @@ function extractProductCore(value) {
   if (quoted && /ポケモンカード|拡張パック|デッキ|BOX/i.test(quoted)) product = quoted;
   product = product
     .replace(/^.*?(?=ポケモンカードゲーム|ポケモンカード|拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|デッキビルドBOX)/, '')
-    .replace(/\s*(?:抽選会のお知らせ|抽選販売のお知らせ|抽選受付のお知らせ|予約受付のお知らせ).*$/g, '')
+    .replace(/\s*(?:抽選会のお知らせ|抽選販売のお知らせ|抽選受付のお知らせ|予約受付のお知らせ|抽選予約販売|抽選販売|抽選受付|抽選会)\s*$/g, '')
     .replace(/\s*[|｜]\s*.*$/g, '')
     .trim();
   return product.slice(0, 220);
 }
 
 function findProduct(text, title = '') {
+  const preferred = extractProductCore(title);
+  if (
+    preferred &&
+    /ポケモンカード|拡張パック|デッキ|スターターセット|BOX/i.test(preferred) &&
+    !/\.\.\.|…/.test(preferred) &&
+    !/注意事項|応募期間|当選発表|結果発表|購入期間|Each person/i.test(preferred)
+  ) return preferred;
+
   const rawCandidates = [
     ...lineCandidates(text),
     title,
@@ -229,8 +277,11 @@ function findProduct(text, title = '') {
 
 function normalizeShopCandidate(value) {
   return compact(value)
+    .replace(/^name\s*[:：]\s*/i, '')
+    .replace(/^店舗名\s*[:：]\s*/i, '')
     .replace(/^(?:販売元|主催者|主催|開催店舗|販売店舗|受取店舗|対象店舗)\s*[:：]?\s*/i, '')
     .replace(/\s*(?:ポケモンカードゲーム|ポケモンカード|抽選会のお知らせ|抽選販売のお知らせ).*$/i, '')
+    .replace(/\s*[（(](?:北海道|(?:京都|大阪)府|東京都|.{2,3}県)[）)]\s*.*$/i, '')
     .replace(/[|｜].*$/g, '')
     .trim();
 }
@@ -407,6 +458,11 @@ function normalizeHttpsUrl(value = '') {
     const url = new URL(raw);
     if (url.protocol !== 'https:') return '';
     url.hash = '';
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
+    }
+    url.hostname = url.hostname.toLowerCase();
+    url.pathname = url.pathname.replace(/\/+$/, '');
     return url.toString();
   } catch {
     return '';
@@ -655,6 +711,80 @@ async function handlePublish(request, env) {
   return jsonResponse({ ok: true, removed: remove, count: lotteries.length, updatedAt: payload.updatedAt });
 }
 
+async function refreshManualLotteryFromUrl(item) {
+  const base = normalizeManualLottery(item);
+  if (!/^(?:https:\/\/)?(?:www\.)?livepocket\.jp\/e\//i.test(base.url)) return base;
+  try {
+    const { html, finalUrl } = await fetchLivePocket(base.url);
+    const title = currentEventHeading(html);
+    const text = buildReadableText(html);
+    const parsed = parseLivePocketFromText(text, finalUrl, title).data;
+    return normalizeManualLottery({
+      ...base,
+      ...Object.fromEntries(Object.entries(parsed).filter(([, value]) => value !== '' && value !== null && value !== undefined)),
+      url: base.url,
+      externalId: base.url,
+      createdAt: base.createdAt,
+      collectedAt: base.collectedAt,
+      memo: base.memo || parsed.memo,
+    });
+  } catch (error) {
+    return base;
+  }
+}
+
+function dedupeManualByUrl(items) {
+  const map = new Map();
+  for (const raw of items) {
+    let item;
+    try { item = normalizeManualLottery(raw); } catch { continue; }
+    const key = manualIdentity(item);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, item);
+      continue;
+    }
+    const currentTime = Date.parse(item.updatedAt || item.collectedAt || item.createdAt || '') || 0;
+    const existingTime = Date.parse(existing.updatedAt || existing.collectedAt || existing.createdAt || '') || 0;
+    const preferred = currentTime >= existingTime ? item : existing;
+    const other = preferred === item ? existing : item;
+    map.set(key, {
+      ...other,
+      ...preferred,
+      externalId: key,
+      url: normalizeHttpsUrl(preferred.url || other.url),
+      createdAt: existing.createdAt || item.createdAt,
+      updatedAt: preferred.updatedAt || new Date().toISOString(),
+    });
+  }
+  return [...map.values()];
+}
+
+async function handleRepair(request, env) {
+  requireAdmin(request, env);
+  const current = await readManualPayload(env);
+  const before = current.payload.lotteries.length;
+  const firstPass = dedupeManualByUrl(current.payload.lotteries);
+  const refreshed = [];
+  let repaired = 0;
+  for (const item of firstPass) {
+    const next = await refreshManualLotteryFromUrl(item);
+    if (next.shop !== item.shop || next.product !== item.product || next.url !== item.url) repaired += 1;
+    refreshed.push(next);
+  }
+  const lotteries = dedupeManualByUrl(refreshed);
+  const validKeys = new Set(lotteries.map(manualIdentity));
+  const deleted = current.payload.deleted.filter(entry => !validKeys.has(String(entry?.key || entry || ''))).slice(0, 500);
+  const payload = {
+    version: 4,
+    updatedAt: new Date().toISOString(),
+    lotteries,
+    deleted,
+  };
+  await writeManualPayload(current.settings, payload, current.sha, 'admin: repair manual lotteries');
+  return jsonResponse({ ok: true, before, after: lotteries.length, repaired, updatedAt: payload.updatedAt });
+}
+
 async function handleAdminCheck(request, env) {
   requireAdmin(request, env);
   const current = await readManualPayload(env);
@@ -665,7 +795,7 @@ async function handleReader(request) {
   const body = await request.json();
   const target = normalizeTarget(body?.url);
   const { html, finalUrl } = await fetchLivePocket(target);
-  const title = htmlTitle(html);
+  const title = currentEventHeading(html);
   const text = buildReadableText(html);
   const parsed = parseLivePocketFromText(text, finalUrl, title);
 
@@ -700,12 +830,13 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.1.2',
+          version: '1.2.0',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
       if (request.method === 'GET' && path === '/manual') return await handleManualRead(env);
       if (request.method === 'POST' && path === '/admin-check') return await handleAdminCheck(request, env);
+      if (request.method === 'POST' && path === '/repair') return await handleRepair(request, env);
       if (request.method === 'POST' && path === '/publish') return await handlePublish(request, env);
       if (request.method === 'POST' && (path === '/read' || path === '/')) return await handleReader(request);
       return jsonResponse({ ok: false, error: '対応していない操作です' }, 405);
