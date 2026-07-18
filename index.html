@@ -2210,8 +2210,8 @@ function lotteryHTML(x,mode='list'){
     </div>
     <div class="lottery-card-footer">
       <span class="deadline ${d.cls}">${d.text}</span>
-      ${x.url
-        ?`<a class="lottery-apply-button" href="${esc(x.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">応募ページ</a>`
+      ${destinationPrimaryUrl(x)
+        ?`<a class="lottery-apply-button" href="${esc(destinationPrimaryUrl(x))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(destinationLabel(x))}</a>`
         :'<span class="lottery-url-missing">URL未登録</span>'}
       <span class="lottery-card-chevron" aria-hidden="true">›</span>
     </div>
@@ -2675,7 +2675,8 @@ function renderCollectorMeta(){
 
   setText('#collectorSourceCount',publishedCount);
   setText('#collectorSuccessCount',meta.status==='partial'?'一部確認中':meta.lastRunAt?'正常':'待機');
-  setText('#collectorXCount',meta.lastRunAt?'稼働':'待機');
+  const xCollectorStatus=meta.xCollectorStatus||'not_configured';
+  setText('#collectorXCount',xCollectorStatus==='ok'?'稼働':xCollectorStatus==='error'?'エラー':'未接続');
   setText('#collectorReviewCount',reviewCount);
   setText('#settingsSourceCount',publishedCount);
   setText('#settingsSuccessCount',meta.status==='partial'?'一部確認中':meta.lastRunAt?'正常':'待機');
@@ -2689,9 +2690,16 @@ function renderCollectorMeta(){
     else{badge.className='collector-health ok';badge.textContent='正常'}
   }
   const xStatus=$('#xCollectorStatus');
-  if(xStatus){xStatus.textContent=meta.lastRunAt?'稼働中':'待機中';xStatus.style.color=meta.lastRunAt?'#86efac':''}
+  if(xStatus){
+    xStatus.textContent=xCollectorStatus==='ok'?'稼働中':xCollectorStatus==='error'?'取得エラー':'API未接続';
+    xStatus.style.color=xCollectorStatus==='ok'?'#86efac':xCollectorStatus==='error'?'#fca5a5':'';
+  }
   const xStatusMeta=$('#xCollectorMeta');
-  if(xStatusMeta)xStatusMeta.textContent='自動照合・重複統合済み';
+  if(xStatusMeta){
+    xStatusMeta.textContent=xCollectorStatus==='ok'
+      ?`公式アカウント${Number(meta.xOfficialAccountCount||0)}件／候補${Number(meta.xItemCount||0)}件`
+      :xCollectorStatus==='error'?'X APIの取得に失敗しました':'X_API_BEARER_TOKEN設定後に公式店舗告知を収集';
+  }
 
   const version=$('#collectorVersionText');
   if(version){

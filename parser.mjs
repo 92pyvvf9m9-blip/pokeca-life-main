@@ -116,6 +116,8 @@ function buildRecord({ source, product, applyText, resultText, purchaseText, htm
     purchaseEndDate: purchase.end?.date || "",
     purchaseEndTime: purchase.end?.time || "",
     destinationType: source.destinationType || "direct",
+    noticeOnly: Boolean(source.noticeOnly),
+    officialNotice: Boolean(source.officialNotice),
     appName: source.appName || "",
     appUrl: source.appUrl || "",
     fallbackUrl: source.fallbackUrl || "",
@@ -123,7 +125,78 @@ function buildRecord({ source, product, applyText, resultText, purchaseText, htm
     rawApplyText: String(applyText || "").slice(0, 300),
     rawResultText: String(resultText || "").slice(0, 300),
     memo: "",
+    purchaseStartPolicy: source.purchaseStartPolicy || "",
   };
+}
+
+function imageAltTexts(html = "") {
+  const values = [];
+  const regex = /<img\b[^>]*\balt=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  while ((match = regex.exec(String(html)))) {
+    const value = htmlToText(match[1]);
+    if (value) values.push(value);
+  }
+  return [...new Set(values)];
+}
+
+function sectionText(lines, labels, stopLabels = []) {
+  const index = lines.findIndex((line) => labels.some((label) => line.includes(label)));
+  if (index < 0) return "";
+  const output = [lines[index]];
+  for (let i = index + 1; i < Math.min(lines.length, index + 8); i += 1) {
+    if (stopLabels.some((label) => lines[i].includes(label))) break;
+    output.push(lines[i]);
+  }
+  return output.join(" ");
+}
+
+function dateYear(value = "") {
+  const match = String(value).match(/^(\d{4})-/);
+  return match ? Number(match[1]) : 0;
+}
+
+function replaceDateYear(value = "", year = 0) {
+  return year && /^\d{4}-\d{2}-\d{2}$/.test(String(value))
+    ? `${year}${String(value).slice(4)}`
+    : value;
+}
+
+function repairPublishedYear(record) {
+  const referenceYear = dateYear(record.applyEndDate || record.applyStartDate);
+  if (!referenceYear) return record;
+  for (const key of ["resultStartDate", "resultEndDate", "purchaseStartDate", "purchaseEndDate"]) {
+    const year = dateYear(record[key]);
+    if (year && year === referenceYear - 1) record[key] = replaceDateYear(record[key], referenceYear);
+  }
+  return record;
+}
+
+function normalizePokemonProductName(value = "") {
+  return cleanProduct(String(value)
+    .normalize("NFKC")
+    .replace(/[「」『』]/g, "")
+    .replace(/\s*（再販）\s*|\s*\(再販\)\s*/g, "")
+    .replace(/\s+/g, " "));
+}
+
+function quotedProductCandidates(text = "") {
+  const normalized = String(text).normalize("NFKC");
+  const prefixMatch = normalized.match(/(ポケモンカードゲーム\s*(?:MEGA|スカーレット＆バイオレット)?\s*(?:強化拡張パック|拡張パック|ハイクラスパック|スタートデッキ[^「」『』]{0,25}|スターターセットex)?)/i);
+  const prefix = prefixMatch?.[1]?.trim() || "ポケモンカードゲーム";
+  const quoted = [...normalized.matchAll(/[「『]([^」』]{2,90})[」』]/g)]
+    .map((match) => match[1].trim())
+    .filter((value) => !/応募|抽選|販売|注意|期間/.test(value));
+  if (quoted.length) {
+    return uniqueValues(quoted.map((value) => {
+      if (isPokemonCard(value)) return value;
+      if (/^(?:MEGA\s*)?(?:強化拡張パック|拡張パック|ハイクラスパック|スタートデッキ|スターターセット)/i.test(value)) {
+        return `ポケモンカードゲーム ${value}`;
+      }
+      return `${prefix} ${value}`;
+    }));
+  }
+  return [];
 }
 
 function parseAmiAmi(source, html, collectedAt) {
@@ -403,6 +476,208 @@ function parseGeoLottery(source, html, collectedAt) {
   });
 }
 
+function hobbyStationProducts(text = "") {
+  const products = quotedProductCandidates(text).map(normalizePokemonProductName);
+  if (products.length) {
+    const unique = new Map();
+    for (const product of products) {
+      const key = product.normalize("NFKC").toLowerCase().replace(/再販|再販売|[()（）\s]/g, "");
+      if (!unique.has(key) || product.length < unique.get(key).length) unique.set(key, product);
+    }
+    return [...unique.values()].slice(0, 12);
+  }
+
+  const lines = normalizeLines(text);
+  return uniqueValues(lines
+    .filter((line) => isPokemonCard(line))
+    .filter((line) => /拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|MEGA/i.test(line))
+    .filter((line) => !/応募方法|応募期間|抽選受付|当選発表|購入期間|注意事項/.test(line))
+    .map((line) => normalizePokemonProductName(line.replace(/^.*?抽選販売/, "")))
+    .filter((line) => line.length > 4 && line.length < 150))
+    .slice(0, 12);
+}
+
+function parseHobbyStationNews(source, html, collectedAt) {
+  const text = htmlToText(html);
+  if (!/ポケモンカード|ポケカ/i.test(text) || !/抽選/.test(text)) return [];
+
+  const livePocketLinks = extractLinks(html, source.url)
+    .filter((link) => /(^|\.)livepocket\.jp$/i.test(new URL(link.url).hostname));
+  const textLivePocket = [...String(html).matchAll(/https?:\/\/livepocket\.jp\/e\/[A-Za-z0-9_-]+/gi)]
+    .map((match) => match[0]);
+  const actionUrls = [...new Set([...livePocketLinks.map((link) => link.url), ...textLivePocket])];
+  if (!actionUrls.length) return [];
+
+  const lines = normalizeLines(text);
+  const products = hobbyStationProducts(text);
+  if (!products.length) return [];
+
+  const applyText = sectionText(lines,
+    ["応募期間", "抽選受付期間", "受付期間"],
+    ["当選発表", "結果発表", "当選者購入期間", "購入期間", "受取期間"]);
+  const resultText = sectionText(lines,
+    ["当選発表", "結果発表", "抽選結果"],
+    ["当選者購入期間", "購入期間", "受取期間", "注意事項"]);
+  const purchaseText = sectionText(lines,
+    ["当選者購入期間", "購入期間", "受取期間", "引取期間"],
+    ["注意事項", "応募条件", "お問い合わせ"]);
+
+  const pairCount = Math.max(products.length, actionUrls.length);
+  const records = [];
+  for (let index = 0; index < pairCount; index += 1) {
+    const product = products[Math.min(index, products.length - 1)];
+    const actionUrl = actionUrls[Math.min(index, actionUrls.length - 1)];
+    const record = buildRecord({
+      source,
+      product,
+      applyText,
+      resultText,
+      purchaseText,
+      html,
+      collectedAt,
+      actionUrlOverride: actionUrl,
+      shopOverride: "ホビーステーション",
+      typeOverride: "店舗",
+      areaOverride: "全国",
+    });
+    repairPublishedYear(record);
+    record.memo = /再販|再販売/.test(text)
+      ? "ホビーステーション公式告知から取得した再販抽選です。"
+      : "ホビーステーション公式告知からLivePocket応募先を自動取得しました。";
+    record.collectionMode = "official-news-livepocket";
+    records.push(record);
+  }
+  return records;
+}
+
+function furuichiSectionProducts(section = "", html = "") {
+  const candidates = [
+    ...quotedProductCandidates(section),
+    ...imageAltTexts(html)
+      .filter((value) => isPokemonCard(value))
+      .map(normalizePokemonProductName),
+    ...normalizeLines(section)
+      .filter((line) => isPokemonCard(line))
+      .filter((line) => /拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|MEGA/i.test(line))
+      .map(normalizePokemonProductName),
+  ];
+  return uniqueValues(candidates)
+    .filter((value) => !/抽選受付|抽選販売|お知らせ|スケジュール/.test(value))
+    .slice(0, 16);
+}
+
+function furuichiSchedule(section = "") {
+  const lines = normalizeLines(section);
+  return {
+    applyText: sectionText(lines,
+      ["抽選受付日時", "抽選受付期間", "応募期間", "受付期間"],
+      ["当選発表", "当選商品販売時間", "購入期間", "販売予定期間"]),
+    resultText: sectionText(lines,
+      ["当選発表", "結果発表"],
+      ["当選商品販売時間", "購入期間", "販売予定期間"]),
+    purchaseText: sectionText(lines,
+      ["当選商品販売時間", "購入期間", "販売予定期間", "受取期間"],
+      ["注意事項", "応募は無料", "第"]),
+  };
+}
+
+function furuichiShopName(text = "", fallback = "ふるいち") {
+  const line = normalizeLines(text).find((value) => /(?:ふるいち|古本市場)[^\n]{0,40}店/.test(value));
+  const match = line?.match(/((?:ふるいち|古本市場)[^｜|　\n]{0,40}店)/);
+  return match?.[1]?.trim() || fallback;
+}
+
+function parseFuruichiNews(source, html, collectedAt) {
+  const text = htmlToText(html);
+  const combinedText = `${text}\n${imageAltTexts(html).join("\n")}`;
+  if (!/ポケモンカード|ポケカ/i.test(combinedText) || !/抽選/.test(combinedText)) return [];
+
+  const directLivePocket = extractLinks(html, source.url)
+    .filter((link) => /(^|\.)livepocket\.jp$/i.test(new URL(link.url).hostname))
+    .map((link) => link.url);
+  const sections = combinedText
+    .split(/(?=第\s*\d+\s*弾[^\n]{0,80}(?:LivePocket|ライブポケット)抽選販売)/i)
+    .filter((section) => /ポケモンカード|ポケカ/i.test(section) && /抽選/.test(section));
+  const records = [];
+  const detectedShop = furuichiShopName(combinedText, source.name || "ふるいち");
+
+  for (let index = 0; index < sections.length; index += 1) {
+    const section = sections[index];
+    const products = furuichiSectionProducts(section, html);
+    const schedule = furuichiSchedule(section);
+    if (!products.length || !schedule.applyText) continue;
+
+    const actionUrl = directLivePocket[index] || directLivePocket[0] || source.url;
+    const storeQr = !directLivePocket.length && /店頭[^\n]{0,40}(?:QR|ＱＲ)|QRコードは店頭|受付QRコードは店頭/i.test(section);
+    for (const product of products) {
+      const recordSource = {
+        ...source,
+        destinationType: storeQr ? "store" : "direct",
+        fallbackUrl: storeQr ? source.url : source.fallbackUrl,
+        instructions: storeQr
+          ? "店舗で公開されるLivePocketのQRコードから応募してください。"
+          : source.instructions,
+        noticeOnly: storeQr,
+        officialNotice: storeQr,
+      };
+      const record = buildRecord({
+        source: recordSource,
+        product,
+        applyText: schedule.applyText,
+        resultText: schedule.resultText,
+        purchaseText: schedule.purchaseText,
+        html,
+        collectedAt,
+        actionUrlOverride: actionUrl,
+        shopOverride: detectedShop,
+        typeOverride: "店舗",
+        areaOverride: source.area || "全国",
+      });
+      record.memo = storeQr
+        ? "ふるいち公式告知を確認。応募用QRコードは店頭でのみ公開されます。"
+        : "ふるいち公式告知からLivePocket応募先を自動取得しました。";
+      record.collectionMode = storeQr ? "official-store-qr-notice" : "official-news-livepocket";
+      records.push(record);
+    }
+  }
+
+  if (records.length) return records;
+
+  // アプリ抽選は、本文に商品名と期間の両方がある場合だけ公開候補にする。
+  if (/ふるいちアプリ/.test(combinedText) && /WEB事前抽選|Web事前抽選|アプリ抽選/.test(combinedText)) {
+    const products = furuichiSectionProducts(combinedText, html);
+    const schedule = furuichiSchedule(combinedText);
+    if (products.length && schedule.applyText) {
+      return products.map((product) => {
+        const record = buildRecord({
+          source: {
+            ...source,
+            destinationType: "app",
+            appName: "ふるいちアプリ",
+            fallbackUrl: source.url,
+            instructions: "ふるいちアプリ内の抽選案内から応募してください。",
+          },
+          product,
+          applyText: schedule.applyText,
+          resultText: schedule.resultText,
+          purchaseText: schedule.purchaseText,
+          html,
+          collectedAt,
+          actionUrlOverride: source.url,
+          shopOverride: detectedShop,
+          typeOverride: "店舗",
+          areaOverride: source.area || "全国",
+        });
+        record.memo = "ふるいち公式ページでアプリ抽選を確認しました。";
+        record.collectionMode = "official-app-notice";
+        return record;
+      });
+    }
+  }
+
+  return [];
+}
+
 function parseGeneric(source, html, collectedAt) {
   const text = htmlToText(html);
   if (!source.keywords?.every((word) => text.includes(word))) return [];
@@ -423,5 +698,7 @@ export function parseSourceDocument(source, html, collectedAt = new Date().toISO
   if (source.parser === "hobby-search") return parseHobbySearch(source, html, collectedAt);
   if (source.parser === "listing-intelligence-v1") return parseListingIntelligence(source, html, collectedAt);
   if (source.parser === "geo-lottery") return parseGeoLottery(source, html, collectedAt);
+  if (source.parser === "hobby-station-news") return parseHobbyStationNews(source, html, collectedAt);
+  if (source.parser === "furuichi-news") return parseFuruichiNews(source, html, collectedAt);
   return parseGeneric(source, html, collectedAt);
 }

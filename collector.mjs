@@ -56,6 +56,23 @@ async function fetchHtml(source) {
   }
 }
 
+function applyCatalogPurchaseStart(candidate, catalogProduct) {
+  if (candidate.purchaseStartPolicy !== "catalog-release" || !catalogProduct?.releaseDate) return candidate;
+  const context = `${candidate.product || ""}\n${candidate.memo || ""}\n${candidate.rawApplyText || ""}`;
+  if (/再販|再販売|キャンセル分|追加販売/.test(context)) return candidate;
+  const releaseDate = String(catalogProduct.releaseDate || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate)) return candidate;
+  const resultDate = candidate.resultStartDate || candidate.applyEndDate || "";
+  const purchaseEnd = candidate.purchaseEndDate || "";
+  if (resultDate && releaseDate < resultDate) return candidate;
+  if (purchaseEnd && releaseDate > purchaseEnd) return candidate;
+  candidate.purchaseStartDate = releaseDate;
+  candidate.purchaseStartTime = "";
+  candidate.memo = [candidate.memo, `購入開始は商品カタログの発売日 ${releaseDate.replaceAll("-", "/")} を使用`]
+    .filter(Boolean).join("\n");
+  return candidate;
+}
+
 async function run() {
   const startedAt = new Date().toISOString();
   const registry = await readJson(SOURCES_PATH, { sources: [] });
@@ -194,12 +211,15 @@ async function run() {
     }
 
     const intelligence = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence" || candidate.sourceKind === "x";
+    const officialNotice = Boolean(candidate.noticeOnly && (candidate.officialAccount || candidate.officialNotice));
 
-    if (intelligence && candidate.url) {
+    if (intelligence && candidate.url && !officialNotice) {
       const verification = await verifyDestination(candidate, async ({ url }) => fetchHtml({ url }), { blockedDestinationDomains });
       candidate.destinationVerified = verification.ok;
       candidate.destinationHost = verification.host;
       candidate.destinationVerificationReason = verification.reason;
+    } else if (officialNotice) {
+      candidate.destinationVerified = true;
     } else if (!intelligence) {
       candidate.destinationVerified = candidate.url ? true : false;
     }
@@ -208,7 +228,9 @@ async function run() {
     if (gate.catalogProduct) {
       candidate.product = gate.catalogProduct.name;
       candidate.productCatalogId = gate.catalogProduct.id;
+      applyCatalogPurchaseStart(candidate, gate.catalogProduct);
       catalogMatchedCount += 1;
+      gate = evaluateCandidate(candidate, productCatalog, new Date(startedAt), { blockedDestinationDomains });
     }
     if (gate.checks.directDestination && gate.checks.destinationVerified) directVerifiedCount += 1;
 
@@ -258,10 +280,10 @@ async function run() {
     catalogMatchedCount,
     autoCollectedCount,
     multiProductExpandedCount,
-    rule: "catalog+deadline+direct-destination",
+    rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.18.0",
+    collectorVersion: "1.19.0",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
@@ -273,6 +295,10 @@ async function run() {
     failedSourceCount: sourceResults.filter((result) => !result.ok).length,
     autoCollectedCount,
     multiProductExpandedCount,
+    xCollectorStatus: xResult.meta?.status || "not_configured",
+    xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
+    xPostCount: Number(xResult.meta?.postCount || 0),
+    xItemCount: Number(xResult.meta?.itemCount || 0),
     quality,
   };
 

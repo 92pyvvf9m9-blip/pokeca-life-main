@@ -1,7 +1,7 @@
 {
   "name": "pokeca-life",
   "private": true,
-  "version": "1.15.3",
+  "version": "1.19.0",
   "type": "module",
   "scripts": {
     "test": "node --test collector/tests/*.test.mjs",

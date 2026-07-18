@@ -32,8 +32,7 @@ function keyFor(item) {
 }
 function quality(item) {
   let score = Number(item.confidence || 0);
-  if (item.sourceKind === "history") score -= 0.2;
-  else if (item.sourceKind !== "x" && item.sourceType !== "X") score += 0.3;
+  if (item.sourceKind !== "x" && item.sourceType !== "X") score += 0.3;
   if (actionHost(item)) score += 0.15;
   if (item.applyEndDate) score += 0.1;
   if (item.resultStartDate) score += 0.05;
@@ -81,12 +80,15 @@ export function sanitizeForPublic(item) {
     "rawResultText",
     "xAuthor",
     "xPostId",
+    "officialAccount",
+    "productCandidates",
+    "purchaseStartPolicy",
   ];
   for (const key of privateKeys) delete output[key];
 
   try {
     const host = output.url ? new URL(output.url).hostname : "";
-    if (/x\.com$|twitter\.com$/.test(host)) output.url = "";
+    if (/x\.com$|twitter\.com$/.test(host) && !output.noticeOnly) output.url = "";
   } catch {
     output.url = "";
   }

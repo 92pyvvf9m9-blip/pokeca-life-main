@@ -1,7 +1,5 @@
 import fs from "node:fs/promises";
 import { parseXPost } from "./x-parser.mjs";
-import { buildStoreIndex } from "./location.mjs";
-import { isLivePocketUrl, parseLivePocketPage } from "./livepocket-parser.mjs";
 
 const API_BASE = "https://api.x.com/2/tweets/search/recent";
 
@@ -13,25 +11,12 @@ async function readJson(path, fallback) {
   }
 }
 
-function normalizedAccounts(accounts = []) {
-  const map = new Map();
-  for (const raw of accounts) {
-    const account = typeof raw === "string" ? { username: raw } : raw || {};
-    const username = String(account.username || "").replace(/^@/, "").trim();
-    if (!username) continue;
-    map.set(username.toLowerCase(), { ...account, username });
-  }
-  return [...map.values()];
-}
-
 function accountQueries(accounts = []) {
   const batches = [];
   for (let i = 0; i < accounts.length; i += 6) {
     const group = accounts.slice(i, i + 6);
     const fromClause = group.map((account) => `from:${account.username}`).join(" OR ");
-    batches.push(
-      `(${fromClause}) (ポケカ OR ポケモンカード OR 拡張パック OR ハイクラスパック OR スタートデッキ OR MEGA OR LivePocket OR ライブポケット) (抽選 OR 招待リクエスト OR 応募 OR 予約 OR 受付 OR 申込 OR エントリー) -is:retweet lang:ja`
-    );
+    batches.push(`(${fromClause}) (ポケカ OR ポケモンカード) (抽選 OR 招待リクエスト OR 応募 OR 予約) -is:retweet lang:ja`);
   }
   return batches;
 }
@@ -65,80 +50,25 @@ async function searchRecentPosts(query, bearerToken) {
   }
 }
 
-async function fetchDestinationHtml(url) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20_000);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; PokecaLifeCollector/1.15; +https://github.com/)",
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "ja,en;q=0.5",
-      },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return { html: await response.text(), finalUrl: response.url || url };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-function prefer(value, fallback) {
-  return value == null || value === "" ? fallback : value;
-}
-
-function mergeDestinationDetails(item, page) {
-  if (!page?.ok) return item;
-  const genericShop = /LivePocket掲載店舗|X情報/.test(page.shop || "");
-  return {
-    ...item,
-    shop: genericShop ? item.shop : prefer(page.shop, item.shop),
-    product: prefer(page.product, item.product),
-    type: prefer(page.type, item.type),
-    area: prefer(page.area, item.area),
-    url: prefer(page.url, item.url),
-    applyStartDate: prefer(page.applyStartDate, item.applyStartDate),
-    applyStartTime: prefer(page.applyStartTime, item.applyStartTime),
-    applyEndDate: prefer(page.applyEndDate, item.applyEndDate),
-    applyEndTime: prefer(page.applyEndTime, item.applyEndTime),
-    resultStartDate: prefer(page.resultStartDate, item.resultStartDate),
-    resultStartTime: prefer(page.resultStartTime, item.resultStartTime),
-    resultEndDate: prefer(page.resultEndDate, item.resultEndDate),
-    resultEndTime: prefer(page.resultEndTime, item.resultEndTime),
-    purchaseStartDate: prefer(page.purchaseStartDate, item.purchaseStartDate),
-    purchaseStartTime: prefer(page.purchaseStartTime, item.purchaseStartTime),
-    purchaseEndDate: prefer(page.purchaseEndDate, item.purchaseEndDate),
-    purchaseEndTime: prefer(page.purchaseEndTime, item.purchaseEndTime),
-    rawApplyText: prefer(page.rawApplyText, item.rawApplyText),
-    rawResultText: prefer(page.rawResultText, item.rawResultText),
-    confidence: Number(Math.min(0.99, Number(item.confidence || 0) + 0.12).toFixed(2)),
-    verified: true,
-  };
-}
-
-export async function collectXLotteryCandidates({
-  configPath,
-  bearerToken,
-  privateAccountsJson = "",
-  storeMasterPath = "",
-  maxDestinationPages = 50,
-}) {
-  const config = await readJson(configPath, { queries: [], accounts: [] });
-  const storeMaster = storeMasterPath ? await readJson(storeMasterPath, { stores: [] }) : { stores: [] };
-  const storeIndex = buildStoreIndex(storeMaster);
-
+export async function collectXLotteryCandidates({ configPath, bearerToken, privateAccountsJson = "" }) {
+  const config = await readJson(configPath, { queries: [], accounts: [], officialAccounts: [] });
   let privateAccounts = [];
-  try {
-    const parsed = JSON.parse(privateAccountsJson || "[]");
-    if (Array.isArray(parsed)) privateAccounts = parsed;
-  } catch {
-    // Invalid optional secret: continue with the private config bundle.
+  try { const parsed = JSON.parse(privateAccountsJson || "[]"); if (Array.isArray(parsed)) privateAccounts = parsed; } catch {}
+  const officialAccounts = (config.officialAccounts || []).map((account) =>
+    typeof account === "string" ? { username: account, official: true } : { ...account, official: true }
+  );
+  const accounts = [...(config.accounts || []), ...officialAccounts, ...privateAccounts];
+  const knownAccounts = new Set(accounts.map((account) => String(account.username || account || "").toLowerCase()));
+  const accountMetadata = new Map();
+  for (const account of accounts) {
+    const normalized = typeof account === "string" ? { username: account } : account;
+    const username = String(normalized.username || "").toLowerCase();
+    if (!username) continue;
+    accountMetadata.set(username, {
+      ...normalized,
+      official: Boolean(normalized.official || officialAccounts.some((item) => String(item.username || "").toLowerCase() === username)),
+    });
   }
-
-  const accounts = normalizedAccounts([...(config.accounts || []), ...privateAccounts]);
-  const knownAccounts = new Set(accounts.map((account) => account.username.toLowerCase()));
 
   if (!bearerToken) {
     return {
@@ -146,15 +76,19 @@ export async function collectXLotteryCandidates({
       meta: {
         status: "not_configured",
         accountCount: knownAccounts.size,
+        officialAccountCount: officialAccounts.length,
         queryCount: 0,
         postCount: 0,
         itemCount: 0,
-        destinationPageCount: 0,
       },
     };
   }
 
-  const queries = [...new Set([...(config.queries || []), ...accountQueries(accounts)].map((value) => String(value || "").trim()).filter(Boolean))];
+  const queries = [
+    ...(config.queries || []),
+    ...accountQueries(accounts.map((account) => typeof account === "string" ? { username: account } : account)),
+  ];
+
   const posts = new Map();
   const users = new Map();
   let failedQueries = 0;
@@ -162,53 +96,34 @@ export async function collectXLotteryCandidates({
   for (const query of queries) {
     try {
       const payload = await searchRecentPosts(query, bearerToken);
-      for (const user of payload?.includes?.users || []) users.set(String(user.id), user);
-      for (const post of payload?.data || []) posts.set(String(post.id), post);
+      for (const user of payload?.includes?.users || []) {
+        users.set(String(user.id), user);
+      }
+      for (const post of payload?.data || []) {
+        posts.set(String(post.id), post);
+      }
     } catch (error) {
       failedQueries += 1;
       console.error("X query failed", error);
     }
+
     await new Promise((resolve) => setTimeout(resolve, 600));
   }
 
-  const baseItems = [];
+  const items = [];
   for (const post of posts.values()) {
     const user = users.get(String(post.author_id)) || {};
-    const item = parseXPost(post, user, knownAccounts, { storeIndex });
-    if (item) baseItems.push(item);
-  }
-
-  const destinationCache = new Map();
-  let destinationPageCount = 0;
-  let destinationSuccessCount = 0;
-  const items = [];
-
-  for (const item of baseItems) {
-    if (!isLivePocketUrl(item.url) || destinationPageCount >= maxDestinationPages) {
-      items.push(item);
-      continue;
-    }
-
-    destinationPageCount += 1;
-    try {
-      let payload = destinationCache.get(item.url);
-      if (!payload) {
-        payload = await fetchDestinationHtml(item.url);
-        destinationCache.set(item.url, payload);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-      const page = parseLivePocketPage({
-        html: payload.html,
-        url: payload.finalUrl,
-        fallbackShop: item.shop,
-        collectedAt: item.collectedAt,
-        storeIndex,
+    const item = parseXPost(post, user, knownAccounts, accountMetadata);
+    if (!item) continue;
+    const products = Array.isArray(item.productCandidates) && item.productCandidates.length
+      ? item.productCandidates
+      : [item.product];
+    for (const product of [...new Set(products)].slice(0, 12)) {
+      items.push({
+        ...item,
+        externalId: `${item.externalId}-${Buffer.from(String(product)).toString("base64url").slice(0, 16)}`,
+        product,
       });
-      if (page.ok) destinationSuccessCount += 1;
-      items.push(mergeDestinationDetails(item, page));
-    } catch (error) {
-      console.error(`LivePocket destination parse failed: ${item.url}`, error);
-      items.push(item);
     }
   }
 
@@ -217,12 +132,11 @@ export async function collectXLotteryCandidates({
     meta: {
       status: failedQueries === queries.length && queries.length ? "error" : "ok",
       accountCount: knownAccounts.size,
+      officialAccountCount: officialAccounts.length,
       queryCount: queries.length,
       failedQueries,
       postCount: posts.size,
       itemCount: items.length,
-      destinationPageCount,
-      destinationSuccessCount,
     },
   };
 }
