@@ -51,11 +51,24 @@ async function searchRecentPosts(query, bearerToken) {
 }
 
 export async function collectXLotteryCandidates({ configPath, bearerToken, privateAccountsJson = "" }) {
-  const config = await readJson(configPath, { queries: [], accounts: [] });
+  const config = await readJson(configPath, { queries: [], accounts: [], officialAccounts: [] });
   let privateAccounts = [];
   try { const parsed = JSON.parse(privateAccountsJson || "[]"); if (Array.isArray(parsed)) privateAccounts = parsed; } catch {}
-  const accounts = [...(config.accounts || []), ...privateAccounts];
+  const officialAccounts = (config.officialAccounts || []).map((account) =>
+    typeof account === "string" ? { username: account, official: true } : { ...account, official: true }
+  );
+  const accounts = [...(config.accounts || []), ...officialAccounts, ...privateAccounts];
   const knownAccounts = new Set(accounts.map((account) => String(account.username || account || "").toLowerCase()));
+  const accountMetadata = new Map();
+  for (const account of accounts) {
+    const normalized = typeof account === "string" ? { username: account } : account;
+    const username = String(normalized.username || "").toLowerCase();
+    if (!username) continue;
+    accountMetadata.set(username, {
+      ...normalized,
+      official: Boolean(normalized.official || officialAccounts.some((item) => String(item.username || "").toLowerCase() === username)),
+    });
+  }
 
   if (!bearerToken) {
     return {
@@ -63,6 +76,7 @@ export async function collectXLotteryCandidates({ configPath, bearerToken, priva
       meta: {
         status: "not_configured",
         accountCount: knownAccounts.size,
+        officialAccountCount: officialAccounts.length,
         queryCount: 0,
         postCount: 0,
         itemCount: 0,
@@ -99,8 +113,18 @@ export async function collectXLotteryCandidates({ configPath, bearerToken, priva
   const items = [];
   for (const post of posts.values()) {
     const user = users.get(String(post.author_id)) || {};
-    const item = parseXPost(post, user, knownAccounts);
-    if (item) items.push(item);
+    const item = parseXPost(post, user, knownAccounts, accountMetadata);
+    if (!item) continue;
+    const products = Array.isArray(item.productCandidates) && item.productCandidates.length
+      ? item.productCandidates
+      : [item.product];
+    for (const product of [...new Set(products)].slice(0, 12)) {
+      items.push({
+        ...item,
+        externalId: `${item.externalId}-${Buffer.from(String(product)).toString("base64url").slice(0, 16)}`,
+        product,
+      });
+    }
   }
 
   return {
@@ -108,6 +132,7 @@ export async function collectXLotteryCandidates({ configPath, bearerToken, priva
     meta: {
       status: failedQueries === queries.length && queries.length ? "error" : "ok",
       accountCount: knownAccounts.size,
+      officialAccountCount: officialAccounts.length,
       queryCount: queries.length,
       failedQueries,
       postCount: posts.size,

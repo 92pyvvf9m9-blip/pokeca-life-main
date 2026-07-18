@@ -94,6 +94,7 @@ export function evaluateCandidate(candidate, products = [], now = new Date(), op
 
   const host = directHost(candidate);
   if (!host) reasons.push("応募先URLがありません");
+  const officialNotice = Boolean(candidate.noticeOnly && (candidate.officialAccount || candidate.officialNotice));
   const blockedDestinationDomains = new Set(
     (options.blockedDestinationDomains || [])
       .map((value) => String(value || "").toLowerCase().replace(/^www\./, ""))
@@ -107,11 +108,11 @@ export function evaluateCandidate(candidate, products = [], now = new Date(), op
   try { discoveryHost = new URL(candidate.sourceUrl || "").hostname.replace(/^www\./, ""); } catch {}
   const aggregated = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence";
   const isDiscoveryPage = Boolean(aggregated && discoveryHost && host === discoveryHost);
-  if (isDiscoveryPage || blockedDestination || /x\.com$|twitter\.com$/.test(host)) {
+  if (!officialNotice && (isDiscoveryPage || blockedDestination || /x\.com$|twitter\.com$/.test(host))) {
     reasons.push("発見元ではなく直接応募先の確認が必要です");
   }
 
-  if (aggregated && !candidate.destinationVerified) reasons.push("直接応募先を再確認できません");
+  if (aggregated && !officialNotice && !candidate.destinationVerified) reasons.push("直接応募先を再確認できません");
   if (!aggregated && candidate.destinationVerified === false) warnings.push("応募先ページの再確認に失敗しました");
 
   const accepted = reasons.length === 0;
@@ -126,7 +127,8 @@ export function evaluateCandidate(candidate, products = [], now = new Date(), op
       productMatched: Boolean(catalogProduct),
       deadlineConfirmed: Boolean(candidate.applyEndDate && validDate(candidate.applyEndDate)),
       directDestination: Boolean(host && !isDiscoveryPage && !blockedDestination && !/x\.com$|twitter\.com$/.test(host)),
-      destinationVerified: aggregated ? Boolean(candidate.destinationVerified) : candidate.destinationVerified !== false,
+      officialNotice,
+      destinationVerified: officialNotice ? true : (aggregated ? Boolean(candidate.destinationVerified) : candidate.destinationVerified !== false),
     },
   };
 }

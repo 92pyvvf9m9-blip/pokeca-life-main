@@ -34,6 +34,7 @@ export function parseJapaneseDateToken(token, base = new Date()) {
 
 export function parseDateRange(text, base = new Date()) {
   const value = String(text || "")
+    .normalize("NFKC")
     .replace(/[（(][月火水木金土日祝曜\s]*[)）]/g, "")
     .replace(/午前/g, "")
     .replace(/午後\s*(\d{1,2})時/g, (_, h) => `${Number(h) + 12}時`);
