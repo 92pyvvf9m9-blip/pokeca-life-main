@@ -3,8 +3,8 @@
   "updatedAt": "2026-07-17T18:19:07.443Z",
   "lotteries": [
     {
-      "externalId": "manual-3258dad8-4014-46cc-857b-79156a47ab74",
-      "shop": "name: フタバ図書 TSUTAYA 海田店",
+      "externalId": "https://livepocket.jp/e/eq0_2",
+      "shop": "フタバ図書 TSUTAYA 海田店",
       "product": "ポケモンカードゲーム　MEGAスターターセットex　イーブイex",
       "type": "店舗",
       "area": "広島県",
@@ -38,10 +38,5 @@
       "updatedAt": "2026-07-17T18:19:07.160Z"
     }
   ],
-  "deleted": [
-    {
-      "key": "manual-1f79809c-2fce-43ee-98ce-0acb945ad2a6",
-      "deletedAt": "2026-07-17T18:16:07.388Z"
-    }
-  ]
+  "deleted": []
 }

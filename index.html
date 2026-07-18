@@ -2332,7 +2332,7 @@ function openDetail(item){
         : item.origin==='remote'
           ? '<button class="secondary" disabled>応募先を確認中</button>'
           : `<button class="secondary" data-detail-edit="${item.id}">応募先を追加</button>`}
-      ${item.origin==='remote'?'':`<button class="secondary full" data-detail-edit="${item.id}">編集</button><button class="danger full" data-detail-delete="${item.id}">削除</button>`}
+      ${(item.origin!=='remote'||(document.body.classList.contains('admin-mode')&&isAdminPublishedLottery(item)))?`<button class="secondary full" data-detail-edit="${item.id}">編集</button><button class="danger full" data-detail-delete="${item.id}">削除</button>`:''}
     </div>`;
   $('#detailBackdrop').classList.remove('hide');
 }
@@ -2409,10 +2409,11 @@ function saveSyncPreferences(){
   try{localStorage.setItem(SYNC_STATE_KEY,JSON.stringify(syncState))}catch(err){console.warn(err)}
 }
 function remoteIdentity(item){
+  const canonicalUrl=canonicalLotteryStateUrl(item?.url||item?.appUrl||item?.fallbackUrl||'');
   return String(
+    canonicalUrl||
     item.externalId||
     item.remoteId||
-    item.url||
     [
       item.shop||'',
       item.product||'',
@@ -4255,8 +4256,9 @@ function bindLotteryImporter(){
  if(u)u.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();importFromUrl()}};
 }
 function manualLotteryPublicItem(item){
+ const canonicalUrl=canonicalLotteryStateUrl(item?.url||'');
  return{
-  externalId:item.externalId||`manual-${item.id}`,
+  externalId:canonicalUrl||item.externalId||`manual-${item.id}`,
   manualEntry:true,adminPublished:true,sourceKind:'manual',confidence:0.99,verified:true,
   shop:item.shop||'',product:item.product||'',url:item.url||'',
   applyStartDate:item.applyStartDate||'',applyStartTime:item.applyStartTime||'',
@@ -4323,7 +4325,7 @@ async function workerPublishRequest(path,body={}){
  return payload;
 }
 function publishedManualIdentity(item){
- return String(item?.externalId||canonicalLotteryStateUrl(item?.url||'')||`${item?.shop||''}|${item?.product||''}|${item?.applyEndDate||item?.deadline||''}`);
+ return String(canonicalLotteryStateUrl(item?.url||'')||item?.externalId||`${item?.shop||''}|${item?.product||''}|${item?.applyEndDate||item?.deadline||''}`);
 }
 async function publishManualLottery(item,{remove=false}={}){
  const settings=publisherSettingsFromUI({requireKey:true});
@@ -4777,7 +4779,7 @@ $('#form').addEventListener('submit',async e=>{
         origin:existingLottery?.origin||(publishManaged?'manual-admin':'local'),
         manualEntry:Boolean(existingLottery?.manualEntry||publishManaged),
         adminPublished:Boolean(existingLottery?.adminPublished||publishManaged),
-        externalId:existingLottery?.externalId||`manual-${id}`,
+        externalId:canonicalLotteryStateUrl(o.url||'')||existingLottery?.externalId||`manual-${id}`,
         collectedAt:existingLottery?.collectedAt||existingLottery?.createdAt||nowIso,
         updatedAt:nowIso,
         createdAt:existingLottery?.createdAt||nowIso

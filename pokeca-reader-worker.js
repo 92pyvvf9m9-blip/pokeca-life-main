@@ -433,13 +433,27 @@ function cleanShort(value, max = 300) {
   return cleanLine(value).slice(0, max);
 }
 
+function cleanManualShop(value) {
+  return cleanShort(value, 120)
+    .replace(/^name\s*[:：]\s*/i, '')
+    .replace(/^店舗名\s*[:：]\s*/i, '')
+    .trim();
+}
+
+function cleanManualProduct(value) {
+  return cleanShort(value, 180)
+    .replace(/^商品名\s*[:：]\s*/i, '')
+    .replace(/^[・･\-—–\s]+/, '')
+    .trim();
+}
+
 function normalizeManualLottery(input) {
   const now = new Date().toISOString();
   const item = input && typeof input === 'object' ? input : {};
   const normalized = {
     externalId: cleanShort(item.externalId || item.remoteId || '', 160),
-    shop: cleanShort(item.shop, 120),
-    product: cleanShort(item.product, 180),
+    shop: cleanManualShop(item.shop),
+    product: cleanManualProduct(item.product),
     type: item.type === '通販' ? '通販' : '店舗',
     area: cleanShort(item.area || '全国', 20) || '全国',
     status: 'open',
@@ -472,8 +486,11 @@ function normalizeManualLottery(input) {
     updatedAt: now,
   };
 
-  if (!normalized.externalId) {
-    normalized.externalId = normalized.url || `${normalized.shop}|${normalized.product}|${normalized.applyEndDate}`;
+  // URL付き抽選はURLを唯一の公開キーにする。商品名や店舗名が変わっても別抽選を上書きしない。
+  if (normalized.url) {
+    normalized.externalId = normalized.url;
+  } else if (!normalized.externalId) {
+    normalized.externalId = `${normalized.shop}|${normalized.product}|${normalized.applyEndDate}`;
   }
   if (!normalized.shop) throw new Error('店舗名がありません');
   if (!normalized.product) throw new Error('商品名がありません');
@@ -485,8 +502,8 @@ function normalizeManualLottery(input) {
 
 function manualIdentity(item) {
   return String(
-    item?.externalId ||
     normalizeHttpsUrl(item?.url || '') ||
+    item?.externalId ||
     `${item?.shop || ''}|${item?.product || ''}|${item?.applyEndDate || item?.deadline || ''}`
   );
 }
@@ -683,7 +700,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.1.1',
+          version: '1.1.2',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
