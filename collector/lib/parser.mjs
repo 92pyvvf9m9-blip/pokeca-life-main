@@ -9,6 +9,11 @@ const STOP_LABELS = [
   "当選発表",
   "結果発表",
   "購入期間",
+  "購入期限",
+  "受取期間",
+  "受取期限",
+  "引取期間",
+  "引取期限",
   "販売期間",
   "注意事項",
   "応募条件",
@@ -32,6 +37,14 @@ function isPokemonCard(value = "") {
   return /ポケモンカード|ポケカ|MEGA|拡張パック|ハイクラスパック|スタートデッキ|スペシャルセット|プレミアムデッキ/i.test(value);
 }
 
+function normalizedLabelLine(value = "") {
+  return String(value).replace(/^[\s【\[［(（]+/, "").trim();
+}
+function startsWithStopLabel(value = "") {
+  const normalized = normalizedLabelLine(value);
+  return STOP_LABELS.some((label) => normalized.startsWith(label));
+}
+
 function productLinesAfterLabel(lines, labelPattern) {
   const index = lines.findIndex((line) => labelPattern.test(line));
   if (index < 0) return [];
@@ -41,7 +54,7 @@ function productLinesAfterLabel(lines, labelPattern) {
 
   for (let i = index + 1; i < Math.min(lines.length, index + 15); i += 1) {
     const line = lines[i].trim();
-    if (STOP_LABELS.some((label) => line.startsWith(label))) break;
+    if (startsWithStopLabel(line)) break;
     if (line.length > 2 && isPokemonCard(line)) products.push(line);
   }
 
@@ -54,7 +67,7 @@ function labelText(lines, labels) {
 
   const output = [lines[index]];
   for (let i = index + 1; i < Math.min(lines.length, index + 4); i += 1) {
-    if (STOP_LABELS.some((label) => lines[i].startsWith(label))) break;
+    if (startsWithStopLabel(lines[i])) break;
     output.push(lines[i]);
   }
   return output.join(" ");
@@ -196,6 +209,134 @@ function quotedProductCandidates(text = "") {
       return `${prefix} ${value}`;
     }));
   }
+  return [];
+}
+
+function livePocketTitle(html = "") {
+  const meta = String(html).match(/<meta[^>]+(?:property|name)=["']og:title["'][^>]+content=["']([^"']+)["']/i)?.[1] || "";
+  const tag = String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "";
+  return htmlToText(meta || tag);
+}
+
+const PREFECTURES = [
+  "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
+  "茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
+  "新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県",
+  "静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県",
+  "奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県",
+  "徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県",
+  "熊本県","大分県","宮崎県","鹿児島県","沖縄県",
+];
+
+function inferLivePocketArea(lines, fallback = "全国") {
+  if (fallback && fallback !== "全国") return fallback;
+  const locationLine = lines.find((line) => PREFECTURES.some((prefecture) => line.includes(prefecture)));
+  return PREFECTURES.find((prefecture) => locationLine?.includes(prefecture))
+    || PREFECTURES.find((prefecture) => lines.some((line) => line.includes(prefecture)))
+    || fallback
+    || "全国";
+}
+
+function inferLivePocketShop(lines, title, fallback = "") {
+  const text = [title, ...lines.slice(0, 120)].join("\n");
+  const patterns = [
+    /フタバ図書\s*TSUTAYA[^\n（）()]{1,45}店/i,
+    /フタバ図書[^\n（）()]{1,45}店/i,
+    /ホビーステーション[^\n（）()]{0,35}店/i,
+    /(?:ふるいち|古本市場)[^\n（）()]{0,40}店/i,
+    /TSUTAYA[^\n（）()]{1,45}店/i,
+    /GIRAFULL(?:\([^)]*\))?[^\n（）()]{0,35}店/i,
+    /カードボックス[^\n（）()]{0,35}店/i,
+    /フルコンプ[^\n（）()]{0,35}店/i,
+    /カードラボ[^\n（）()]{0,35}店/i,
+    /トレカ[^\n（）()]{0,35}店/i,
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern)?.[0]?.replace(/\s+/g, " ").trim();
+    if (match) return match;
+  }
+
+  const bracket = title.match(/[【\[]([^】\]]{2,45}(?:店|センター))[】\]]/)?.[1];
+  if (bracket) return bracket.trim();
+
+  const locationCandidate = lines.find((line) =>
+    /店(?:\s*[（(][^）)]*(?:都|道|府|県)[）)])?$/.test(line)
+    && line.length >= 4
+    && line.length <= 80
+    && !/営業時間|販売店|対象店舗|お問い合わせ/.test(line)
+  );
+  return locationCandidate?.replace(/\s*[（(][^）)]*(?:都|道|府|県)[）)]\s*$/, "").trim()
+    || fallback
+    || "LivePocket";
+}
+
+function cleanLivePocketProduct(value = "") {
+  return normalizePokemonProductName(value)
+    .replace(/&/g, "＆")
+    .replace(/\s*(?:抽選販売|抽選受付|抽選予約販売|購入権応募受付|抽選販売のお知らせ).*$/i, "")
+    .replace(/^\s*[【\[][^】\]]*(?:店|センター)[】\]]\s*/, "")
+    .trim();
+}
+
+function livePocketProduct(lines, html) {
+  const title = livePocketTitle(html);
+  const titleCandidates = [title, ...lines.slice(0, 50)]
+    .map(cleanLivePocketProduct)
+    .filter((value) => isPokemonCard(value) && value.length >= 4 && value.length <= 180);
+  return titleCandidates.sort((a, b) => {
+    const score = (value) =>
+      (/拡張パック|強化拡張パック|ハイクラスパック|スターターセット|スタートデッキ|スペシャルセット/i.test(value) ? 20 : 0)
+      + (/「[^」]+」|『[^』]+』/.test(value) ? 5 : 0)
+      - (/抽選|応募|受付|お知らせ/.test(value) ? 8 : 0)
+      + Math.min(value.length, 120) / 100;
+    return score(b) - score(a);
+  })[0] || "";
+}
+
+function parseLivePocket(source, html, collectedAt) {
+  const text = htmlToText(html);
+  if (!/ポケモンカード|ポケカ|拡張パック|ハイクラスパック|スタートデッキ|スターターセット|MEGA/i.test(text)) return [];
+  if (!/抽選|応募|申込|受付/.test(text)) return [];
+
+  const lines = normalizeLines(text);
+  const product = livePocketProduct(lines, html);
+  if (!product) return [];
+
+  const applyText = labelText(lines, ["受付日時", "受付期間", "申込期間", "応募期間", "抽選受付期間", "販売期間", "受付終了", "申込締切"])
+    || lines.find((line) => /受付.*(?:まで|終了|締切)|申込.*(?:まで|終了|締切)|応募.*(?:まで|終了|締切)/.test(line))
+    || "";
+  const resultText = labelText(lines, ["結果発表予定日", "抽選結果発表日時", "抽選結果", "当選発表", "結果発表", "当選通知"]);
+  const purchaseText = labelText(lines, ["購入期間", "購入期限", "支払期限", "入金期限", "受取期間", "受取期限", "引取期間", "引取期限"]);
+
+  const title = livePocketTitle(html);
+  const fallbackShop = source.shop || (source.name === "LivePocket公開抽選" ? "" : source.name);
+  const shop = inferLivePocketShop(lines, title, fallbackShop);
+  const area = inferLivePocketArea(lines, source.area || "全国");
+  const record = buildRecord({
+    source,
+    product,
+    applyText,
+    resultText,
+    purchaseText,
+    html,
+    collectedAt,
+    actionUrlOverride: source.url,
+    shopOverride: shop,
+    typeOverride: source.type || "店舗",
+    areaOverride: area,
+  });
+  repairPublishedYear(record);
+  record.sourceType = "LivePocket";
+  record.sourceKind = source.sourceKind || "web";
+  record.destinationType = "direct";
+  record.collectionMode = source.discoveryParentUrl ? "livepocket-public-search" : "livepocket-direct";
+  if (/営業時間終了まで/.test(purchaseText)) {
+    record.memo = "購入期限は営業時間終了までです。店舗の営業時間を応募ページで確認してください。";
+  }
+  return [record];
+}
+
+function parseLivePocketSearch() {
   return [];
 }
 
@@ -693,6 +834,8 @@ function parseGeneric(source, html, collectedAt) {
 }
 
 export function parseSourceDocument(source, html, collectedAt = new Date().toISOString()) {
+  if (source.parser === "livepocket") return parseLivePocket(source, html, collectedAt);
+  if (source.parser === "livepocket-search") return parseLivePocketSearch(source, html, collectedAt);
   if (source.parser === "amiami") return parseAmiAmi(source, html, collectedAt);
   if (source.parser === "rakuten-books") return parseRakutenBooks(source, html, collectedAt);
   if (source.parser === "hobby-search") return parseHobbySearch(source, html, collectedAt);
