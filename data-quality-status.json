@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-18T18:15:25.208Z",
+  "updatedAt": "2026-07-18T20:27:00.494Z",
   "qualityVersion": 2,
-  "candidateCount": 109,
-  "publishedCount": 88,
-  "reviewCount": 21,
+  "candidateCount": 84,
+  "publishedCount": 77,
+  "reviewCount": 7,
   "rejectedCount": 0,
-  "directVerifiedCount": 74,
-  "catalogMatchedCount": 109,
-  "autoCollectedCount": 50,
+  "directVerifiedCount": 59,
+  "catalogMatchedCount": 84,
+  "autoCollectedCount": 21,
   "multiProductExpandedCount": 9,
   "rule": "catalog+deadline+direct-destination-or-official-store-notice"
 }
