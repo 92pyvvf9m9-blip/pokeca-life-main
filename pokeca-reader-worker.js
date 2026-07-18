@@ -260,7 +260,7 @@ export function resolveEventHeading(html, targetUrl = '') {
     if (/抽選|予約販売|販売/.test(cleaned)) score += 20;
     if (/【[^】]*店】|\[[^\]]*店\]/.test(cleaned)) score += 15;
     if (/\.\.\.|…/.test(cleaned)) score -= 90;
-    candidates.push({ value: cleaned, score, source, exactTarget, product: extractProductCore(cleaned) });
+    candidates.push({ value: cleaned, score, source, exactTarget, product: extractProductCore(cleaned), order: candidates.length });
   };
 
   targetJsonTitleCandidates(html, targetUrl).forEach(item => push(item.value, item.score, 'target-json', true));
@@ -272,7 +272,16 @@ export function resolveEventHeading(html, targetUrl = '') {
   push(metaContent(html, 'twitter:title', 'name'), 590, 'twitter:title');
   push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 540, 'title');
 
-  const sorted = candidates.sort((a, b) => b.score - a.score || b.value.length - a.value.length);
+  const sourcePriority = { 'target-json': 0, 'main-h1': 1, 'og:title': 2, 'twitter:title': 3, h1: 4, title: 5 };
+  const sorted = candidates.sort((a, b) => {
+    if (a.exactTarget !== b.exactTarget) return a.exactTarget ? -1 : 1;
+    const sourceDiff = (sourcePriority[a.source] ?? 9) - (sourcePriority[b.source] ?? 9);
+    if (sourceDiff) return sourceDiff;
+    if (a.exactTarget && a.score !== b.score) return b.score - a.score;
+    // Within the same page region, the first heading is the current event;
+    // lower headings are commonly related or recommended events.
+    return a.order - b.order;
+  });
   const exact = sorted.filter(item => item.exactTarget);
   const authoritative = exact.length ? exact : sorted.filter(item => ['main-h1', 'h1', 'og:title', 'twitter:title', 'title'].includes(item.source));
   const distinct = new Map();
@@ -282,13 +291,17 @@ export function resolveEventHeading(html, targetUrl = '') {
   }
 
   const winner = (exact[0] || sorted[0]);
-  const ambiguous = !exact.length && distinct.size > 1;
-  const confidence = winner ? (winner.exactTarget ? 1 : ambiguous ? 0.45 : winner.source === 'main-h1' ? 0.98 : winner.source === 'h1' ? 0.96 : 0.9) : 0;
+  // LivePocket may repeat related products in metadata or lower sections of the same page.
+  // A difference between those strings is not grounds to reject the page: the requested URL
+  // remains the record identity, and the highest-priority page heading is the event title.
+  const hasAlternatives = !exact.length && distinct.size > 1;
+  const confidence = winner ? (winner.exactTarget ? 1 : winner.source === 'main-h1' ? 0.98 : winner.source === 'h1' ? 0.96 : 0.9) : 0;
   return {
     title: winner?.value || htmlTitle(html),
     source: winner?.source || 'fallback',
-    confidence,
-    ambiguous,
+    confidence: hasAlternatives ? Math.min(confidence, 0.9) : confidence,
+    ambiguous: false,
+    hasAlternatives,
     candidates: [...distinct.values()].slice(0, 8).map(item => ({ title: item.value, product: item.product, source: item.source })),
   };
 }
@@ -420,11 +433,14 @@ export function findProductResult(text, title = '') {
 
   const top = distinct[0];
   const second = distinct[1];
-  const ambiguous = Boolean(second && second.score >= top.score - 18);
+  const hasAlternatives = Boolean(second && second.score >= top.score - 18);
   return {
-    product: ambiguous ? '' : top.product,
-    confidence: ambiguous ? 0.35 : Math.max(0.55, Math.min(0.86, top.score / 220)),
-    ambiguous,
+    // The form is shown to the administrator before saving, so use the strongest candidate
+    // instead of discarding all fields merely because related product names also occur.
+    product: top.product,
+    confidence: hasAlternatives ? 0.68 : Math.max(0.55, Math.min(0.86, top.score / 220)),
+    ambiguous: false,
+    hasAlternatives,
     candidates: distinct.map(item => item.product),
     source: 'body-fallback',
   };
@@ -588,8 +604,8 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   if (!data.resultStartDate) missing.push('結果発表');
 
   const warnings = [];
-  if (productResult.ambiguous) warnings.push('商品名候補が複数あり、自動確定を停止しました');
-  if (context?.heading?.ambiguous) warnings.push('ページ上部のイベント名が一致しないため、自動確定を停止しました');
+  if (productResult.hasAlternatives) warnings.push('関連商品名も検出しましたが、ページ上部のイベント名を優先して反映しました');
+  if (context?.heading?.hasAlternatives) warnings.push('ページ内に別の商品名もありますが、対象URLのイベント見出しを優先しました');
   const confidence = Math.min(
     context?.heading?.confidence ?? 0.9,
     productResult.confidence || 0,
@@ -601,7 +617,7 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
     missing,
     warnings,
     confidence,
-    reviewRequired: Boolean(productResult.ambiguous || context?.heading?.ambiguous),
+    reviewRequired: false,
     evidence: {
       eventSlug: eventSlugFromUrl(url),
       titleSource: context?.heading?.source || '',
@@ -1028,17 +1044,6 @@ async function handleReader(request) {
   const parsed = parseLivePocketFromText(text, target, heading.title, { heading });
   parsed.data.url = target;
 
-  if (heading.ambiguous || parsed.reviewRequired) {
-    return jsonResponse({
-      ok: false,
-      error: 'このページには商品名候補が複数あります。誤登録を防ぐため自動入力を停止しました',
-      requestedUrl: target,
-      finalUrl,
-      identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
-      candidates: parsed.evidence?.productCandidates || heading.candidates,
-      warnings: parsed.warnings,
-    }, 422);
-  }
 
   if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
     return jsonResponse({
@@ -1085,7 +1090,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.1',
+          version: '1.4.2',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }

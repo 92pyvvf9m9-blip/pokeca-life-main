@@ -753,7 +753,7 @@ body.admin-mode .admin-only{display:block!important}
 .version-owner-trigger{user-select:none;-webkit-user-select:none}
 
 
-/* v1.16.2 URL isolation + parser ambiguity guard */
+/* v1.16.3 URL isolation + non-blocking candidate selection */
 html,body{width:100%;max-width:100%;overflow-x:clip}
 @supports not (overflow:clip){html,body{overflow-x:hidden}}
 body{overscroll-behavior-x:none}
@@ -1227,7 +1227,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.16.2</h3><p>URL別完全分離・誤登録防止</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.16.3</h3><p>URL別完全分離・候補名の自動選択</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -4301,7 +4301,6 @@ async function importFromUrl(){
   if(responseUrl!==requestedUrl)throw new Error('APIの応答URLが入力URLと一致しないため、反映を停止しました');
   const expectedKey=livePocketRecordKey(requestedUrl);
   if(pg.identity?.recordKey&&pg.identity.recordKey!==expectedKey)throw new Error('抽選IDが入力URLと一致しないため、反映を停止しました');
-  if(pg.warnings?.length)throw new Error(pg.warnings.join('／'));
   const parsed=pg.parsed||parseLotteryImport(pg.text,requestedUrl,pg.title);
   clearImportedLotteryFields();
   const n=fillLotteryImport({...parsed,url:requestedUrl});
@@ -4310,7 +4309,8 @@ async function importFromUrl(){
   const missing=[];if(!parsed.shop)missing.push('店舗名');if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');
   const confidence=Number(pg.confidence||0);
   const confidenceText=confidence?` 読取確度${Math.round(confidence*100)}%。`:'';
-  setImportStatus(`${pg.method}でこのURL専用の情報を読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。'}${confidenceText}保存前に末尾の商品名を確認してください。`,missing.length?'info':'success');
+  const warningText=pg.warnings?.length?` ${pg.warnings.join('／')}。`:'';
+  setImportStatus(`${pg.method}でこのURL専用の情報を読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。'}${confidenceText}${warningText}保存前に末尾の商品名を確認してください。`,missing.length?'info':'success');
  }catch(e){
   if(requestId!==lotteryImportRequestSequence)return;
   console.warn(e);clearImportedLotteryFields();clearLotteryImportEvidence();fillLotteryImport({url:requestedUrl});
