@@ -95,13 +95,49 @@ function cleanLine(value) {
     .trim();
 }
 
+function splitSemanticLines(value) {
+  const decoded = decodeHtmlEntities(decodeEscapes(String(value || '')))
+    .replace(/\r/g, '\n')
+    // Event descriptions are often stored as one very long JSON string. Insert
+    // safe boundaries before the labels that carry lottery dates instead of
+    // discarding the entire string merely because it exceeds 1,000 characters.
+    .replace(/(?=【(?:抽選応募受付期間|抽選申込受付期間|抽選応募期間|応募受付期間|応募期間|受付期間|受付日時|抽選結果発表予定日|結果発表予定日|抽選結果発表|当選発表|結果発表|店頭購入期間|ご購入期間|購入期間|購入期限|受取期間|引取期間|注意事項)】)/g, '\n')
+    .replace(/(?=\[(?:抽選応募受付期間|抽選申込受付期間|抽選応募期間|応募受付期間|応募期間|受付期間|受付日時|抽選結果発表予定日|結果発表予定日|抽選結果発表|当選発表|結果発表|店頭購入期間|ご購入期間|購入期間|購入期限|受取期間|引取期間|注意事項)\])/g, '\n')
+    .replace(/(?=(?:抽選応募受付期間|抽選申込受付期間|抽選応募期間|応募受付期間|応募期間|受付期間|受付日時|抽選結果発表予定日|結果発表予定日|抽選結果発表|当選発表|結果発表|店頭購入期間|ご購入期間|購入期間|購入期限|受取期間|引取期間)\s*[:：])/g, '\n')
+    .replace(/([。！？])\s*/g, '$1\n');
+
+  const lines = [];
+  for (const rawLine of decoded.split(/\n+/)) {
+    const line = cleanLine(rawLine);
+    if (!line) continue;
+    if (line.length <= 1400) {
+      lines.push(line);
+      continue;
+    }
+
+    // Keep long content in overlapping chunks. The overlap prevents a label at
+    // the end of one chunk and its date at the beginning of the next from being
+    // separated. This is intentionally generic so future sites with minified
+    // JSON/React payloads are handled by the same path.
+    const chunkSize = 1200;
+    const overlap = 220;
+    for (let start = 0; start < line.length; start += chunkSize - overlap) {
+      const chunk = cleanLine(line.slice(start, start + chunkSize));
+      if (chunk) lines.push(chunk);
+      if (start + chunkSize >= line.length) break;
+    }
+  }
+  return lines;
+}
+
+function normalizeTextPreserveDuplicates(value) {
+  return splitSemanticLines(value).join('\n');
+}
+
 function normalizeText(value) {
   const seen = new Set();
-  const lines = String(value || '')
-    .replace(/\r/g, '\n')
-    .split(/\n+/)
-    .map(cleanLine)
-    .filter(line => line && line.length <= 1000)
+  const lines = normalizeTextPreserveDuplicates(value)
+    .split('\n')
     .filter(line => {
       const key = line.replace(/\s+/g, ' ');
       if (seen.has(key)) return false;
@@ -310,47 +346,140 @@ function currentEventHeading(html, targetUrl = '') {
   return resolveEventHeading(html, targetUrl).title;
 }
 
+function contextWindows(value, pattern, radius = 1800, maxWindows = 24) {
+  const source = String(value || '');
+  if (!source) return [];
+  const windows = [];
+  const seen = new Set();
+  const regex = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
+  let match;
+  while ((match = regex.exec(source)) && windows.length < maxWindows) {
+    const from = Math.max(0, match.index - radius);
+    const to = Math.min(source.length, match.index + match[0].length + radius);
+    const window = source.slice(from, to);
+    const key = window.slice(0, 240);
+    if (!seen.has(key)) {
+      seen.add(key);
+      windows.push(window);
+    }
+    if (match[0].length === 0) regex.lastIndex += 1;
+  }
+  return windows;
+}
+
+const LOTTERY_TEXT_HINT = /応募期間|応募受付|申込期間|受付期間|受付日時|応募締切|申込締切|当選発表|結果発表|結果発表予定日|抽選結果|当落発表|当選通知|購入制限|購入期間|購入期限|受取期間|受取期限|引取期間|引取期限|営業時間終了|ポケモンカード|販売元|主催者|開催店舗/gi;
+
+function collectMetaStrings(html) {
+  const values = [];
+  const pairs = [
+    ['description', 'name'],
+    ['og:description', 'property'],
+    ['twitter:description', 'name'],
+    ['event:description', 'property'],
+  ];
+  for (const [key, attr] of pairs) {
+    const value = metaContent(html, key, attr);
+    if (value) values.push(value);
+  }
+
+  // Some SPA pages put the complete event description in a data/aria attribute.
+  // Restrict this to attributes containing lottery vocabulary to avoid collecting
+  // unrelated framework state.
+  for (const match of String(html || '').matchAll(/\b(?:data-[\w:-]+|aria-label|value)\s*=\s*["']([\s\S]*?)["']/gi)) {
+    const decoded = decodeEscapes(decodeHtmlEntities(match[1]));
+    if (LOTTERY_TEXT_HINT.test(decoded)) values.push(decoded);
+    LOTTERY_TEXT_HINT.lastIndex = 0;
+  }
+  return values.join('\n');
+}
+
 function collectStructuredStrings(html) {
   const values = [];
-  const pushValue = value => {
-    if (typeof value === 'string') {
-      const cleaned = cleanLine(value);
-      if (cleaned && cleaned.length < 5000) values.push(cleaned);
-      return;
+  const seen = new Set();
+  let visitedNodes = 0;
+
+  const pushString = value => {
+    const decoded = decodeEscapes(decodeHtmlEntities(String(value || '')));
+    if (!decoded.trim()) return;
+
+    const pieces = decoded.length <= 4800
+      ? [decoded]
+      : contextWindows(decoded, LOTTERY_TEXT_HINT, 2200, 30);
+
+    // If a long string has no known label, retain the beginning and end. This
+    // captures descriptions where the site uses a new label not yet in our map.
+    if (!pieces.length && decoded.length > 4800) {
+      pieces.push(decoded.slice(0, 3000), decoded.slice(-3000));
     }
-    if (Array.isArray(value)) return value.forEach(pushValue);
-    if (value && typeof value === 'object') Object.values(value).forEach(pushValue);
+
+    for (const piece of pieces) {
+      const cleaned = cleanLine(piece);
+      if (!cleaned) continue;
+      const key = cleaned.slice(0, 500);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      values.push(cleaned);
+    }
   };
 
-  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
-    try { pushValue(JSON.parse(decodeHtmlEntities(match[1]))); } catch {}
+  const pushValue = (value, depth = 0) => {
+    if (visitedNodes++ > 30000 || depth > 20) return;
+    if (typeof value === 'string') {
+      pushString(value);
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(item => pushValue(item, depth + 1));
+      return;
+    }
+    if (value && typeof value === 'object') {
+      Object.entries(value).forEach(([key, item]) => {
+        // Keep semantic keys next to primitive values. APIs often return
+        // { label: "応募期間", value: "7/18〜7/26" }.
+        if (typeof item === 'string' || typeof item === 'number') pushString(`${key}: ${item}`);
+        pushValue(item, depth + 1);
+      });
+    }
+  };
+
+  for (const match of String(html || '').matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { pushValue(JSON.parse(decodeHtmlEntities(match[1]))); } catch { pushString(match[1]); }
   }
 
-  const nextData = html.match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i)?.[1];
+  const nextData = String(html || '').match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i)?.[1];
   if (nextData) {
-    try { pushValue(JSON.parse(decodeHtmlEntities(nextData))); } catch {}
+    try { pushValue(JSON.parse(decodeHtmlEntities(nextData))); } catch { pushString(nextData); }
   }
 
-  // New LivePocket embeds event data in JavaScript. Keep only scripts that contain useful Japanese labels.
-  for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+  // React Server Components / Next app-router payloads, Nuxt state and other
+  // minified JavaScript can contain the event description as an escaped string.
+  // Keep only context windows around lottery terms rather than slicing the first
+  // 150 kB and hoping the useful section appears early.
+  for (const match of String(html || '').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
     const decoded = decodeEscapes(decodeHtmlEntities(match[1]));
-    if (!/応募期間|応募受付|当選発表|結果発表|購入制限|購入期間|ポケモンカード|販売元|主催者/.test(decoded)) continue;
-    const readable = decoded
-      .replace(/[{}[\],]/g, '\n')
-      .replace(/(?:"|')([\w$.-]+)(?:"|')\s*:/g, '$1: ')
-      .replace(/["']/g, '')
-      .slice(0, 150000);
-    values.push(readable);
+    const windows = contextWindows(decoded, LOTTERY_TEXT_HINT, 2600, 40);
+    for (const window of windows) {
+      const readable = window
+        .replace(/[{}[\],]/g, '\n')
+        .replace(/(?:\\?"|')([\w$.-]+)(?:\\?"|')\s*:/g, '$1: ')
+        .replace(/\\?"/g, '')
+        .replace(/\\n/g, '\n');
+      pushString(readable);
+    }
   }
 
   return values.join('\n');
 }
 
 function buildReadableText(html) {
-  const withoutScripts = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
+  const source = String(html || '');
+  const withoutScripts = source.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
   const visible = stripTags(withoutScripts);
-  const structured = collectStructuredStrings(html);
-  return normalizeText(`${structured}\n${visible}`);
+  const meta = collectMetaStrings(source);
+  const structured = collectStructuredStrings(source);
+  // Ticket pages can contain repeated labels such as multiple 「受付日時」 blocks.
+  // Keep their order here; product/shop parsing still uses a deduplicated copy later.
+  return normalizeTextPreserveDuplicates(`${meta}\n${structured}\n${visible}`);
 }
 
 function compact(value) {
@@ -508,33 +637,264 @@ function section(text, labels, nextLabels) {
   return cleanLine(match?.[1] || '');
 }
 
+const APPLY_DATE_LABELS = [
+  '抽選応募受付期間', '抽選申込受付期間', '抽選申込期間', '抽選応募期間', '抽選受付期間',
+  '抽選販売受付期間', '応募受付期間', '申込受付期間', 'お申し込み期間', 'エントリー受付期間',
+  '応募申込期間', '応募期間', '申込期間', '受付期間', '申込受付日時', '受付日時', '応募受付',
+  '応募締め切り', '応募締切日時', '応募締切日', '応募締切', '申込締切日時', '申込締切日', '申込締切',
+];
+const RESULT_DATE_LABELS = [
+  '抽選結果発表予定日', '結果発表予定日', '抽選結果発表日時', '抽選結果発表日',
+  '抽選結果発表', '当選者発表', '当選発表日時', '当選発表日', '当選発表', '結果発表',
+  '抽選結果', '当落発表', '当落結果', '当選通知予定', '当選通知日', '当選通知',
+  '当選者への連絡', '当選連絡', '抽選発表',
+];
+const PURCHASE_DATE_LABELS = [
+  '当選商品購入期間', '当選品購入期間', '店頭購入期間', 'ご購入期間', '商品購入期間', '購入可能期間',
+  '購入受付期間', '購入・受取期間', '購入期間', '購入期限日時', '購入期限日', '購入期限',
+  '受取可能期間', '受け取り可能期間', '受取期間', '受け取り期間', '引取期間', '引き取り期間',
+  '受取期限日時', '受取期限', '引取期限日時', '引取期限', '支払期限', '決済期限', '購入制限',
+];
+const DATE_SECTION_LABELS = [...new Set([
+  ...APPLY_DATE_LABELS,
+  ...RESULT_DATE_LABELS,
+  ...PURCHASE_DATE_LABELS,
+  '注意事項', 'お問い合わせ', 'チケット販売情報', '入場方法', '料金', '料 金', '購入枚数',
+])].sort((a, b) => b.length - a.length);
+
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normalizeDateText(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .replace(/[：﹕]/g, ':')
+    .replace(/[〜～~]/g, '〜')
+    .replace(/[‐‑‒–—―]/g, '-')
+    .replace(/ /g, ' ');
+}
+
+function dateLikeCount(value) {
+  return [...normalizeDateText(value).matchAll(/(?:(?:20\d{2})\s*[年\/.\-]\s*)?\d{1,2}\s*(?:月|[\/.\-])\s*\d{1,2}\s*日?/g)].length;
+}
+
+function labeledDateSection(text, labels, mode = 'range') {
+  const lines = normalizeTextPreserveDuplicates(text).split('\n').map(cleanLine).filter(Boolean);
+  const sortedLabels = [...labels].sort((a, b) => b.length - a.length);
+  const labelPattern = sortedLabels.map(escapeRegExp).join('|');
+  const allLabelPattern = DATE_SECTION_LABELS.map(escapeRegExp).join('|');
+  const labelRegex = new RegExp(`(?:^|[【\\[〔\\s])(${labelPattern})(?:】|\\]|〕)?\\s*[:：]?\\s*`, 'i');
+  const boundaryRegex = new RegExp(`^(?:【|\\[|〔)?(?:${allLabelPattern})(?:】|\\]|〕)?\\s*[:：]?`, 'i');
+  const hardStopRegex = /^(?:受付終了|販売終了|予定販売数終了|チケット分配不可|入場方法|お問い合わせ|CONTACT|料\s*金|購入枚数|会員登録が必要)/i;
+  const candidates = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const match = line.match(labelRegex);
+    if (!match) continue;
+
+    const parts = [];
+    const sameLine = cleanLine(line.slice((match.index || 0) + match[0].length));
+    if (sameLine) parts.push(sameLine);
+
+    for (let nextIndex = index + 1; nextIndex < Math.min(lines.length, index + 7); nextIndex += 1) {
+      const nextLine = lines[nextIndex];
+      if (boundaryRegex.test(nextLine) || hardStopRegex.test(nextLine)) break;
+      parts.push(nextLine);
+      const count = dateLikeCount(parts.join(' '));
+      if ((mode === 'point' && count >= 1) || (mode === 'range' && count >= 2)) break;
+    }
+
+    const value = cleanLine(parts.join(' '));
+    const count = dateLikeCount(value);
+    if (!count) continue;
+
+    const contextLines = lines.slice(Math.max(0, index - 5), index);
+    const nearestSalesHeading = [...contextLines].reverse().find(value => /抽選販売受付|抽選受付|抽選申込|先着販売受付/.test(value)) || '';
+    let score = count * 100 + match[1].length;
+    if (mode === 'range' && count >= 2) score += 50;
+    if (/抽選販売受付|抽選受付|抽選申込/.test(nearestSalesHeading)) score += 60;
+    if (/先着販売受付/.test(nearestSalesHeading)) score -= 120;
+    if (/受付日時/.test(match[1]) && mode === 'range') score += 25;
+    if (/結果発表予定日/.test(match[1]) && mode === 'point') score += 25;
+    candidates.push({ value, score, index, label: match[1] });
+  }
+
+  return candidates.sort((a, b) => b.score - a.score || a.index - b.index)[0]?.value || '';
+}
+
+
+function semanticDateSection(text, labels, mode = 'range') {
+  const source = normalizeDateText(normalizeTextPreserveDuplicates(text));
+  const sortedLabels = [...labels].sort((a, b) => b.length - a.length);
+  const allLabels = DATE_SECTION_LABELS.map(escapeRegExp).join('|');
+  const candidates = [];
+
+  for (const label of sortedLabels) {
+    const labelRegex = new RegExp(escapeRegExp(label), 'gi');
+    let match;
+    while ((match = labelRegex.exec(source))) {
+      const afterStart = match.index + match[0].length;
+      let window = source.slice(afterStart, afterStart + 700);
+      const boundary = window.match(new RegExp(`(?:\\n|\\s{2,})(?:【|\\[|〔)?(?:${allLabels})(?:】|\\]|〕)?\\s*[:：]?`, 'i'));
+      if (boundary && boundary.index !== undefined && boundary.index > 0) window = window.slice(0, boundary.index);
+      const count = dateLikeCount(window);
+      if (!count) continue;
+
+      let score = label.length * 4 + count * 100;
+      if (mode === 'range' && count >= 2) score += 80;
+      if (mode === 'point' && count === 1) score += 45;
+      if (/締切|期限/.test(label) && mode === 'range') score += 10;
+      if (/予定/.test(window)) score += 5;
+      candidates.push({ value: cleanLine(window), score, index: match.index, label });
+      if (match[0].length === 0) labelRegex.lastIndex += 1;
+    }
+  }
+
+  return candidates.sort((a, b) => b.score - a.score || a.index - b.index)[0]?.value || '';
+}
+
+const STRUCTURED_DATE_KEYS = {
+  applyStart: [
+    'applicationStartAt','applicationStartDate','entryStartAt','entryStartDate','receptionStartAt','receptionStartDate',
+    'application_start_at','application_start_date','entry_start_at','entry_start_date','reception_start_at',
+    '応募開始日時','応募開始日','受付開始日時','受付開始日','申込開始日時','申込開始日',
+  ],
+  applyEnd: [
+    'applicationEndAt','applicationEndDate','entryEndAt','entryEndDate','receptionEndAt','receptionEndDate','deadlineAt',
+    'application_end_at','application_end_date','entry_end_at','entry_end_date','reception_end_at','deadline_at',
+    '応募終了日時','応募終了日','応募締切日時','応募締切日','受付終了日時','受付終了日','申込終了日時','申込終了日',
+  ],
+  result: [
+    'lotteryResultAt','lotteryResultDate','resultAnnouncementAt','winnerAnnouncementAt','announceAt','announcementAt',
+    'lottery_result_at','result_announcement_at','winner_announcement_at','announce_at','announcement_at',
+    '抽選結果発表日時','抽選結果発表日','当選発表日時','当選発表日','結果発表日時','結果発表日',
+  ],
+  purchaseStart: [
+    'purchaseStartAt','purchaseStartDate','pickupStartAt','pickupStartDate','redemptionStartAt','redemptionStartDate',
+    'purchase_start_at','purchase_start_date','pickup_start_at','pickup_start_date','redemption_start_at',
+    '購入開始日時','購入開始日','受取開始日時','受取開始日','引取開始日時','引取開始日',
+  ],
+  purchaseEnd: [
+    'purchaseEndAt','purchaseEndDate','pickupEndAt','pickupEndDate','redemptionEndAt','redemptionEndDate','paymentDeadlineAt',
+    'purchase_end_at','purchase_end_date','pickup_end_at','pickup_end_date','redemption_end_at','payment_deadline_at',
+    '購入終了日時','購入終了日','購入期限日時','購入期限日','受取終了日時','受取終了日','受取期限日時','受取期限日',
+  ],
+  eventStart: ['eventStartAt','eventStartDate','startDate','start_at','start_date','開催開始日時','開催開始日'],
+  eventEnd: ['eventEndAt','eventEndDate','endDate','end_at','end_date','開催終了日時','開催終了日'],
+};
+
+function structuredDateValue(text, keys, base = new Date()) {
+  const source = normalizeDateText(normalizeTextPreserveDuplicates(text));
+  const candidates = [];
+  for (const key of keys) {
+    const regex = new RegExp(`(?:^|\\n|[,{\\s])${escapeRegExp(key)}\\s*[:=：]\\s*["']?([^\\n,}]{4,120})`, 'gi');
+    let match;
+    while ((match = regex.exec(source))) {
+      const token = dateTokens(match[1], base)[0];
+      if (token) candidates.push({ token, index: match.index, key });
+      if (match[0].length === 0) regex.lastIndex += 1;
+    }
+  }
+  return candidates.sort((a, b) => a.index - b.index)[0]?.token || null;
+}
+
+function structuredDateFacts(text, base = new Date()) {
+  const applyStart = structuredDateValue(text, STRUCTURED_DATE_KEYS.applyStart, base);
+  const applyEnd = structuredDateValue(text, STRUCTURED_DATE_KEYS.applyEnd, applyStart?.date || base);
+  const result = structuredDateValue(text, STRUCTURED_DATE_KEYS.result, applyEnd?.date || applyStart?.date || base);
+  const purchaseStart = structuredDateValue(text, STRUCTURED_DATE_KEYS.purchaseStart, result?.date || applyEnd?.date || base);
+  const purchaseEnd = structuredDateValue(text, STRUCTURED_DATE_KEYS.purchaseEnd, purchaseStart?.date || result?.date || base);
+  const eventStart = structuredDateValue(text, STRUCTURED_DATE_KEYS.eventStart, base);
+  const eventEnd = structuredDateValue(text, STRUCTURED_DATE_KEYS.eventEnd, eventStart?.date || base);
+  return { applyStart, applyEnd, result, purchaseStart, purchaseEnd, eventStart, eventEnd };
+}
+
+function explicitReferenceDate(text) {
+  const source = normalizeDateText(text);
+  const match = source.match(/(20\d{2})\s*[年\/.\-]\s*(\d{1,2})\s*(?:月|[\/.\-])\s*(\d{1,2})\s*日?/);
+  if (!match) return new Date();
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  return validCalendarDate(year, month, day)
+    ? new Date(Date.UTC(year, month - 1, day, 12))
+    : new Date();
+}
+
 function pad2(value) { return String(value).padStart(2, '0'); }
 
-function dateTokens(value) {
-  const source = String(value || '').replace(/[：﹕]/g, ':').replace(/[〜～]/g, '〜');
+function referenceDate(value) {
+  if (value instanceof Date && Number.isFinite(value.getTime())) return value;
+  const iso = String(value || '').match(/^(20\d{2})-(\d{2})-(\d{2})$/);
+  if (iso) return new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]), 12));
+  const parsed = new Date(value || Date.now());
+  return Number.isFinite(parsed.getTime()) ? parsed : new Date();
+}
+
+function validCalendarDate(year, month, day) {
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function inferYearForMonthDay(month, day, base, previous) {
+  if (previous) {
+    let year = previous.year;
+    if (month < previous.month - 6) year += 1;
+    else if (month > previous.month + 6) year -= 1;
+    return year;
+  }
+
+  const baseDate = referenceDate(base);
+  const baseYear = baseDate.getUTCFullYear();
+  const candidates = [baseYear - 1, baseYear, baseYear + 1]
+    .filter(year => validCalendarDate(year, month, day))
+    .map(year => ({
+      year,
+      distance: Math.abs(Date.UTC(year, month - 1, day, 12) - baseDate.getTime()),
+    }))
+    .sort((a, b) => a.distance - b.distance);
+  return candidates[0]?.year || baseYear;
+}
+
+function dateTokens(value, base = new Date()) {
+  const source = normalizeDateText(value);
   const result = [];
-  const pattern = /(?:(20\d{2})\s*[年\/.\-]\s*)?(\d{1,2})\s*[月\/.\-]\s*(\d{1,2})\s*日?(?:\s*[（(][^）)]*[）)])?\s*(?:(\d{1,2})\s*:\s*(\d{2}))?/g;
+  const pattern = /(?:(20\d{2})\s*[年\/.\-]\s*)?(\d{1,2})\s*(?:月|[\/.\-])\s*(\d{1,2})\s*日?(?:\s*[（(][^）)]*[）)])?(?:\s*T?\s*(?:(\d{1,2})\s*:\s*(\d{2})(?::\d{2}(?:\.\d+)?)?|(\d{1,2})\s*時\s*(?:(\d{1,2})\s*分)?))?/g;
   let match;
-  let inheritedYear = '';
+  let previous = null;
+
   while ((match = pattern.exec(source))) {
-    if (match[1]) inheritedYear = match[1];
-    const year = match[1] || inheritedYear;
-    if (!year) continue;
     const month = Number(match[2]);
     const day = Number(match[3]);
-    const hour = match[4] === undefined ? '' : Number(match[4]);
-    const minute = match[5] === undefined ? '' : Number(match[5]);
     if (month < 1 || month > 12 || day < 1 || day > 31) continue;
-    result.push({
+
+    const explicitYear = match[1] ? Number(match[1]) : 0;
+    const year = explicitYear || inferYearForMonthDay(month, day, base, previous);
+    if (!validCalendarDate(year, month, day)) continue;
+
+    const rawHour = match[4] ?? match[6];
+    const rawMinute = match[5] ?? match[7];
+    const hour = rawHour === undefined ? '' : Number(rawHour);
+    const minute = rawHour === undefined ? '' : Number(rawMinute ?? 0);
+    if (hour !== '' && (hour < 0 || hour > 23 || minute < 0 || minute > 59)) continue;
+
+    const token = {
       date: `${year}-${pad2(month)}-${pad2(day)}`,
       time: hour === '' ? '' : `${pad2(hour)}:${pad2(minute)}`,
-    });
+      year,
+      month,
+      day,
+    };
+    result.push(token);
+    previous = token;
   }
   return result;
 }
 
-function datesFromSection(value, mode = 'range') {
-  const tokens = dateTokens(value);
+function datesFromSection(value, mode = 'range', base = new Date()) {
+  const tokens = dateTokens(value, base);
   if (!tokens.length) return { startDate: '', startTime: '', endDate: '', endTime: '' };
   if (mode === 'point') {
     return { startDate: tokens[0].date, startTime: tokens[0].time, endDate: '', endTime: '' };
@@ -547,31 +907,102 @@ function datesFromSection(value, mode = 'range') {
   };
 }
 
+function pageDateRangeCandidate(text, base = new Date()) {
+  const candidates = [];
+  const lines = normalizeTextPreserveDuplicates(text).split('\n').map(cleanLine).filter(Boolean);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = normalizeDateText(lines[index]);
+    if (line.length > 360) continue;
+    if (/応募|申込|受付|当選|結果|抽選|購入|受取|引取|締切|期限/.test(line)) continue;
+    const tokens = dateTokens(line, base);
+    if (tokens.length < 2) continue;
+    let score = 0;
+    if (/20\d{2}/.test(line)) score += 80;
+    if (/日程|開催|概要|イベント/.test(lines.slice(Math.max(0, index - 3), index + 1).join(' '))) score += 30;
+    if (tokens[0].date !== tokens[tokens.length - 1].date) score += 25;
+    candidates.push({
+      start: tokens[0],
+      end: tokens[tokens.length - 1],
+      score,
+      index,
+      text: line,
+    });
+  }
+  return candidates.sort((a, b) => b.score - a.score || a.index - b.index)[0] || null;
+}
+
 export function parseLivePocketFromText(text, url = '', title = '', context = {}) {
   const normalized = normalizeText(text);
   const productResult = findProductResult(normalized, title);
   const product = productResult.product;
   const shop = findShop(normalized, title);
+  const pageBase = explicitReferenceDate(normalized);
 
-  const applyText = section(
-    normalized,
-    '応募期間|応募受付期間|応募受付|受付期間|申込期間|お申し込み期間',
-    '当選発表|結果発表|抽選結果|購入制限|購入期間|購入期限|注意事項|お問い合わせ',
-  );
-  const resultText = section(
-    normalized,
-    '当選発表|結果発表|抽選結果|当落発表|当選通知',
-    '購入制限|購入期間|購入期限|受取期間|注意事項|お問い合わせ',
-  );
-  const purchaseText = section(
-    normalized,
-    '購入制限|購入期間|購入期限|受取期間|受け取り期間|引取期間',
-    '注意事項|お問い合わせ',
-  );
+  const applyText = labeledDateSection(text, APPLY_DATE_LABELS, 'range')
+    || semanticDateSection(text, APPLY_DATE_LABELS, 'range')
+    || section(
+      normalized,
+      APPLY_DATE_LABELS.join('|'),
+      [...RESULT_DATE_LABELS, ...PURCHASE_DATE_LABELS, '注意事項', 'お問い合わせ'].join('|'),
+    );
+  const resultText = labeledDateSection(text, RESULT_DATE_LABELS, 'point')
+    || semanticDateSection(text, RESULT_DATE_LABELS, 'point')
+    || section(
+      normalized,
+      RESULT_DATE_LABELS.join('|'),
+      [...PURCHASE_DATE_LABELS, '注意事項', 'お問い合わせ'].join('|'),
+    );
+  const purchaseText = labeledDateSection(text, PURCHASE_DATE_LABELS, 'range')
+    || semanticDateSection(text, PURCHASE_DATE_LABELS, 'range')
+    || section(
+      normalized,
+      PURCHASE_DATE_LABELS.join('|'),
+      '注意事項|お問い合わせ',
+    );
 
-  const apply = datesFromSection(applyText, 'range');
-  const result = datesFromSection(resultText, 'point');
-  const purchase = datesFromSection(purchaseText, 'range');
+  const structured = structuredDateFacts(text, pageBase);
+  const applyParsed = datesFromSection(applyText, 'range', pageBase);
+  const applyStartDate = structured.applyStart?.date || applyParsed.startDate;
+  const applyStartTime = structured.applyStart?.time || applyParsed.startTime;
+  const applyEndDate = structured.applyEnd?.date || applyParsed.endDate || applyParsed.startDate;
+  const applyEndTime = structured.applyEnd?.time || applyParsed.endTime || applyParsed.startTime;
+
+  const resultBase = applyEndDate || applyStartDate || pageBase;
+  const resultParsed = datesFromSection(resultText, 'point', resultBase);
+  const resultStartDate = structured.result?.date || resultParsed.startDate;
+  const resultStartTime = structured.result?.time || resultParsed.startTime;
+
+  const purchaseBase = resultStartDate || applyEndDate || applyStartDate || pageBase;
+  const purchaseParsed = datesFromSection(purchaseText, 'range', purchaseBase);
+  let purchaseStartDate = structured.purchaseStart?.date || purchaseParsed.startDate;
+  let purchaseStartTime = structured.purchaseStart?.time || purchaseParsed.startTime;
+  let purchaseEndDate = structured.purchaseEnd?.date || purchaseParsed.endDate || purchaseParsed.startDate;
+  let purchaseEndTime = structured.purchaseEnd?.time || purchaseParsed.endTime || purchaseParsed.startTime;
+
+  // Retail lottery pages sometimes state only "購入期限 8/2" in the detail
+  // while the page overview / JSON-LD contains the complete 7/31〜8/2 event
+  // window. Use that range only when its end date agrees with the stated
+  // purchase deadline; this prevents ordinary ticket-event dates from being
+  // mistaken for a purchase period.
+  const pageRange = pageDateRangeCandidate(text, pageBase);
+  const eventStart = structured.eventStart || pageRange?.start || null;
+  const eventEnd = structured.eventEnd || pageRange?.end || null;
+  const retailLottery = /抽選販売|抽選会のお知らせ|ポケモンカード/.test(`${title}\n${normalized}`);
+  let purchaseRangeSupplemented = false;
+  if (
+    retailLottery
+    && /購入期限|受取期限|引取期限|営業時間終了/.test(purchaseText)
+    && eventStart?.date
+    && eventEnd?.date
+    && (!purchaseEndDate || purchaseEndDate === eventEnd.date)
+  ) {
+    purchaseStartDate = purchaseStartDate && purchaseStartDate !== purchaseEndDate ? purchaseStartDate : eventStart.date;
+    purchaseStartTime = purchaseStartTime && purchaseStartDate !== eventStart.date ? purchaseStartTime : (eventStart.time || '');
+    purchaseEndDate = purchaseEndDate || eventEnd.date;
+    purchaseEndTime = purchaseEndTime || eventEnd.time || '';
+    purchaseRangeSupplemented = true;
+  }
+
   const locationSource = `${shop}\n${title}\n${normalized}`;
   const area = PREFECTURES.find(prefecture => locationSource.includes(prefecture)) || '全国';
 
@@ -579,22 +1010,22 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
     shop,
     product,
     url,
-    applyStartDate: apply.startDate,
-    applyStartTime: apply.startTime,
-    applyEndDate: apply.endDate || apply.startDate,
-    applyEndTime: apply.endTime || apply.startTime,
-    resultStartDate: result.startDate,
-    resultStartTime: result.startTime,
+    applyStartDate,
+    applyStartTime,
+    applyEndDate: applyEndDate || applyStartDate,
+    applyEndTime: applyEndTime || applyStartTime,
+    resultStartDate,
+    resultStartTime,
     resultEndDate: '',
     resultEndTime: '',
     resultNote: /予定/.test(resultText) ? '予定' : '',
-    purchaseStartDate: purchase.startDate,
-    purchaseStartTime: purchase.startTime,
-    purchaseEndDate: purchase.endDate || purchase.startDate,
-    purchaseEndTime: purchase.endTime || purchase.startTime,
+    purchaseStartDate,
+    purchaseStartTime,
+    purchaseEndDate: purchaseEndDate || purchaseStartDate,
+    purchaseEndTime: purchaseEndTime || purchaseStartTime,
     type: '店舗',
     area,
-    memo: 'LivePocket専用APIから自動取得',
+    memo: 'URL本文・構造化データから自動取得',
   };
 
   const missing = [];
@@ -606,24 +1037,47 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   const warnings = [];
   if (productResult.hasAlternatives) warnings.push('関連商品名も検出しましたが、ページ上部のイベント名を優先して反映しました');
   if (context?.heading?.hasAlternatives) warnings.push('ページ内に別の商品名もありますが、対象URLのイベント見出しを優先しました');
-  const confidence = Math.min(
+  if (purchaseRangeSupplemented) warnings.push('購入期限とページ概要の日程を照合し、購入期間を補完しました');
+
+  const identityConfidence = Math.min(
     context?.heading?.confidence ?? 0.9,
     productResult.confidence || 0,
     shop ? 0.95 : 0.5,
   );
+  const fieldCoverage = [
+    Boolean(data.shop),
+    Boolean(data.product),
+    Boolean(data.applyStartDate),
+    Boolean(data.applyEndDate),
+    Boolean(data.resultStartDate),
+    Boolean(data.purchaseEndDate),
+  ].filter(Boolean).length / 6;
+  let confidence = Math.min(identityConfidence, 0.45 + fieldCoverage * 0.55);
+  if (missing.length) confidence = Math.min(confidence, 0.74);
+  confidence = Math.max(0, Math.min(1, confidence));
+
+  const dateSources = {
+    apply: structured.applyStart || structured.applyEnd ? 'structured-fields' : (applyText ? 'labeled-text' : 'none'),
+    result: structured.result ? 'structured-fields' : (resultText ? 'labeled-text' : 'none'),
+    purchase: structured.purchaseStart || structured.purchaseEnd
+      ? 'structured-fields'
+      : (purchaseRangeSupplemented ? 'deadline+event-range' : (purchaseText ? 'labeled-text' : 'none')),
+  };
 
   return {
     data,
     missing,
     warnings,
     confidence,
-    reviewRequired: false,
+    reviewRequired: missing.length > 0,
     evidence: {
       eventSlug: eventSlugFromUrl(url),
       titleSource: context?.heading?.source || '',
       titleCandidates: context?.heading?.candidates || [],
       productSource: productResult.source,
       productCandidates: productResult.candidates,
+      dateSources,
+      eventRange: eventStart && eventEnd ? { startDate: eventStart.date, endDate: eventEnd.date } : null,
     },
     sections: { applyText, resultText, purchaseText },
   };
@@ -649,6 +1103,61 @@ async function fetchLivePocket(url) {
   if (html.length < 200) throw new Error('ページ本文が空です');
   if (html.length > 4_000_000) throw new Error('ページが大きすぎます');
   return { html, finalUrl: response.url || url };
+}
+
+
+function parsedCompleteness(parsed) {
+  const data = parsed?.data || {};
+  return [
+    data.shop,
+    data.product,
+    data.applyStartDate,
+    data.applyEndDate,
+    data.resultStartDate,
+    data.purchaseEndDate,
+  ].filter(Boolean).length;
+}
+
+async function readAndParseLivePocket(target) {
+  const primary = await fetchLivePocket(target);
+  let heading = resolveEventHeading(primary.html, target);
+  let text = buildReadableText(primary.html);
+  let parsed = parseLivePocketFromText(text, target, heading.title, { heading });
+  const representations = [{ url: target, finalUrl: primary.finalUrl, kind: 'primary' }];
+
+  // The new LivePocket SPA and the legacy server-rendered representation do not
+  // always expose the same fields in their initial HTML. If mandatory dates are
+  // absent, read the official legacy host as a second representation and merge
+  // both texts before parsing. This remains first-party data and avoids relying
+  // on third-party scraping services.
+  if (!parsed.data.applyEndDate || !parsed.data.resultStartDate) {
+    const slug = eventSlugFromUrl(target);
+    const alternatives = slug ? [`https://t.livepocket.jp/e/${slug}`] : [];
+    for (const alternativeUrl of alternatives) {
+      try {
+        const alternative = await fetchLivePocket(alternativeUrl);
+        const alternativeText = buildReadableText(alternative.html);
+        if (!alternativeText || alternativeText === text) continue;
+        const alternativeHeading = resolveEventHeading(alternative.html, target);
+        const combinedText = normalizeTextPreserveDuplicates(`${text}\n${alternativeText}`);
+        const combinedHeading = heading.title ? heading : alternativeHeading;
+        const candidate = parseLivePocketFromText(combinedText, target, combinedHeading.title, { heading: combinedHeading });
+        representations.push({ url: alternativeUrl, finalUrl: alternative.finalUrl, kind: 'official-legacy' });
+        if (parsedCompleteness(candidate) >= parsedCompleteness(parsed)) {
+          parsed = candidate;
+          text = combinedText;
+          heading = combinedHeading;
+        }
+        if (parsed.data.applyEndDate && parsed.data.resultStartDate) break;
+      } catch {
+        // The legacy representation is a fallback only. A failure here must not
+        // turn a usable primary-page result into a total error.
+      }
+    }
+  }
+
+  parsed.evidence = { ...(parsed.evidence || {}), representations };
+  return { parsed, heading, text, finalUrl: primary.finalUrl, representations };
 }
 
 
@@ -938,10 +1447,7 @@ async function refreshManualLotteryFromUrl(item) {
   const base = normalizeManualLottery(item);
   if (!/^(?:https:\/\/)?(?:www\.)?livepocket\.jp\/e\//i.test(base.url)) return base;
   try {
-    const { html } = await fetchLivePocket(base.url);
-    const heading = resolveEventHeading(html, base.url);
-    const text = buildReadableText(html);
-    const parsedResult = parseLivePocketFromText(text, base.url, heading.title, { heading });
+    const { parsed: parsedResult, heading } = await readAndParseLivePocket(base.url);
     if (parsedResult.reviewRequired || parsedResult.confidence < 0.75 || !parsedResult.data.product) {
       return normalizeManualLottery({
         ...base,
@@ -1038,10 +1544,7 @@ async function handleAdminCheck(request, env) {
 async function handleReader(request) {
   const body = await request.json();
   const target = normalizeTarget(body?.url);
-  const { html, finalUrl } = await fetchLivePocket(target);
-  const heading = resolveEventHeading(html, target);
-  const text = buildReadableText(html);
-  const parsed = parseLivePocketFromText(text, target, heading.title, { heading });
+  const { parsed, heading, text, finalUrl, representations } = await readAndParseLivePocket(target);
   parsed.data.url = target;
 
 
@@ -1059,6 +1562,8 @@ async function handleReader(request) {
     title: heading.title,
     requestedUrl: target,
     finalUrl,
+    representations,
+    readerVersion: '1.4.4',
     identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
     confidence: parsed.confidence,
     warnings: parsed.warnings,
@@ -1069,8 +1574,8 @@ async function handleReader(request) {
       sourceEventSlug: eventSlugFromUrl(target),
       sourceTitle: heading.title,
       parseConfidence: parsed.confidence,
-      reviewRequired: false,
-      parseWarning: '',
+      reviewRequired: parsed.reviewRequired,
+      parseWarning: parsed.missing.length ? `未取得：${parsed.missing.join('・')}` : '',
     },
     missing: parsed.missing,
     sections: parsed.sections,
@@ -1090,7 +1595,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.2',
+          version: '1.4.4',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
