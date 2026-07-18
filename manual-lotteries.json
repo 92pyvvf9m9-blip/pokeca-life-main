@@ -1,7 +1,48 @@
 {
   "version": 5,
-  "updatedAt": "2026-07-18T08:17:27.082Z",
+  "updatedAt": "2026-07-18T08:33:54.404Z",
   "lotteries": [
+    {
+      "externalId": "https://livepocket.jp/e/rbh91",
+      "sourceKey": "url:https://livepocket.jp/e/rbh91",
+      "sourceEventSlug": "rbh91",
+      "sourceTitle": "【海田店】 ポケモンカードゲーム MEGAスターターセットex　ニャオハ＆マスカーニャex　抽選販売",
+      "parseConfidence": 0.9,
+      "reviewRequired": false,
+      "parseWarning": "ページ内に別の商品名もありますが、対象URLのイベント見出しを優先しました",
+      "shop": "フタバ図書 TSUTAYA 海田店",
+      "product": "ポケモンカードゲーム MEGAスターターセットex　ニャオハ＆マスカーニャex",
+      "type": "店舗",
+      "area": "広島県",
+      "status": "open",
+      "url": "https://livepocket.jp/e/rbh91",
+      "applyStartDate": "2026-07-17",
+      "applyStartTime": "12:00",
+      "applyEndDate": "2026-07-23",
+      "applyEndTime": "21:59",
+      "resultStartDate": "2026-07-24",
+      "resultStartTime": "12:00",
+      "resultEndDate": "",
+      "resultEndTime": "",
+      "resultNote": "予定",
+      "purchaseStartDate": "2026-07-31",
+      "purchaseStartTime": "",
+      "purchaseEndDate": "2026-08-02",
+      "purchaseEndTime": "21:59",
+      "destinationType": "direct",
+      "appName": "",
+      "appUrl": "",
+      "fallbackUrl": "",
+      "instructions": "",
+      "memo": "LivePocket専用APIから自動取得",
+      "manualEntry": true,
+      "adminPublished": true,
+      "verified": true,
+      "confidence": 0.99,
+      "collectedAt": "2026-07-18T08:33:53.953Z",
+      "createdAt": "2026-07-18T08:33:54.140Z",
+      "updatedAt": "2026-07-18T08:33:54.140Z"
+    },
     {
       "externalId": "https://livepocket.jp/e/eq0_2",
       "sourceKey": "url:https://livepocket.jp/e/eq0_2",
@@ -85,10 +126,5 @@
       "updatedAt": "2026-07-18T08:10:17.710Z"
     }
   ],
-  "deleted": [
-    {
-      "key": "https://livepocket.jp/e/rbh91",
-      "deletedAt": "2026-07-18T06:51:16.873Z"
-    }
-  ]
+  "deleted": []
 }
