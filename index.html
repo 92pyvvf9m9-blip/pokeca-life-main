@@ -834,6 +834,31 @@ nav button{height:52px;min-height:52px;max-height:52px}
   .lottery-card-main{gap:8px}
   .lottery-product-thumb.home{flex-basis:56px;width:56px;height:76px}
 }
+
+
+/* 管理者専用：スクリーンショット一括登録 */
+.batch-import-sheet{max-height:94vh}
+.batch-import-intro{margin:8px 0 14px;padding:13px 14px;border:1px solid #8b5cf655;border-radius:15px;background:#7c3aed16;color:var(--muted);font-size:12px;line-height:1.6}
+.batch-import-intro strong{display:block;color:#e9d5ff;margin-bottom:3px}
+.batch-dropzone{display:grid;place-items:center;min-height:128px;padding:20px;border:1px dashed #a855f788;border-radius:18px;background:#7c3aed10;text-align:center;cursor:pointer}
+.batch-dropzone strong{display:block;font-size:17px;color:#e9d5ff}.batch-dropzone span{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}
+.batch-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.batch-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.batch-preview{position:relative;overflow:hidden;aspect-ratio:3/4;border:1px solid var(--line);border-radius:13px;background:#ffffff08}
+.batch-preview img{width:100%;height:100%;object-fit:cover;display:block}.batch-preview span{position:absolute;right:5px;bottom:5px;padding:4px 7px;border-radius:999px;background:#000b;color:#fff;font-size:9px;font-weight:800}
+.batch-status{margin-top:12px;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:#ffffff07;color:var(--muted);font-size:12px;line-height:1.55;white-space:pre-wrap}
+.batch-status.loading{border-color:#3b82f666;background:#3b82f615;color:#93c5fd}.batch-status.success{border-color:#22c55e66;background:#22c55e12;color:#86efac}.batch-status.error{border-color:#ef444466;background:#ef444412;color:#fca5a5}
+.batch-progress{height:7px;margin-top:9px;border-radius:999px;background:#ffffff12;overflow:hidden}.batch-progress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7c3aed,#c084fc);transition:width .2s}
+.batch-url-block{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.batch-url-block h3,.batch-results-head h3{margin:0 0 5px;font-size:17px}.batch-url-block p,.batch-results-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+.batch-url-text{min-height:150px;margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.55}
+.batch-results-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:18px 0 10px}.batch-count{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#7c3aed2b;color:#d8b4fe;font-size:11px;font-weight:900}
+.batch-result-list{display:grid;gap:10px}.batch-result-card{padding:13px;border:1px solid var(--line);border-radius:16px;background:#ffffff07}.batch-result-card.ready{border-color:#22c55e55;background:#22c55e0c}.batch-result-card.review{border-color:#f59e0b66;background:#f59e0b0b}.batch-result-card.error{border-color:#ef444466;background:#ef44440c}.batch-result-card.published{border-color:#3b82f666;background:#3b82f60c}.batch-result-card.duplicate{opacity:.78}
+.batch-result-top{display:flex;align-items:flex-start;gap:10px}.batch-result-select{width:20px;height:20px;margin-top:2px;accent-color:#8b5cf6}.batch-result-main{min-width:0;flex:1}.batch-result-main strong{display:block;font-size:14px;line-height:1.4}.batch-result-main small{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45;word-break:break-all}.batch-result-badge{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:#ffffff0d;color:var(--muted);font-size:9px;font-weight:900}.batch-result-badge.ok{background:#22c55e22;color:#86efac}.batch-result-badge.warn{background:#f59e0b22;color:#fcd34d}.batch-result-badge.bad{background:#ef444422;color:#fca5a5}.batch-result-badge.info{background:#3b82f622;color:#93c5fd}
+.batch-result-product{margin-top:9px;color:#e4e4e7;font-size:12px;line-height:1.45}.batch-result-dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.batch-result-dates div{padding:7px;border-radius:10px;background:#ffffff08}.batch-result-dates span{display:block;color:var(--muted);font-size:8px}.batch-result-dates b{display:block;margin-top:3px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.batch-result-note{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.5}.batch-result-note.correction{color:#93c5fd}.batch-result-actions{display:flex;gap:8px;margin-top:10px}.batch-result-actions button{flex:1;padding:9px 10px;font-size:11px}
+.batch-publish-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:16px;padding:12px 0 calc(4px + env(safe-area-inset-bottom));background:#111116;border-top:1px solid var(--line)}
+@media(max-width:390px){.batch-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.batch-toolbar{grid-template-columns:1fr}.batch-result-dates{grid-template-columns:1fr 1fr}.batch-publish-actions{grid-template-columns:1fr}}
+
 </style></head><body><div class="app"><header><div><p class="eyebrow">POKECA LIFE</p><h1 id="title">ホーム</h1></div><button class="icon" id="bellButton" aria-label="お知らせを開く">🔔<span id="notificationBadge" class="hide">0</span></button></header><main>
 <section class="screen on" data-screen="home"><div class="hero home-module" data-home-section="tasks"><p class="muted">おかえりなさい</p><h2>今日やることを、すぐ確認。</h2><div id="tasks" class="tasks"></div></div>
 <div class="section home-module today-deadline-section" data-home-section="deadlines">
@@ -1067,6 +1092,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
   </div>
   <div class="admin-manual-entry-actions">
     <button id="openAdminLotteryImportButton" class="primary" type="button">URLを貼って公開追加</button>
+    <button id="openBatchScreenshotImportButton" class="secondary" type="button">スクショから一括公開</button>
   </div>
   <p class="admin-manual-entry-note">保存するとこの端末へ即反映し、そのまま全ユーザー向けの公開処理を開始します。JSONの書き出しやGitHubへの手動アップロードは不要です。</p>
   <details class="publish-settings-details" id="publishSettingsDetails">
@@ -1227,7 +1253,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.16.4</h3><p>URL別完全分離・候補名の自動選択</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.17.0</h3><p>管理者スクショ一括登録・OCRリンク自動補正</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1268,6 +1294,59 @@ nav button{height:52px;min-height:52px;max-height:52px}
       <button id="detailClose" class="icon">✕</button>
     </div>
     <div id="detailBody"></div>
+  </div>
+</div>
+
+
+
+<div id="batchImportBackdrop" class="backdrop hide">
+  <div class="sheet batch-import-sheet">
+    <div class="modalhead">
+      <div>
+        <p class="eyebrow">OWNER BATCH IMPORT</p>
+        <h2>スクショ一括登録</h2>
+      </div>
+      <button id="batchImportClose" class="icon" type="button">✕</button>
+    </div>
+    <div class="batch-import-intro">
+      <strong>管理者端末だけで使用</strong>
+      LINEのスクリーンショットを複数選ぶと、画像内の応募URLを端末内で文字認識します。画像そのものは保存・送信せず、抽出したURLだけを既存の読取APIへ送ります。
+    </div>
+    <label class="batch-dropzone" for="batchImageInput">
+      <div><strong>スクショを選択</strong><span>複数枚まとめて選択できます<br>最大8枚・PNG/JPEG推奨</span></div>
+      <input id="batchImageInput" type="file" accept="image/*" multiple hidden>
+    </label>
+    <div class="batch-toolbar">
+      <button id="batchPasteImageButton" class="secondary" type="button">画像を貼り付け</button>
+      <button id="batchRunOcrButton" class="primary" type="button">画像からURL抽出</button>
+    </div>
+    <div id="batchImagePreview" class="batch-preview-grid"></div>
+    <div id="batchOcrStatus" class="batch-status">スクショを選択してください。</div>
+    <div class="batch-progress"><span id="batchOcrProgress"></span></div>
+
+    <div class="batch-url-block">
+      <h3>抽出したURL</h3>
+      <p>1行に1件。OCRの誤認識は読取時にLivePocketへ照合して、0・O・9などを自動補正します。手入力で修正もできます。</p>
+      <textarea id="batchUrlText" class="field batch-url-text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://livepocket.jp/e/xxxxx"></textarea>
+      <div class="batch-toolbar">
+        <button id="batchNormalizeUrlsButton" class="secondary" type="button">URLを整理</button>
+        <button id="batchReadUrlsButton" class="primary" type="button">抽選情報を一括読取</button>
+      </div>
+      <details>
+        <summary>OCR原文を確認</summary>
+        <textarea id="batchRawOcrText" class="field batch-url-text" readonly></textarea>
+      </details>
+    </div>
+
+    <div class="batch-results-head">
+      <div><h3>読取結果</h3><p>必須項目が揃った新規リンクだけを初期選択します。</p></div>
+      <span id="batchResultCount" class="batch-count">0件</span>
+    </div>
+    <div id="batchResultList" class="batch-result-list"></div>
+    <div class="batch-publish-actions">
+      <button id="batchResetButton" class="secondary" type="button">新しく開始</button>
+      <button id="batchPublishButton" class="primary" type="button" disabled>選択分を一括公開</button>
+    </div>
   </div>
 </div>
 
@@ -4612,6 +4691,345 @@ function openAdminLotteryImport(){
  setTimeout(()=>$('#autoImportUrl')?.focus(),80);
 }
 
+
+
+const BATCH_OCR_SCRIPT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const BATCH_MAX_IMAGES=8;
+let batchOcrScriptPromise=null;
+let batchOcrWorker=null;
+let batchImportState={files:[],previewUrls:[],rawText:'',results:[],busy:false};
+
+function setBatchStatus(message='',state='',progress=null){
+ const node=$('#batchOcrStatus'),bar=$('#batchOcrProgress');
+ if(node){node.textContent=message;node.className=`batch-status ${state}`.trim()}
+ if(bar&&progress!==null)bar.style.width=`${Math.max(0,Math.min(100,Number(progress)||0))}%`;
+}
+function releaseBatchPreviewUrls(){
+ for(const url of batchImportState.previewUrls)try{URL.revokeObjectURL(url)}catch{}
+ batchImportState.previewUrls=[];
+}
+function renderBatchImagePreview(){
+ const node=$('#batchImagePreview');if(!node)return;
+ releaseBatchPreviewUrls();
+ batchImportState.previewUrls=batchImportState.files.map(file=>URL.createObjectURL(file));
+ node.innerHTML=batchImportState.previewUrls.map((url,index)=>`<div class="batch-preview"><img src="${esc(url)}" alt="スクリーンショット${index+1}"><span>${index+1}/${batchImportState.files.length}</span></div>`).join('');
+}
+function resetBatchImport(){
+ releaseBatchPreviewUrls();
+ batchImportState={files:[],previewUrls:[],rawText:'',results:[],busy:false};
+ const input=$('#batchImageInput');if(input)input.value='';
+ const urls=$('#batchUrlText');if(urls)urls.value='';
+ const raw=$('#batchRawOcrText');if(raw)raw.value='';
+ const preview=$('#batchImagePreview');if(preview)preview.innerHTML='';
+ renderBatchResults();
+ setBatchStatus('スクショを選択してください。','',0);
+}
+function openBatchImport(){
+ if(!document.body.classList.contains('admin-mode'))return toast('管理者モードで使用してください');
+ $('#batchImportBackdrop')?.classList.remove('hide');
+ renderBatchResults();
+}
+function closeBatchImport(){
+ $('#batchImportBackdrop')?.classList.add('hide');
+}
+async function loadBatchOcrLibrary(){
+ if(window.Tesseract)return window.Tesseract;
+ if(batchOcrScriptPromise)return batchOcrScriptPromise;
+ batchOcrScriptPromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src=BATCH_OCR_SCRIPT_URL;script.async=true;script.crossOrigin='anonymous';
+  script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error('OCRライブラリを読み込めませんでした'));
+  script.onerror=()=>reject(new Error('OCRライブラリの通信に失敗しました'));
+  document.head.appendChild(script);
+ }).catch(error=>{batchOcrScriptPromise=null;throw error});
+ return batchOcrScriptPromise;
+}
+async function imageFileToOcrCanvas(file){
+ const objectUrl=URL.createObjectURL(file);
+ try{
+  const image=await new Promise((resolve,reject)=>{
+   const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error(`${file.name||'画像'}を開けませんでした`));img.src=objectUrl;
+  });
+  const maxWidth=1800,maxHeight=3200;
+  const scale=Math.min(1,maxWidth/image.naturalWidth,maxHeight/image.naturalHeight);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const context=canvas.getContext('2d',{alpha:false});
+  context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  return canvas;
+ }finally{URL.revokeObjectURL(objectUrl)}
+}
+function normalizeOcrUrlLine(value=''){
+ let line=String(value||'').normalize('NFKC').trim();
+ line=line.replace(/[｜|]/g,'/').replace(/\\/g,'/');
+ line=line.replace(/https?\s*:\s*\/\s*\//i,match=>/^http:/i.test(match.replace(/\s/g,''))?'http://':'https://');
+ line=line.replace(/https?\s*\/\s*\//i,match=>/^http/i.test(match)?'http://':'https://');
+ line=line.replace(/livepocket\s*[,.]\s*jp/ig,'livepocket.jp').replace(/livepocket\s+jp/ig,'livepocket.jp');
+ line=line.replace(/\s*([:\/._?=&%-])\s*/g,'$1');
+ return line;
+}
+function extractBatchUrlsFromText(text=''){
+ const found=[];
+ const add=value=>{
+  let candidate=normalizeOcrUrlLine(value).replace(/[）)】\]」』、。,.]+$/g,'');
+  if(/^www\./i.test(candidate))candidate=`https://${candidate}`;
+  if(/^livepocket\.jp\//i.test(candidate))candidate=`https://${candidate}`;
+  if(!/^https?:\/\//i.test(candidate))return;
+  try{
+   const url=new URL(candidate);url.hash='';
+   const normalized=url.toString().replace(/\/$/,'');
+   const key=normalized.toLowerCase();
+   if(!found.some(item=>item.key===key))found.push({key,url:normalized});
+  }catch{}
+ };
+ const source=String(text||'').normalize('NFKC');
+ for(const rawLine of source.split(/\r?\n/)){
+  const line=normalizeOcrUrlLine(rawLine);
+  const liveMatches=line.match(/(?:https?:\/\/)?(?:www\.)?livepocket\.jp\/e\/[A-Za-z0-9_\- ]{3,40}/ig)||[];
+  liveMatches.forEach(add);
+  const genericMatches=line.match(/https?:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\/[A-Za-z0-9._~:/?#@!$&()*+,;=%\-]*)?/ig)||[];
+  genericMatches.forEach(add);
+ }
+ return found.map(item=>item.url);
+}
+function normalizeBatchUrlEditor(){
+ const node=$('#batchUrlText');if(!node)return[];
+ const urls=extractBatchUrlsFromText(node.value);
+ node.value=urls.join('\n');
+ setBatchStatus(urls.length?`${urls.length}件のURLを整理しました。続けて一括読取してください。`:'URLを見つけられませんでした。OCR原文またはURLを確認してください。',urls.length?'success':'error',urls.length?100:0);
+ return urls;
+}
+function ambiguousSlugAlternatives(char){
+ const map={o:['0','9'],0:['o'],9:['o','q'],l:['1','i'],i:['1','l'],1:['l','i'],s:['5'],5:['s'],b:['8'],8:['b'],g:['6'],6:['g'],z:['2'],2:['z'],q:['9','g'],'-':['_'],'_':['-']};
+ return map[char]||[];
+}
+function livePocketSlugCandidates(rawSlug=''){
+ const normalized=String(rawSlug||'').normalize('NFKC').trim();
+ const seeds=[];
+ const addSeed=value=>{value=String(value||'').replace(/[^A-Za-z0-9_-]/g,'').toLowerCase();if(value&&!seeds.includes(value))seeds.push(value)};
+ addSeed(normalized);addSeed(normalized.replace(/\s+/g,''));addSeed(normalized.replace(/\s+/g,'_'));
+ const output=[...seeds],queue=seeds.map(value=>({value,depth:0}));
+ while(queue.length&&output.length<40){
+  const current=queue.shift();if(current.depth>=2)continue;
+  for(let index=0;index<current.value.length;index++){
+   for(const replacement of ambiguousSlugAlternatives(current.value[index])){
+    const next=current.value.slice(0,index)+replacement+current.value.slice(index+1);
+    if(!output.includes(next)){output.push(next);queue.push({value:next,depth:current.depth+1});if(output.length>=40)break}
+   }
+   if(output.length>=40)break;
+  }
+ }
+ return output;
+}
+function batchUrlCandidates(inputUrl=''){
+ const normalized=normalizeOcrUrlLine(inputUrl);
+ try{
+  const url=new URL(normalized);url.hash='';
+  if(!livePocketHost(url.toString()))return[url.toString().replace(/\/$/,'')];
+  const match=url.pathname.match(/^\/e\/([^/]+)/i);if(!match)return[url.toString().replace(/\/$/,'')];
+  return livePocketSlugCandidates(match[1]).map(slug=>`${url.protocol}//${url.host}/e/${slug}`);
+ }catch{return[]}
+}
+async function terminateBatchOcrWorker(){
+ if(batchOcrWorker){try{await batchOcrWorker.terminate()}catch{}batchOcrWorker=null}
+}
+async function runBatchOcr(){
+ if(batchImportState.busy)return;
+ if(!batchImportState.files.length)return setBatchStatus('先にスクショを選択してください。','error',0);
+ batchImportState.busy=true;
+ const runButton=$('#batchRunOcrButton');if(runButton){runButton.disabled=true;runButton.textContent='文字認識中…'}
+ try{
+  const Tesseract=await loadBatchOcrLibrary();
+  setBatchStatus('OCRエンジンを準備しています。初回だけ少し時間がかかります。','loading',3);
+  batchOcrWorker=await Tesseract.createWorker('eng',1,{logger:message=>{
+   const base=Math.max(0,Math.min(1,Number(message.progress)||0));
+   if(message.status==='recognizing text')setBatchStatus('スクショ内のURLを読み取っています…','loading',Math.round(10+base*80));
+  }});
+  await batchOcrWorker.setParameters({
+   tessedit_pageseg_mode:String(Tesseract.PSM?.SPARSE_TEXT||11),
+   preserve_interword_spaces:'1',
+   tessedit_char_whitelist:'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/._-?=&%'
+  });
+  const texts=[];
+  for(let index=0;index<batchImportState.files.length;index++){
+   setBatchStatus(`画像 ${index+1}/${batchImportState.files.length} を読み取っています…`,'loading',Math.round((index/batchImportState.files.length)*90));
+   const canvas=await imageFileToOcrCanvas(batchImportState.files[index]);
+   const result=await batchOcrWorker.recognize(canvas);
+   texts.push(String(result?.data?.text||''));
+   canvas.width=1;canvas.height=1;
+  }
+  batchImportState.rawText=texts.join('\n\n--- IMAGE ---\n\n');
+  const rawNode=$('#batchRawOcrText');if(rawNode)rawNode.value=batchImportState.rawText;
+  const urls=extractBatchUrlsFromText(batchImportState.rawText);
+  const urlNode=$('#batchUrlText');if(urlNode)urlNode.value=urls.join('\n');
+  setBatchStatus(urls.length?`${batchImportState.files.length}枚から${urls.length}件のURLを抽出しました。次に「抽選情報を一括読取」を押してください。`:'URLを抽出できませんでした。OCR原文を確認するか、スクショ内の文字をLive Textでコピーして貼り付けてください。',urls.length?'success':'error',100);
+ }catch(error){
+  console.error(error);setBatchStatus(`画像の文字認識に失敗しました：${error.message||'OCRエラー'}。通信環境を確認するか、URLを直接貼り付けてください。`,'error',0);
+ }finally{
+  await terminateBatchOcrWorker();batchImportState.busy=false;
+  if(runButton){runButton.disabled=false;runButton.textContent='画像からURL抽出'}
+ }
+}
+async function setBatchImages(files){
+ const images=[...files].filter(file=>String(file.type||'').startsWith('image/')).slice(0,BATCH_MAX_IMAGES);
+ if(!images.length)return setBatchStatus('画像ファイルを選択してください。','error',0);
+ batchImportState.files=images;batchImportState.results=[];renderBatchImagePreview();renderBatchResults();
+ setBatchStatus(`${images.length}枚を選択しました。URL抽出を開始します。`,'loading',1);
+ await runBatchOcr();
+}
+async function pasteBatchImages(){
+ try{
+  if(!navigator.clipboard?.read)throw new Error('この端末では画像の直接貼り付けに対応していません');
+  const items=await navigator.clipboard.read(),files=[];
+  for(const item of items){
+   for(const type of item.types){if(type.startsWith('image/')){const blob=await item.getType(type);files.push(new File([blob],`clipboard-${Date.now()}.${type.split('/')[1]||'png'}`,{type}));break}}
+  }
+  if(!files.length)throw new Error('クリップボードに画像がありません');
+  await setBatchImages(files);
+ }catch(error){setBatchStatus(`${error.message||'画像を貼り付けできませんでした'}。「スクショを選択」から写真を選んでください。`,'error',0)}
+}
+function batchRequiredMissing(item){
+ const missing=[];
+ if(!item?.shop)missing.push('店舗名');if(!item?.product)missing.push('商品名');if(!item?.applyEndDate)missing.push('応募締切');if(!item?.resultStartDate)missing.push('結果発表');
+ return missing;
+}
+function batchExistingLottery(url=''){
+ const canonical=canonicalLotteryStateUrl(url||'');
+ return D.lotteries.find(item=>canonicalLotteryStateUrl(item?.url||item?.appUrl||item?.fallbackUrl||'')===canonical)||null;
+}
+async function resolveBatchLottery(inputUrl=''){
+ const candidates=batchUrlCandidates(inputUrl);if(!candidates.length)throw new Error('URL形式を確認してください');
+ let lastError=null;
+ for(const candidate of candidates){
+  try{
+   const page=await fetchImportPage(candidate);
+   const requested=canonicalLotteryStateUrl(candidate);
+   const response=canonicalLotteryStateUrl(page.requestedUrl||candidate);
+   if(livePocketHost(candidate)&&response&&response!==requested)throw new Error('応答URL不一致');
+   if(livePocketHost(candidate)&&page.identity?.recordKey&&page.identity.recordKey!==livePocketRecordKey(requested))throw new Error('抽選ID不一致');
+   const raw=page.parsed||parseLotteryImport(page.text,candidate,page.title);
+   const enrichment=enrichImportedPurchaseDates(raw,page);
+   return{candidate,page,parsed:enrichment.data,enrichment,corrected:canonicalLotteryStateUrl(candidate)!==canonicalLotteryStateUrl(inputUrl)};
+  }catch(error){lastError=error}
+ }
+ throw new Error(lastError?.message||'ページを読み取れませんでした');
+}
+function buildBatchLotteryItem(resolved,inputUrl=''){
+ const url=canonicalLotteryStateUrl(resolved.candidate||inputUrl),existing=batchExistingLottery(url),now=new Date().toISOString();
+ const parsed=resolved.parsed||{},missing=batchRequiredMissing(parsed),warnings=[...(resolved.page?.warnings||[])];
+ if(missing.length)warnings.push(`未取得：${missing.join('・')}`);
+ let memo=parsed.memo||'';
+ if(resolved.corrected)memo=appendImportMemo(memo,`スクショOCR URL補正：${inputUrl} → ${url}`);
+ const item={...existing,...parsed,
+  id:existing?.id||uid(),status:existing?.status||'open',url,
+  deadline:parsed.applyEndDate||'',resultDate:parsed.resultStartDate||'',purchaseDeadline:parsed.purchaseEndDate||'',
+  origin:existing?.origin||'manual-admin',manualEntry:true,adminPublished:true,
+  externalId:url,remoteId:url,sourceKey:url?`url:${url}`:'',
+  sourceEventSlug:(()=>{try{return new URL(url).pathname.match(/^\/e\/([^/]+)/)?.[1]||''}catch{return''}})(),
+  sourceTitle:String(resolved.page?.title||'').slice(0,500),
+  parseConfidence:Number(resolved.page?.confidence||0)||null,
+  reviewRequired:Boolean(missing.length||((resolved.page?.confidence||0)>0&&(resolved.page?.confidence||0)<.75)),
+  parseWarning:warnings.join('／').slice(0,500),memo,
+  collectedAt:existing?.collectedAt||existing?.createdAt||now,createdAt:existing?.createdAt||now,updatedAt:now
+ };
+ return{item,existing,missing,warnings};
+}
+function batchResultBadge(result){
+ const labels={queued:['待機',''],reading:['読取中','info'],ready:['公開可能','ok'],review:['要確認','warn'],duplicate:['登録済み','info'],error:['失敗','bad'],publishing:['公開中','info'],published:['公開済み','ok']};
+ return labels[result.state]||['確認',''];
+}
+function renderBatchResults(){
+ const list=$('#batchResultList'),count=$('#batchResultCount'),publish=$('#batchPublishButton');if(!list)return;
+ const results=batchImportState.results||[];if(count)count.textContent=`${results.length}件`;
+ if(!results.length){list.innerHTML='<div class="empty">一括読取を実行すると、ここに店舗名・商品名・日付が並びます。</div>';if(publish)publish.disabled=true;return}
+ list.innerHTML=results.map((result,index)=>{
+  const [label,badgeClass]=batchResultBadge(result),item=result.item||{};
+  const selectable=['ready','review','duplicate'].includes(result.state);
+  const checked=Boolean(result.selected&&selectable);
+  const note=result.missing?.length?`未取得：${(result.missing||[]).join('・')}`:'';
+  const correction=result.corrected?`OCR補正：${result.inputUrl} → ${result.url}`:'';
+  return`<div class="batch-result-card ${esc(result.state)}">
+   <div class="batch-result-top">
+    <input class="batch-result-select" type="checkbox" data-batch-select="${index}" ${checked?'checked':''} ${selectable?'':'disabled'}>
+    <div class="batch-result-main"><strong>${esc(item.shop||result.inputUrl||'読取中')}</strong><small>${esc(result.url||result.inputUrl||'')}</small></div>
+    <span class="batch-result-badge ${badgeClass}">${label}</span>
+   </div>
+   ${item.product?`<div class="batch-result-product">${esc(item.product)}</div>`:''}
+   ${item.shop?`<div class="batch-result-dates"><div><span>応募締切</span><b>${esc(item.applyEndDate||'未取得')}</b></div><div><span>結果発表</span><b>${esc(item.resultStartDate||'未取得')}</b></div><div><span>購入期限</span><b>${esc(item.purchaseEndDate||'未設定')}</b></div></div>`:''}
+   ${correction?`<div class="batch-result-note correction">${esc(correction)}</div>`:''}
+   ${note?`<div class="batch-result-note">${esc(note)}</div>`:''}
+   ${result.error?`<div class="batch-result-note">${esc(result.error)}</div>`:''}
+   ${item.url?`<div class="batch-result-actions"><button class="secondary" type="button" data-batch-review="${index}">個別確認</button><a class="secondary" href="${esc(item.url)}" target="_blank" rel="noopener">ページを開く</a></div>`:''}
+  </div>`;
+ }).join('');
+ list.querySelectorAll('[data-batch-select]').forEach(node=>node.onchange=()=>{const result=results[Number(node.dataset.batchSelect)];if(result)result.selected=node.checked;renderBatchResults()});
+ list.querySelectorAll('[data-batch-review]').forEach(node=>node.onclick=()=>openBatchResultForReview(Number(node.dataset.batchReview)));
+ const selected=results.filter(result=>result.selected&&['ready','review','duplicate'].includes(result.state)).length;
+ if(publish){publish.disabled=batchImportState.busy||selected===0;publish.textContent=selected?`${selected}件を一括公開`:'選択分を一括公開'}
+}
+async function readBatchUrls(){
+ if(batchImportState.busy)return;
+ const urls=normalizeBatchUrlEditor();if(!urls.length)return;
+ batchImportState.busy=true;
+ batchImportState.results=urls.map(url=>({inputUrl:url,url,state:'queued',selected:false,item:null,missing:[],corrected:false,error:''}));renderBatchResults();
+ const button=$('#batchReadUrlsButton');if(button){button.disabled=true;button.textContent='一括読取中…'}
+ setBatchStatus(`${urls.length}件をURLごとに照合しています。0・O・9などのOCR誤認識も自動補正します。`,'loading',0);
+ let cursor=0,completed=0;
+ const runner=async()=>{
+  while(true){
+   const index=cursor++;if(index>=batchImportState.results.length)return;
+   const result=batchImportState.results[index];result.state='reading';renderBatchResults();
+   try{
+    const resolved=await resolveBatchLottery(result.inputUrl),built=buildBatchLotteryItem(resolved,result.inputUrl);
+    result.url=canonicalLotteryStateUrl(resolved.candidate);result.item=built.item;result.missing=built.missing;result.corrected=resolved.corrected;
+    if(built.existing){result.state='duplicate';result.selected=false}
+    else if(built.missing.length||built.item.reviewRequired){result.state='review';result.selected=false}
+    else{result.state='ready';result.selected=true}
+   }catch(error){result.state='error';result.error=error.message||'読取に失敗しました';result.selected=false}
+   completed++;setBatchStatus(`${completed}/${urls.length}件を確認しました。`,'loading',Math.round((completed/urls.length)*100));renderBatchResults();
+  }
+ };
+ try{
+  await Promise.all(Array.from({length:Math.min(2,urls.length)},()=>runner()));
+  const ready=batchImportState.results.filter(result=>result.state==='ready').length;
+  const review=batchImportState.results.filter(result=>result.state==='review').length;
+  const duplicate=batchImportState.results.filter(result=>result.state==='duplicate').length;
+  const failed=batchImportState.results.filter(result=>result.state==='error').length;
+  setBatchStatus(`読取完了：新規${ready}件・要確認${review}件・登録済み${duplicate}件・失敗${failed}件。公開する項目を確認してください。`,failed||review?'':'success',100);
+ }finally{batchImportState.busy=false;if(button){button.disabled=false;button.textContent='抽選情報を一括読取'}renderBatchResults()}
+}
+function openBatchResultForReview(index){
+ const result=batchImportState.results[index];if(!result?.item)return;
+ closeBatchImport();go('lottery');open('lottery',result.item);enableAdminPublishMode(result.item);
+}
+async function publishBatchResults(){
+ if(batchImportState.busy)return;
+ const targets=batchImportState.results.filter(result=>result.selected&&['ready','review','duplicate'].includes(result.state)&&result.item);
+ if(!targets.length)return setBatchStatus('公開する項目を選択してください。','error',100);
+ try{publisherSettingsFromUI({requireKey:true})}catch(error){setBatchStatus(`${error.message||'公開設定を確認してください'}。設定画面の「初回だけ：公開保存設定」を開いてください。`,'error',100);return}
+ if(!confirm(`${targets.length}件を全ユーザー向けに公開しますか？`))return;
+ batchImportState.busy=true;const button=$('#batchPublishButton');if(button){button.disabled=true;button.textContent='一括公開中…'}
+ let success=0,failed=0;
+ for(let index=0;index<targets.length;index++){
+  const result=targets[index];result.state='publishing';renderBatchResults();setBatchStatus(`${index+1}/${targets.length}件を公開しています…`,'loading',Math.round((index/targets.length)*100));
+  try{
+   const current=batchExistingLottery(result.item.url),item={...current,...result.item,id:current?.id||result.item.id,updatedAt:new Date().toISOString()};
+   const existingIndex=D.lotteries.findIndex(entry=>entry.id===item.id||canonicalLotteryStateUrl(entry.url||'')===canonicalLotteryStateUrl(item.url||''));
+   if(existingIndex>=0)D.lotteries[existingIndex]=item;else D.lotteries.unshift(item);
+   repairDuplicateLotteries();
+   if(!await save())throw new Error('端末への保存に失敗しました');
+   await publishManualLottery(item);result.item=item;result.state='published';result.selected=false;success++;
+  }catch(error){result.state='error';result.error=`公開失敗：${error.message||'不明なエラー'}`;result.selected=false;failed++}
+  renderBatchResults();
+ }
+ batchImportState.busy=false;renderAllSafely();
+ syncRemoteLotteries({silent:true}).catch(console.warn);
+ setBatchStatus(`一括公開完了：成功${success}件${failed?`・失敗${failed}件`:''}。` ,failed?'error':'success',100);
+ if(button){button.disabled=false;button.textContent='選択分を一括公開'}renderBatchResults();
+ toast(success?`${success}件を公開しました`:'公開できませんでした');
+}
+
+
 function open(type,item){$('#backdrop').classList.remove('hide');clearFormMessage();$('#form').dataset.type=type;$('#form').dataset.id=item?.id||'';$('#modalTitle').textContent=(item?'編集':'追加');if(type==='lottery'){
   const advancedOpen=item?.destinationType==='app';
   $('#form').innerHTML=`<div id="formError" class="formerror hide"></div>
@@ -5364,6 +5782,30 @@ const refreshProductCatalogButton=$('#refreshProductCatalogButton');
 if(refreshProductCatalogButton)refreshProductCatalogButton.onclick=refreshProductCatalogData;
 const openAdminLotteryImportButton=$('#openAdminLotteryImportButton');
 if(openAdminLotteryImportButton)openAdminLotteryImportButton.onclick=openAdminLotteryImport;
+const openBatchScreenshotImportButton=$('#openBatchScreenshotImportButton');
+if(openBatchScreenshotImportButton)openBatchScreenshotImportButton.onclick=openBatchImport;
+const batchImportClose=$('#batchImportClose');
+if(batchImportClose)batchImportClose.onclick=closeBatchImport;
+const batchImportBackdrop=$('#batchImportBackdrop');
+if(batchImportBackdrop)batchImportBackdrop.onclick=event=>{if(event.target===batchImportBackdrop)closeBatchImport()};
+const batchImageInput=$('#batchImageInput');
+if(batchImageInput)batchImageInput.onchange=event=>setBatchImages(event.target.files||[]);
+const batchPasteImageButton=$('#batchPasteImageButton');
+if(batchPasteImageButton)batchPasteImageButton.onclick=pasteBatchImages;
+const batchRunOcrButton=$('#batchRunOcrButton');
+if(batchRunOcrButton)batchRunOcrButton.onclick=runBatchOcr;
+const batchNormalizeUrlsButton=$('#batchNormalizeUrlsButton');
+if(batchNormalizeUrlsButton)batchNormalizeUrlsButton.onclick=normalizeBatchUrlEditor;
+const batchReadUrlsButton=$('#batchReadUrlsButton');
+if(batchReadUrlsButton)batchReadUrlsButton.onclick=readBatchUrls;
+const batchPublishButton=$('#batchPublishButton');
+if(batchPublishButton)batchPublishButton.onclick=publishBatchResults;
+const batchResetButton=$('#batchResetButton');
+if(batchResetButton)batchResetButton.onclick=()=>{if(!batchImportState.busy&&confirm('現在の一括登録内容を消して、新しく開始しますか？'))resetBatchImport()};
+if(batchImportBackdrop)batchImportBackdrop.addEventListener('paste',async event=>{
+ const files=[...(event.clipboardData?.files||[])].filter(file=>String(file.type||'').startsWith('image/'));
+ if(files.length){event.preventDefault();await setBatchImages(files)}
+});
 const savePublisherSettingsButton=$('#savePublisherSettingsButton');
 if(savePublisherSettingsButton)savePublisherSettingsButton.onclick=savePublisherSettingsFromUI;
 const testPublisherSettingsButton=$('#testPublisherSettingsButton');
