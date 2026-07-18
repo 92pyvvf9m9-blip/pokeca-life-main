@@ -1703,15 +1703,25 @@ function canonicalLotteryStateUrl(value){
 }
 function lotteryUserStateKeys(item){
   if(!item)return [];
+  const url=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
+  if(url){
+    // URL付き抽選はURLだけで状態を引き継ぐ。店舗名・商品名・締切が似ていても別URLへ混ぜない。
+    const externalUrl=canonicalLotteryStateUrl(item.externalId||'');
+    const remoteUrl=canonicalLotteryStateUrl(item.remoteId||'');
+    return [...new Set([
+      `url:${url}`,
+      item.id?`id:${item.id}`:'',
+      externalUrl===url?`external:${url}`:'',
+      remoteUrl===url?`remote:${url}`:''
+    ].filter(Boolean))];
+  }
   const shop=normalizeLotteryStateKeyText(item.shop);
   const product=normalizeLotteryStateKeyText(displayLotteryProduct(item.product));
   const deadline=item.applyEndDate||item.deadline||'';
-  const url=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
   return [...new Set([
     item.id?`id:${item.id}`:'',
     item.externalId?`external:${item.externalId}`:'',
     item.remoteId?`remote:${item.remoteId}`:'',
-    url?`url:${url}`:'',
     shop&&product&&deadline?`lottery:${shop}|${product}|${deadline}`:''
   ].filter(Boolean))];
 }
@@ -2447,10 +2457,11 @@ function remoteIdentity(item){
 }
 function normalizeRemoteLottery(item){
   const now=new Date().toISOString();
+  const canonicalUrl=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
   return {
     id:item.id||uid(),
-    remoteId:remoteIdentity(item),
-    externalId:item.externalId||item.remoteId||'',
+    remoteId:canonicalUrl||remoteIdentity(item),
+    externalId:canonicalUrl||item.externalId||item.remoteId||'',
     origin:'remote',
     verified:Boolean(item.verified),
     confidence:Number(item.confidence||0),
@@ -2462,7 +2473,7 @@ function normalizeRemoteLottery(item){
     status:item.status||'open',
     type:item.type||'通販',
     area:item.area||'全国',
-    url:normalizeUrl(item.url||''),
+    url:canonicalUrl||normalizeUrl(item.url||''),
     applyStartDate:item.applyStartDate||'',
     applyStartTime:item.applyStartTime||'',
     applyEndDate:item.applyEndDate||item.deadline||'',
@@ -2491,10 +2502,13 @@ function normalizeRemoteLottery(item){
 }
 function mergeRemoteLottery(remote){
   const key=remoteIdentity(remote);
-  let existing=D.lotteries.find(x=>
-    remoteIdentity(x)===key ||
-    (remote.url&&x.url===remote.url)
-  );
+  const remoteUrl=canonicalLotteryStateUrl(remote.url||remote.appUrl||remote.fallbackUrl||'');
+  let existing=D.lotteries.find(x=>{
+    const existingUrl=canonicalLotteryStateUrl(x.url||x.appUrl||x.fallbackUrl||'');
+    if(remoteUrl)return existingUrl===remoteUrl;
+    if(existingUrl)return false;
+    return remoteIdentity(x)===key;
+  });
 
   if(!existing){
     remote.id=uid();
@@ -4219,7 +4233,7 @@ async function fetchImportApi(url){
  },30000);
  const payload=await response.json().catch(()=>null);
  if(!response.ok||!payload?.ok)throw new Error(payload?.error||`読取API HTTP ${response.status}`);
- return{parsed:payload.data||{},text:payload.text||'',title:payload.title||'',method:'専用API',missing:payload.missing||[]};
+ return{parsed:payload.data||{},text:payload.text||'',title:payload.title||'',method:'専用API',missing:payload.missing||[],requestedUrl:payload.requestedUrl||url,finalUrl:payload.finalUrl||''};
 }
 async function fetchImportPage(url){
  if(livePocketHost(url))return fetchImportApi(url);
@@ -4253,6 +4267,12 @@ async function importFromUrl(){
   const n=fillLotteryImport({...parsed,url});
   if($('#autoImportText'))$('#autoImportText').value=(pg.text||'').slice(0,50000);
   const missing=[];if(!parsed.shop)missing.push('店舗名');if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');
+  const identityNote=pg.requestedUrl&&canonicalLotteryStateUrl(pg.requestedUrl)!==canonicalLotteryStateUrl(url)?' URL応答が一致しないため保存を止めました。':'';
+  if(identityNote){
+    clearImportedLotteryFields();
+    fillLotteryImport({url});
+    throw new Error(identityNote.trim());
+  }
   setImportStatus(`${pg.method}で読み取りました。${missing.length?'未取得：'+missing.join('・')+'。':'店舗・商品・日付を自動入力しました。そのまま保存できます。'}`,missing.length?'info':'success');
  }catch(e){
   console.warn(e);

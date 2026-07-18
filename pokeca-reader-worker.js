@@ -130,7 +130,7 @@ function htmlTitle(html) {
 
 function tagTextCandidates(html, tagName) {
   const values = [];
-  const pattern = new RegExp(`<${tagName}\b[^>]*>([\s\S]*?)<\/${tagName}>`, 'gi');
+  const pattern = new RegExp(`<${tagName}\\b[^>]*>([\\s\\S]*?)<\\/${tagName}>`, 'gi');
   for (const match of String(html || '').matchAll(pattern)) {
     const value = cleanLine(stripTags(match[1]));
     if (value && value.length <= 500 && !values.includes(value)) values.push(value);
@@ -138,29 +138,146 @@ function tagTextCandidates(html, tagName) {
   return values;
 }
 
-function currentEventHeading(html) {
+function eventSlugFromUrl(value = '') {
+  try {
+    return new URL(String(value || '')).pathname.match(/^\/e\/([A-Za-z0-9_-]+)/)?.[1] || '';
+  } catch {
+    return '';
+  }
+}
+
+function normalizeComparableUrl(value = '') {
+  try {
+    const url = new URL(String(value || ''));
+    url.hash = '';
+    url.hostname = url.hostname.toLowerCase();
+    url.pathname = url.pathname.replace(/\/+$/, '');
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
+    }
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
+function isUsefulEventTitle(value) {
+  const cleaned = cleanLine(value);
+  if (!cleaned || cleaned.length < 6 || cleaned.length > 500) return false;
+  if (/イベント検索|検索結果|おすすめ|関連イベント|Language|注意事項|お問い合わせ/i.test(cleaned)) return false;
+  return /ポケモンカード|拡張パック|デッキ|スターターセット|BOX/i.test(cleaned);
+}
+
+function targetJsonTitleCandidates(html, targetUrl = '') {
+  const target = normalizeComparableUrl(targetUrl);
+  const targetPath = (() => { try { return new URL(target).pathname.replace(/\/+$/, ''); } catch { return ''; } })();
+  const slug = eventSlugFromUrl(target);
+  if (!target && !slug) return [];
+
+  const roots = [];
+  const pushJson = raw => {
+    try { roots.push(JSON.parse(decodeHtmlEntities(raw))); } catch {}
+  };
+  for (const match of String(html || '').matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) pushJson(match[1]);
+  const nextData = String(html || '').match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i)?.[1];
+  if (nextData) pushJson(nextData);
+
+  const titleKeys = /^(?:name|title|headline|eventName|event_name|eventTitle|event_title|pageTitle|page_title|ogTitle|og_title|ticketName|ticket_name)$/i;
+  const urlKeys = /(?:url|href|path|slug|code|eventId|event_id|eventCode|event_code)/i;
+  const candidates = [];
+  const seen = new Set();
+
+  const walk = (node, depth = 0) => {
+    if (!node || depth > 14) return;
+    if (Array.isArray(node)) {
+      node.forEach(value => walk(value, depth + 1));
+      return;
+    }
+    if (typeof node !== 'object') return;
+
+    let matchScore = 0;
+    for (const [key, raw] of Object.entries(node)) {
+      if (typeof raw !== 'string') continue;
+      const value = decodeEscapes(decodeHtmlEntities(raw));
+      const comparable = normalizeComparableUrl(value);
+      if (target && comparable && comparable === target) matchScore = Math.max(matchScore, 1400);
+      if (targetPath && value.includes(targetPath)) matchScore = Math.max(matchScore, 1200);
+      if (slug && urlKeys.test(key) && (value === slug || value.endsWith(`/${slug}`) || value.includes(`/e/${slug}`))) matchScore = Math.max(matchScore, 1100);
+    }
+
+    if (matchScore) {
+      for (const [key, raw] of Object.entries(node)) {
+        if (typeof raw !== 'string' || !titleKeys.test(key)) continue;
+        const value = cleanLine(decodeEscapes(decodeHtmlEntities(raw)));
+        if (!isUsefulEventTitle(value)) continue;
+        const unique = `${value}\u0000${matchScore}`;
+        if (!seen.has(unique)) {
+          seen.add(unique);
+          candidates.push({ value, score: matchScore });
+        }
+      }
+    }
+
+    Object.values(node).forEach(value => walk(value, depth + 1));
+  };
+  roots.forEach(root => walk(root));
+
+  // Some LivePocket builds embed JSON-like data in ordinary scripts. Match only titles close to this exact event slug.
+  if (slug) {
+    for (const match of String(html || '').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+      const script = decodeEscapes(decodeHtmlEntities(match[1]));
+      const positions = [];
+      let at = script.indexOf(slug);
+      while (at >= 0 && positions.length < 20) {
+        positions.push(at);
+        at = script.indexOf(slug, at + slug.length);
+      }
+      for (const pos of positions) {
+        const nearby = script.slice(Math.max(0, pos - 2500), Math.min(script.length, pos + 2500));
+        const patterns = [
+          /(?:eventName|event_name|eventTitle|event_title|title|name)\s*["']?\s*[:=]\s*["']([^"']{6,500})["']/gi,
+          /["'](?:eventName|event_name|eventTitle|event_title|title|name)["']\s*:\s*["']([^"']{6,500})["']/gi,
+        ];
+        for (const pattern of patterns) {
+          for (const titleMatch of nearby.matchAll(pattern)) {
+            const value = cleanLine(titleMatch[1]);
+            if (isUsefulEventTitle(value)) candidates.push({ value, score: 1000 - Math.min(400, Math.abs((titleMatch.index || 0) - 2500) / 4) });
+          }
+        }
+      }
+    }
+  }
+
+  return candidates.sort((a, b) => b.score - a.score || b.value.length - a.value.length);
+}
+
+function currentEventHeading(html, targetUrl = '') {
   const candidates = [];
   const push = (value, sourceScore) => {
     const cleaned = cleanLine(value);
-    if (!cleaned || cleaned.length < 6 || cleaned.length > 500) return;
+    if (!isUsefulEventTitle(cleaned)) return;
     let score = sourceScore;
     if (/ポケモンカードゲーム|ポケモンカード/.test(cleaned)) score += 120;
     if (/拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|プレミアムトレーナーボックス|スペシャルセット|デッキビルドBOX/i.test(cleaned)) score += 90;
     if (/抽選|予約販売|販売/.test(cleaned)) score += 20;
     if (/【[^】]*店】|\[[^\]]*店\]/.test(cleaned)) score += 15;
-    if (/イベント検索|検索結果|おすすめ|関連イベント|Language|注意事項/.test(cleaned)) score -= 220;
     if (/\.\.\.|…/.test(cleaned)) score -= 90;
     candidates.push({ value: cleaned, score });
   };
 
-  tagTextCandidates(html, 'h1').forEach(value => push(value, 220));
-  tagTextCandidates(html, 'h2').forEach(value => push(value, 120));
-  push(metaContent(html, 'og:title'), 180);
-  push(metaContent(html, 'twitter:title', 'name'), 170);
-  push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 130);
+  // Exact target-URL JSON data has absolute priority over unrelated recommendations on the same page.
+  targetJsonTitleCandidates(html, targetUrl).forEach(item => push(item.value, item.score));
+
+  const main = String(html || '').match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
+  tagTextCandidates(main, 'h1').forEach(value => push(value, 650));
+  tagTextCandidates(html, 'h1').forEach(value => push(value, 520));
+  push(metaContent(html, 'og:title'), 500);
+  push(metaContent(html, 'twitter:title', 'name'), 480);
+  push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 420);
+  tagTextCandidates(main, 'h2').forEach(value => push(value, 300));
+  tagTextCandidates(html, 'h2').forEach(value => push(value, 180));
 
   return candidates
-    .filter(item => /ポケモンカード|拡張パック|デッキ|スターターセット|BOX/i.test(item.value))
     .sort((a, b) => b.score - a.score || b.value.length - a.value.length)[0]?.value || htmlTitle(html);
 }
 
@@ -439,7 +556,8 @@ async function fetchLivePocket(url) {
       'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4',
       'Cache-Control': 'no-cache',
     },
-    cf: { cacheTtl: 60, cacheEverything: false },
+    cache: 'no-store',
+    cf: { cacheTtl: 0, cacheEverything: false },
   });
   if (!response.ok) throw new Error(`LivePocket取得失敗（HTTP ${response.status}）`);
   const contentType = response.headers.get('content-type') || '';
@@ -716,9 +834,9 @@ async function refreshManualLotteryFromUrl(item) {
   if (!/^(?:https:\/\/)?(?:www\.)?livepocket\.jp\/e\//i.test(base.url)) return base;
   try {
     const { html, finalUrl } = await fetchLivePocket(base.url);
-    const title = currentEventHeading(html);
+    const title = currentEventHeading(html, base.url);
     const text = buildReadableText(html);
-    const parsed = parseLivePocketFromText(text, finalUrl, title).data;
+    const parsed = parseLivePocketFromText(text, base.url, title).data;
     return normalizeManualLottery({
       ...base,
       ...Object.fromEntries(Object.entries(parsed).filter(([, value]) => value !== '' && value !== null && value !== undefined)),
@@ -795,15 +913,17 @@ async function handleReader(request) {
   const body = await request.json();
   const target = normalizeTarget(body?.url);
   const { html, finalUrl } = await fetchLivePocket(target);
-  const title = currentEventHeading(html);
+  const title = currentEventHeading(html, target);
   const text = buildReadableText(html);
-  const parsed = parseLivePocketFromText(text, finalUrl, title);
+  // The pasted URL is the record identity. Never replace it with a redirect destination.
+  const parsed = parseLivePocketFromText(text, target, title);
+  parsed.data.url = target;
 
   if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
     return jsonResponse({
       ok: false,
       error: 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした',
-      debug: { title, textPreview: text.slice(0, 1500) },
+      debug: { title, requestedUrl: target, finalUrl, textPreview: text.slice(0, 1500) },
     }, 422);
   }
 
@@ -811,6 +931,8 @@ async function handleReader(request) {
     ok: true,
     source: 'livepocket-server',
     title,
+    requestedUrl: target,
+    finalUrl,
     data: parsed.data,
     missing: parsed.missing,
     sections: parsed.sections,
@@ -830,7 +952,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.2.0',
+          version: '1.3.0',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
