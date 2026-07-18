@@ -1,8 +1,6 @@
 import crypto from "node:crypto";
 import { extractLinks, htmlToText, normalizeLines } from "./html.mjs";
 import { parseDateRange } from "./dates.mjs";
-import { inferLotteryLocation } from "./location.mjs";
-import { isLivePocketUrl, parseLivePocketPage } from "./livepocket-parser.mjs";
 
 const STOP_LABELS = [
   "応募期間",
@@ -64,7 +62,7 @@ function labelText(lines, labels) {
 
 function bestActionUrl(html, sourceUrl) {
   const links = extractLinks(html, sourceUrl);
-  const preferred = links.find((link) => /応募|抽選へ進む|エントリー|申し込/.test(link.text));
+  const preferred = links.find((link) => /応募|抽選へ進む|抽選販売専用サイト|抽選販売サイト|応募ページ|申込受付|エントリー|申し込/.test(link.text));
   return preferred?.url || sourceUrl;
 }
 
@@ -73,13 +71,6 @@ function buildRecord({ source, product, applyText, resultText, purchaseText, htm
   const result = parseDateRange(resultText);
   const purchase = parseDateRange(purchaseText);
   const actionUrl = actionUrlOverride || bestActionUrl(html, source.url);
-  const shop = shopOverride || source.name;
-  const location = inferLotteryLocation({
-    text: htmlToText(html),
-    shop,
-    fallbackArea: areaOverride || source.area || "全国",
-    fallbackType: typeOverride || source.type || "",
-  });
   const externalId = hash([
     source.id,
     product,
@@ -98,10 +89,10 @@ function buildRecord({ source, product, applyText, resultText, purchaseText, htm
 
   return {
     externalId,
-    shop,
+    shop: shopOverride || source.name,
     product: cleanProduct(product),
-    type: location.type,
-    area: location.area,
+    type: typeOverride || source.type || "通販",
+    area: areaOverride || source.area || "全国",
     status: "open",
     url: actionUrl,
     sourceUrl: source.url,
@@ -300,44 +291,116 @@ function parseListingIntelligence(source, html, collectedAt) {
   return [...unique.values()].slice(0, 150);
 }
 
-function parseLivePocketSource(source, html, collectedAt) {
-  const page = parseLivePocketPage({
-    html,
-    url: source.url,
-    fallbackShop: source.name,
-    collectedAt,
+function uniqueValues(values = []) {
+  return [...new Set(values.map((value) => cleanProduct(value)).filter((value) => value.length > 2))];
+}
+
+function geoReleaseText(text = "") {
+  const titleLike = normalizeLines(text).slice(0, 15).join(" ");
+  const match = titleLike.match(/(?:(\d{4})年)?\s*(\d{1,2})月\s*(\d{1,2})日[^\n]{0,8}発売/);
+  if (!match) return "";
+  return `${match[1] ? `${match[1]}年` : ""}${match[2]}月${match[3]}日`;
+}
+
+function extractGeoProducts(text = "") {
+  const normalized = String(text)
+    .normalize("NFKC")
+    .replace(/[\u00a0\t]+/g, " ")
+    .replace(/\s*／\s*/g, "／")
+    .replace(/\s+/g, " ");
+  const products = [];
+
+  // Starter sets are often announced as one group followed by slash-separated variants.
+  const starterGroupPattern = /ポケモンカードゲーム\s*MEGA\s*スターターセットex\s*[（(「『\[]?([^）)」』\]\n。]{3,180})/gi;
+  let starterMatch;
+  while ((starterMatch = starterGroupPattern.exec(normalized))) {
+    let variants = starterMatch[1]
+      .replace(/(?:の)?発売日当日分.*$/i, "")
+      .replace(/(?:抽選販売|抽選申込受付|について).*$/i, "")
+      .replace(/\s*3種.*$/i, "")
+      .trim();
+    const split = variants.split(/[／/]/).map((value) => value.replace(/^[\s（(「『]+|[\s）)」』]+$/g, "").trim());
+    for (const variant of split) {
+      if (!/ex/i.test(variant)) continue;
+      const cleanedVariant = variant.replace(/^スターターセットex\s*/i, "").replace(/&/g, "＆").trim();
+      if (cleanedVariant.length > 2 && cleanedVariant.length < 80) {
+        products.push(`ポケモンカードゲーム MEGA スターターセットex ${cleanedVariant}`);
+      }
+    }
+  }
+
+  // Expansion packs and deck products can be extracted individually from headings/body copy.
+  const expansionPattern = /ポケモンカードゲーム\s*MEGA\s*拡張パック\s*[「『\[]?([^」』\]\n。]{2,80})/gi;
+  let expansionMatch;
+  while ((expansionMatch = expansionPattern.exec(normalized))) {
+    const name = expansionMatch[1]
+      .replace(/[」』\]]/g, "")
+      .replace(/(?:の)?発売日当日分.*$/i, "")
+      .replace(/(?:抽選販売|抽選申込受付|について).*$/i, "")
+      .replace(/^[\s:：]+|[\s,、]+$/g, "")
+      .trim();
+    if (name.length > 1 && name.length < 70) {
+      products.push(`ポケモンカードゲーム MEGA 拡張パック ${name}`);
+    }
+  }
+
+  const deckPattern = /ポケモンカードゲーム\s*MEGA\s*(スタートデッキ[^「」『』\n。]{2,100})/gi;
+  let deckMatch;
+  while ((deckMatch = deckPattern.exec(normalized))) {
+    const name = deckMatch[1]
+      .replace(/(?:の)?再販売分.*$/i, "")
+      .replace(/(?:抽選販売|抽選申込受付|について).*$/i, "")
+      .replace(/[」』]/g, "")
+      .trim();
+    if (name.length > 3 && name.length < 90) products.push(`ポケモンカードゲーム MEGA ${name}`);
+  }
+
+  return uniqueValues(products).filter((product) => isPokemonCard(product)).slice(0, 20);
+}
+
+function parseGeoLottery(source, html, collectedAt) {
+  const text = htmlToText(html);
+  if (!/ポケモンカードゲーム|ポケモンカード|ポケカ/i.test(text) || !/抽選販売|抽選申込|応募期間/.test(text)) return [];
+
+  const lines = normalizeLines(text);
+  const products = extractGeoProducts(text);
+  if (!products.length) return [];
+
+  const applyText = labelText(lines, ["応募期間", "抽選受付期間", "受付期間"])
+    || lines.find((line) => /応募期間は/.test(line))
+    || "";
+  const resultText = labelText(lines, ["当選発表", "結果発表", "当選連絡"]);
+  const purchaseText = labelText(lines, ["購入期間", "販売期間", "受取期間", "引取期間"]);
+  const releaseText = geoReleaseText(text);
+  const actionUrl = bestActionUrl(html, source.url);
+  const isResale = /再販売|再販|キャンセル分|追加販売/.test(text);
+
+  return products.map((product) => {
+    const record = buildRecord({
+      source,
+      product,
+      applyText,
+      resultText,
+      purchaseText,
+      html,
+      collectedAt,
+      actionUrlOverride: actionUrl,
+      shopOverride: "ゲオ",
+      typeOverride: "店舗",
+      areaOverride: "全国",
+    });
+
+    if (!record.purchaseStartDate && releaseText && !isResale) {
+      const release = parseDateRange(releaseText);
+      record.purchaseStartDate = release.start?.date || "";
+      record.purchaseStartTime = release.start?.time || "";
+    }
+    record.memo = isResale
+      ? "再販抽選。購入開始日は公式告知で確認できた場合のみ表示します。"
+      : "ゲオ公式のお知らせから商品単位で自動分割しました。";
+    record.collectionMode = "official-news-multi-product";
+    return record;
   });
-  if (!page.ok) return [];
-  const record = buildRecord({
-    source,
-    product: page.product,
-    applyText: page.rawApplyText,
-    resultText: page.rawResultText,
-    purchaseText: [page.purchaseStartDate, page.purchaseEndDate].filter(Boolean).join(" ～ "),
-    html,
-    collectedAt,
-    actionUrlOverride: page.url || source.url,
-    shopOverride: page.shop || source.name,
-    typeOverride: page.type,
-    areaOverride: page.area,
-  });
-  return [{
-    ...record,
-    applyStartDate: page.applyStartDate || record.applyStartDate,
-    applyStartTime: page.applyStartTime || record.applyStartTime,
-    applyEndDate: page.applyEndDate || record.applyEndDate,
-    applyEndTime: page.applyEndTime || record.applyEndTime,
-    resultStartDate: page.resultStartDate || record.resultStartDate,
-    resultStartTime: page.resultStartTime || record.resultStartTime,
-    resultEndDate: page.resultEndDate || record.resultEndDate,
-    resultEndTime: page.resultEndTime || record.resultEndTime,
-    purchaseStartDate: page.purchaseStartDate || record.purchaseStartDate,
-    purchaseStartTime: page.purchaseStartTime || record.purchaseStartTime,
-    purchaseEndDate: page.purchaseEndDate || record.purchaseEndDate,
-    purchaseEndTime: page.purchaseEndTime || record.purchaseEndTime,
-    confidence: Number(Math.max(0.84, Number(record.confidence || 0)).toFixed(2)),
-    verified: true,
-  }];
 }
 
 function parseGeneric(source, html, collectedAt) {
@@ -355,10 +418,10 @@ function parseGeneric(source, html, collectedAt) {
 }
 
 export function parseSourceDocument(source, html, collectedAt = new Date().toISOString()) {
-  if (source.parser === "livepocket" || isLivePocketUrl(source.url)) return parseLivePocketSource(source, html, collectedAt);
   if (source.parser === "amiami") return parseAmiAmi(source, html, collectedAt);
   if (source.parser === "rakuten-books") return parseRakutenBooks(source, html, collectedAt);
   if (source.parser === "hobby-search") return parseHobbySearch(source, html, collectedAt);
   if (source.parser === "listing-intelligence-v1") return parseListingIntelligence(source, html, collectedAt);
+  if (source.parser === "geo-lottery") return parseGeoLottery(source, html, collectedAt);
   return parseGeneric(source, html, collectedAt);
 }

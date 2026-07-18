@@ -246,6 +246,8 @@ async function run() {
 
   const successCount = sourceResults.filter((result) => result.ok).length;
   const failedCount = sourceResults.length - successCount;
+  const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
+  const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
   const quality = {
     qualityVersion: 2,
     candidateCount: merged.length,
@@ -254,16 +256,23 @@ async function run() {
     rejectedCount: rejected.length,
     directVerifiedCount,
     catalogMatchedCount,
+    autoCollectedCount,
+    multiProductExpandedCount,
     rule: "catalog+deadline+direct-destination",
   };
   const meta = {
-    collectorVersion: "1.15.3",
+    collectorVersion: "1.18.0",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
     publishedCount: published.length,
     historyDays: 35,
     manualEntryCount: manualLotteries.length,
+    checkedSourceCount: enabledSources.length,
+    successfulSourceCount: sourceResults.filter((result) => result.ok && result.id !== "manual-admin").length,
+    failedSourceCount: sourceResults.filter((result) => !result.ok).length,
+    autoCollectedCount,
+    multiProductExpandedCount,
     quality,
   };
 
@@ -294,6 +303,8 @@ async function run() {
     review: reviewQueue.length,
     rejected: rejected.length,
     manualEntryCount: manualLotteries.length,
+    autoCollectedCount,
+    multiProductExpandedCount,
     checkedSourceCount: enabledSources.length + 1,
     successfulSourceCount: successCount,
     failedSourceCount: failedCount,
