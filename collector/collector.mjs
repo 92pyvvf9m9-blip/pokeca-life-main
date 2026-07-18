@@ -19,6 +19,7 @@ const FIXTURE_PATH = process.env.POKECA_FIXTURE_PATH || "";
 const X_SOURCES_PATH = process.env.POKECA_X_SOURCES_PATH || path.join(ROOT, ".private", "x-sources.json");
 const PRODUCT_CATALOG_PATH = path.join(ROOT, "product-catalog.json");
 const QUALITY_STATUS_PATH = process.env.POKECA_QUALITY_STATUS_PATH || path.join(ROOT, "data-quality-status.json");
+const MANUAL_LOTTERIES_PATH = process.env.POKECA_MANUAL_LOTTERIES_PATH || path.join(ROOT, "manual-lotteries.json");
 
 async function readJson(file, fallback) {
   try {
@@ -55,6 +56,23 @@ async function fetchHtml(source) {
   }
 }
 
+function applyCatalogPurchaseStart(candidate, catalogProduct) {
+  if (candidate.purchaseStartPolicy !== "catalog-release" || !catalogProduct?.releaseDate) return candidate;
+  const context = `${candidate.product || ""}\n${candidate.memo || ""}\n${candidate.rawApplyText || ""}`;
+  if (/再販|再販売|キャンセル分|追加販売/.test(context)) return candidate;
+  const releaseDate = String(catalogProduct.releaseDate || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate)) return candidate;
+  const resultDate = candidate.resultStartDate || candidate.applyEndDate || "";
+  const purchaseEnd = candidate.purchaseEndDate || "";
+  if (resultDate && releaseDate < resultDate) return candidate;
+  if (purchaseEnd && releaseDate > purchaseEnd) return candidate;
+  candidate.purchaseStartDate = releaseDate;
+  candidate.purchaseStartTime = "";
+  candidate.memo = [candidate.memo, `購入開始は商品カタログの発売日 ${releaseDate.replaceAll("-", "/")} を使用`]
+    .filter(Boolean).join("\n");
+  return candidate;
+}
+
 async function run() {
   const startedAt = new Date().toISOString();
   const registry = await readJson(SOURCES_PATH, { sources: [] });
@@ -65,9 +83,29 @@ async function run() {
   const previousFeed = await readJson(FEED_PATH, { lotteries: [] });
   const productCatalog = await loadProductCatalog(PRODUCT_CATALOG_PATH);
   const trustedPrevious = (previousFeed.lotteries || []).filter((item) => item.qualityVersion >= 2 && item.verified === true);
+  const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
+  const manualLotteries = (Array.isArray(manualPayload) ? manualPayload : manualPayload.lotteries || [])
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      ...item,
+      sourceKind: "manual",
+      sourceType: "Administrator manual entry",
+      manualEntry: true,
+      adminPublished: true,
+      confidence: Math.max(0.99, Number(item.confidence || 0)),
+      collectedAt: item.collectedAt || item.createdAt || startedAt,
+      updatedAt: item.updatedAt || startedAt,
+    }));
 
-  const collected = [];
-  const sourceResults = [];
+  const collected = [...manualLotteries];
+  const sourceResults = [{
+    id: "manual-admin",
+    name: "Administrator manual entries",
+    ok: true,
+    itemCount: manualLotteries.length,
+    discoveredPages: 0,
+    elapsedMs: 0,
+  }];
 
   for (const source of enabledSources) {
     const started = Date.now();
@@ -142,13 +180,46 @@ async function run() {
 
   for (const rawCandidate of merged) {
     let candidate = { ...rawCandidate };
-    const intelligence = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence" || candidate.sourceKind === "x";
 
-    if (intelligence && candidate.url) {
+    if (candidate.sourceKind === "manual" || candidate.manualEntry === true) {
+      const gate = evaluateCandidate(candidate, productCatalog, new Date(startedAt), { blockedDestinationDomains });
+      if (gate.catalogProduct) {
+        candidate.product = gate.catalogProduct.name;
+        candidate.productCatalogId = gate.catalogProduct.id;
+        catalogMatchedCount += 1;
+      }
+      const hasMinimum = Boolean(candidate.shop && candidate.product && (candidate.applyEndDate || candidate.deadline) && (candidate.resultStartDate || candidate.resultDate));
+      if (hasMinimum) {
+        published.push(sanitizeForPublic({
+          ...candidate,
+          manualEntry: true,
+          adminPublished: true,
+          verified: true,
+          qualityVersion: 2,
+          confidence: 0.99,
+          verificationChecks: { ...gate.checks, administratorApproved: true },
+        }));
+      } else {
+        reviewQueue.push({
+          ...candidate,
+          qualityVersion: 2,
+          reviewReasons: ["管理者入力の必須項目不足"],
+          reviewReason: "管理者入力の必須項目不足",
+        });
+      }
+      continue;
+    }
+
+    const intelligence = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence" || candidate.sourceKind === "x";
+    const officialNotice = Boolean(candidate.noticeOnly && (candidate.officialAccount || candidate.officialNotice));
+
+    if (intelligence && candidate.url && !officialNotice) {
       const verification = await verifyDestination(candidate, async ({ url }) => fetchHtml({ url }), { blockedDestinationDomains });
       candidate.destinationVerified = verification.ok;
       candidate.destinationHost = verification.host;
       candidate.destinationVerificationReason = verification.reason;
+    } else if (officialNotice) {
+      candidate.destinationVerified = true;
     } else if (!intelligence) {
       candidate.destinationVerified = candidate.url ? true : false;
     }
@@ -157,7 +228,9 @@ async function run() {
     if (gate.catalogProduct) {
       candidate.product = gate.catalogProduct.name;
       candidate.productCatalogId = gate.catalogProduct.id;
+      applyCatalogPurchaseStart(candidate, gate.catalogProduct);
       catalogMatchedCount += 1;
+      gate = evaluateCandidate(candidate, productCatalog, new Date(startedAt), { blockedDestinationDomains });
     }
     if (gate.checks.directDestination && gate.checks.destinationVerified) directVerifiedCount += 1;
 
@@ -195,6 +268,8 @@ async function run() {
 
   const successCount = sourceResults.filter((result) => result.ok).length;
   const failedCount = sourceResults.length - successCount;
+  const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
+  const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
   const quality = {
     qualityVersion: 2,
     candidateCount: merged.length,
@@ -203,15 +278,27 @@ async function run() {
     rejectedCount: rejected.length,
     directVerifiedCount,
     catalogMatchedCount,
-    rule: "catalog+deadline+direct-destination",
+    autoCollectedCount,
+    multiProductExpandedCount,
+    rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.14.0",
+    collectorVersion: "1.19.0",
     lastRunAt: startedAt,
     status: failedCount === 0 ? "ok" : "partial",
     reviewCount: reviewQueue.length,
     publishedCount: published.length,
     historyDays: 35,
+    manualEntryCount: manualLotteries.length,
+    checkedSourceCount: enabledSources.length,
+    successfulSourceCount: sourceResults.filter((result) => result.ok && result.id !== "manual-admin").length,
+    failedSourceCount: sourceResults.filter((result) => !result.ok).length,
+    autoCollectedCount,
+    multiProductExpandedCount,
+    xCollectorStatus: xResult.meta?.status || "not_configured",
+    xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
+    xPostCount: Number(xResult.meta?.postCount || 0),
+    xItemCount: Number(xResult.meta?.itemCount || 0),
     quality,
   };
 
@@ -241,7 +328,10 @@ async function run() {
     published: published.length,
     review: reviewQueue.length,
     rejected: rejected.length,
-    checkedSourceCount: enabledSources.length,
+    manualEntryCount: manualLotteries.length,
+    autoCollectedCount,
+    multiProductExpandedCount,
+    checkedSourceCount: enabledSources.length + 1,
     successfulSourceCount: successCount,
     failedSourceCount: failedCount,
   }, null, 2));
