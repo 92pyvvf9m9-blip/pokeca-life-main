@@ -50,7 +50,7 @@ function normalizeTarget(value) {
     if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
   }
   url.pathname = url.pathname.replace(/\/+$/, '');
-  return canonicalLivePocketEventUrl(url.toString()) || url.toString();
+  return url.toString();
 }
 
 function decodeHtmlEntities(input) {
@@ -146,21 +146,7 @@ function eventSlugFromUrl(value = '') {
   }
 }
 
-function canonicalLivePocketEventUrl(value = '') {
-  try {
-    const url = new URL(String(value || ''));
-    const host = url.hostname.toLowerCase();
-    const slug = eventSlugFromUrl(url.toString());
-    if (!slug || !/(^|\.)livepocket\.jp$/.test(host)) return '';
-    return `https://livepocket.jp/e/${slug}`;
-  } catch {
-    return '';
-  }
-}
-
 function normalizeComparableUrl(value = '') {
-  const livePocket = canonicalLivePocketEventUrl(value);
-  if (livePocket) return livePocket;
   try {
     const url = new URL(String(value || ''));
     url.hash = '';
@@ -236,22 +222,38 @@ function targetJsonTitleCandidates(html, targetUrl = '') {
   };
   roots.forEach(root => walk(root));
 
-  // Ordinary script proximity matching is intentionally disabled. A nearby related-event title must never be treated as the target event.
+  // Some LivePocket builds embed JSON-like data in ordinary scripts. Match only titles close to this exact event slug.
+  if (slug) {
+    for (const match of String(html || '').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+      const script = decodeEscapes(decodeHtmlEntities(match[1]));
+      const positions = [];
+      let at = script.indexOf(slug);
+      while (at >= 0 && positions.length < 20) {
+        positions.push(at);
+        at = script.indexOf(slug, at + slug.length);
+      }
+      for (const pos of positions) {
+        const nearby = script.slice(Math.max(0, pos - 2500), Math.min(script.length, pos + 2500));
+        const patterns = [
+          /(?:eventName|event_name|eventTitle|event_title|title|name)\s*["']?\s*[:=]\s*["']([^"']{6,500})["']/gi,
+          /["'](?:eventName|event_name|eventTitle|event_title|title|name)["']\s*:\s*["']([^"']{6,500})["']/gi,
+        ];
+        for (const pattern of patterns) {
+          for (const titleMatch of nearby.matchAll(pattern)) {
+            const value = cleanLine(titleMatch[1]);
+            if (isUsefulEventTitle(value)) candidates.push({ value, score: 1000 - Math.min(400, Math.abs((titleMatch.index || 0) - 2500) / 4) });
+          }
+        }
+      }
+    }
+  }
 
   return candidates.sort((a, b) => b.score - a.score || b.value.length - a.value.length);
 }
 
-function normalizeTitleConsensus(value) {
-  return extractProductCore(value)
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[\s　「」『』【】［］\[\]()（）・･\-‐‑‒–—―_]/g, '')
-    .trim();
-}
-
-export function resolveEventHeading(html, targetUrl = '') {
+function currentEventHeading(html, targetUrl = '') {
   const candidates = [];
-  const push = (value, sourceScore, source, exactTarget = false) => {
+  const push = (value, sourceScore) => {
     const cleaned = cleanLine(value);
     if (!isUsefulEventTitle(cleaned)) return;
     let score = sourceScore;
@@ -260,41 +262,23 @@ export function resolveEventHeading(html, targetUrl = '') {
     if (/抽選|予約販売|販売/.test(cleaned)) score += 20;
     if (/【[^】]*店】|\[[^\]]*店\]/.test(cleaned)) score += 15;
     if (/\.\.\.|…/.test(cleaned)) score -= 90;
-    candidates.push({ value: cleaned, score, source, exactTarget, product: extractProductCore(cleaned) });
+    candidates.push({ value: cleaned, score });
   };
 
-  targetJsonTitleCandidates(html, targetUrl).forEach(item => push(item.value, item.score, 'target-json', true));
+  // Exact target-URL JSON data has absolute priority over unrelated recommendations on the same page.
+  targetJsonTitleCandidates(html, targetUrl).forEach(item => push(item.value, item.score));
 
   const main = String(html || '').match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
-  tagTextCandidates(main, 'h1').forEach(value => push(value, 760, 'main-h1'));
-  tagTextCandidates(html, 'h1').forEach(value => push(value, 620, 'h1'));
-  push(metaContent(html, 'og:title'), 610, 'og:title');
-  push(metaContent(html, 'twitter:title', 'name'), 590, 'twitter:title');
-  push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 540, 'title');
+  tagTextCandidates(main, 'h1').forEach(value => push(value, 650));
+  tagTextCandidates(html, 'h1').forEach(value => push(value, 520));
+  push(metaContent(html, 'og:title'), 500);
+  push(metaContent(html, 'twitter:title', 'name'), 480);
+  push(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '', 420);
+  tagTextCandidates(main, 'h2').forEach(value => push(value, 300));
+  tagTextCandidates(html, 'h2').forEach(value => push(value, 180));
 
-  const sorted = candidates.sort((a, b) => b.score - a.score || b.value.length - a.value.length);
-  const exact = sorted.filter(item => item.exactTarget);
-  const authoritative = exact.length ? exact : sorted.filter(item => ['main-h1', 'h1', 'og:title', 'twitter:title', 'title'].includes(item.source));
-  const distinct = new Map();
-  for (const item of authoritative) {
-    const key = normalizeTitleConsensus(item.product || item.value);
-    if (key && !distinct.has(key)) distinct.set(key, item);
-  }
-
-  const winner = (exact[0] || sorted[0]);
-  const ambiguous = !exact.length && distinct.size > 1;
-  const confidence = winner ? (winner.exactTarget ? 1 : ambiguous ? 0.45 : winner.source === 'main-h1' ? 0.98 : winner.source === 'h1' ? 0.96 : 0.9) : 0;
-  return {
-    title: winner?.value || htmlTitle(html),
-    source: winner?.source || 'fallback',
-    confidence,
-    ambiguous,
-    candidates: [...distinct.values()].slice(0, 8).map(item => ({ title: item.value, product: item.product, source: item.source })),
-  };
-}
-
-function currentEventHeading(html, targetUrl = '') {
-  return resolveEventHeading(html, targetUrl).title;
+  return candidates
+    .sort((a, b) => b.score - a.score || b.value.length - a.value.length)[0]?.value || htmlTitle(html);
 }
 
 function collectStructuredStrings(html) {
@@ -384,54 +368,28 @@ function extractProductCore(value) {
   return product.slice(0, 220);
 }
 
-function normalizeProductConsensus(value) {
-  return extractProductCore(value)
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[\s　「」『』【】［］\[\]()（）・･\-‐‑‒–—―_]/g, '')
-    .trim();
-}
-
-export function findProductResult(text, title = '') {
+function findProduct(text, title = '') {
   const preferred = extractProductCore(title);
   if (
     preferred &&
     /ポケモンカード|拡張パック|デッキ|スターターセット|BOX/i.test(preferred) &&
     !/\.\.\.|…/.test(preferred) &&
     !/注意事項|応募期間|当選発表|結果発表|購入期間|Each person/i.test(preferred)
-  ) return { product: preferred, confidence: 0.98, ambiguous: false, candidates: [preferred], source: 'event-title' };
+  ) return preferred;
 
-  const ranked = lineCandidates(text)
+  const rawCandidates = [
+    ...lineCandidates(text),
+    title,
+  ].map(cleanLine).filter(Boolean);
+
+  // A truncated meta title must never beat a complete title found in the page body.
+  const ranked = rawCandidates
     .map((raw, index) => ({ raw, product: extractProductCore(raw), score: candidateQuality(raw), index }))
     .filter(item => item.product && /ポケモンカード|拡張パック|デッキ|BOX/i.test(item.product))
-    .filter(item => !/\.\.\.|…/.test(item.product))
     .sort((a, b) => b.score - a.score || b.product.length - a.product.length || a.index - b.index);
 
-  const distinct = [];
-  const seen = new Set();
-  for (const item of ranked) {
-    const key = normalizeProductConsensus(item.product);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    distinct.push(item);
-    if (distinct.length >= 8) break;
-  }
-  if (!distinct.length) return { product: '', confidence: 0, ambiguous: false, candidates: [], source: 'none' };
-
-  const top = distinct[0];
-  const second = distinct[1];
-  const ambiguous = Boolean(second && second.score >= top.score - 18);
-  return {
-    product: ambiguous ? '' : top.product,
-    confidence: ambiguous ? 0.35 : Math.max(0.55, Math.min(0.86, top.score / 220)),
-    ambiguous,
-    candidates: distinct.map(item => item.product),
-    source: 'body-fallback',
-  };
-}
-
-function findProduct(text, title = '') {
-  return findProductResult(text, title).product;
+  const complete = ranked.find(item => !/\.\.\.|…/.test(item.product));
+  return (complete || ranked[0])?.product || '';
 }
 
 function normalizeShopCandidate(value) {
@@ -531,10 +489,9 @@ function datesFromSection(value, mode = 'range') {
   };
 }
 
-export function parseLivePocketFromText(text, url = '', title = '', context = {}) {
+export function parseLivePocketFromText(text, url = '', title = '') {
   const normalized = normalizeText(text);
-  const productResult = findProductResult(normalized, title);
-  const product = productResult.product;
+  const product = findProduct(normalized, title);
   const shop = findShop(normalized, title);
 
   const applyText = section(
@@ -587,30 +544,7 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   if (!data.applyEndDate) missing.push('応募締切');
   if (!data.resultStartDate) missing.push('結果発表');
 
-  const warnings = [];
-  if (productResult.ambiguous) warnings.push('商品名候補が複数あり、自動確定を停止しました');
-  if (context?.heading?.ambiguous) warnings.push('ページ上部のイベント名が一致しないため、自動確定を停止しました');
-  const confidence = Math.min(
-    context?.heading?.confidence ?? 0.9,
-    productResult.confidence || 0,
-    shop ? 0.95 : 0.5,
-  );
-
-  return {
-    data,
-    missing,
-    warnings,
-    confidence,
-    reviewRequired: Boolean(productResult.ambiguous || context?.heading?.ambiguous),
-    evidence: {
-      eventSlug: eventSlugFromUrl(url),
-      titleSource: context?.heading?.source || '',
-      titleCandidates: context?.heading?.candidates || [],
-      productSource: productResult.source,
-      productCandidates: productResult.candidates,
-    },
-    sections: { applyText, resultText, purchaseText },
-  };
+  return { data, missing, sections: { applyText, resultText, purchaseText } };
 }
 
 async function fetchLivePocket(url) {
@@ -635,11 +569,9 @@ async function fetchLivePocket(url) {
 }
 
 
-export function normalizeHttpsUrl(value = '') {
+function normalizeHttpsUrl(value = '') {
   const raw = String(value || '').trim();
   if (!raw) return '';
-  const livePocket = canonicalLivePocketEventUrl(raw);
-  if (livePocket) return livePocket;
   try {
     const url = new URL(raw);
     if (url.protocol !== 'https:') return '';
@@ -694,12 +626,6 @@ function normalizeManualLottery(input) {
   const item = input && typeof input === 'object' ? input : {};
   const normalized = {
     externalId: cleanShort(item.externalId || item.remoteId || '', 160),
-    sourceKey: cleanShort(item.sourceKey || '', 220),
-    sourceEventSlug: cleanShort(item.sourceEventSlug || '', 64),
-    sourceTitle: cleanShort(item.sourceTitle || '', 500),
-    parseConfidence: Number.isFinite(Number(item.parseConfidence)) ? Number(item.parseConfidence) : null,
-    reviewRequired: Boolean(item.reviewRequired),
-    parseWarning: cleanShort(item.parseWarning || '', 500),
     shop: cleanManualShop(item.shop),
     product: cleanManualProduct(item.product),
     type: item.type === '通販' ? '通販' : '店舗',
@@ -737,8 +663,8 @@ function normalizeManualLottery(input) {
   // URL付き抽選はURLを唯一の公開キーにする。商品名や店舗名が変わっても別抽選を上書きしない。
   if (normalized.url) {
     normalized.externalId = normalized.url;
-    normalized.sourceEventSlug = eventSlugFromUrl(normalized.url);
-    normalized.sourceKey = `url:${normalized.url}`;
+  } else if (!normalized.externalId) {
+    normalized.externalId = `${normalized.shop}|${normalized.product}|${normalized.applyEndDate}`;
   }
   if (!normalized.shop) throw new Error('店舗名がありません');
   if (!normalized.product) throw new Error('商品名がありません');
@@ -748,17 +674,12 @@ function normalizeManualLottery(input) {
   return normalized;
 }
 
-export function manualIdentity(item) {
-  const url = normalizeHttpsUrl(item?.url || '');
-  return url ? `url:${url}` : '';
-}
-
-function normalizeStoredIdentity(value) {
-  const raw = String(value?.key || value || '').trim();
-  if (!raw) return '';
-  const candidate = raw.startsWith('url:') ? raw.slice(4) : raw;
-  const normalized = normalizeHttpsUrl(candidate);
-  return normalized ? `url:${normalized}` : raw;
+function manualIdentity(item) {
+  return String(
+    normalizeHttpsUrl(item?.url || '') ||
+    item?.externalId ||
+    `${item?.shop || ''}|${item?.product || ''}|${item?.applyEndDate || item?.deadline || ''}`
+  );
 }
 
 function githubSettings(env) {
@@ -872,7 +793,7 @@ async function handleManualRead(env) {
     version: current.payload.version || 3,
     updatedAt: current.payload.updatedAt || '',
     lotteries: current.payload.lotteries,
-    deleted: [...new Map(current.payload.deleted.map(entry => [normalizeStoredIdentity(entry), entry]).filter(([key]) => key)).values()],
+    deleted: current.payload.deleted,
   });
 }
 
@@ -882,72 +803,45 @@ async function handlePublish(request, env) {
   const remove = body?.remove === true;
   const target = normalizeManualLottery(body?.item);
   const key = manualIdentity(target);
-  if (!key) throw new Error('応募URLを抽選キーとして確定できません');
+  const current = await readManualPayload(env);
+  let lotteries = current.payload.lotteries.filter((entry) => manualIdentity(entry) !== key);
+  let deleted = current.payload.deleted.filter((entry) => String(entry?.key || entry || '') !== key);
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const current = await readManualPayload(env);
-    let lotteries = current.payload.lotteries.filter((entry) => manualIdentity(entry) !== key);
-    let deleted = current.payload.deleted.filter((entry) => normalizeStoredIdentity(entry) !== key);
-
-    if (remove) {
-      deleted.unshift({ key, deletedAt: new Date().toISOString() });
-      deleted = deleted.slice(0, 500);
-    } else {
-      lotteries.unshift(target);
-    }
-
-    const payload = {
-      version: 5,
-      updatedAt: new Date().toISOString(),
-      lotteries,
-      deleted,
-    };
-    try {
-      await writeManualPayload(
-        current.settings,
-        payload,
-        current.sha,
-        remove ? `admin: remove lottery ${target.shop || target.product}` : `admin: publish lottery ${target.shop || target.product}`,
-      );
-      return jsonResponse({ ok: true, removed: remove, count: lotteries.length, updatedAt: payload.updatedAt });
-    } catch (error) {
-      if (error?.status !== 409 || attempt === 2) throw error;
-    }
+  if (remove) {
+    deleted.unshift({ key, deletedAt: new Date().toISOString() });
+    deleted = deleted.slice(0, 500);
+  } else {
+    lotteries.unshift(target);
   }
-  throw new Error('公開データの更新競合を解消できませんでした');
+
+  const payload = {
+    version: 3,
+    updatedAt: new Date().toISOString(),
+    lotteries,
+    deleted,
+  };
+  await writeManualPayload(
+    current.settings,
+    payload,
+    current.sha,
+    remove ? `admin: remove lottery ${target.shop || target.product}` : `admin: publish lottery ${target.shop || target.product}`,
+  );
+  return jsonResponse({ ok: true, removed: remove, count: lotteries.length, updatedAt: payload.updatedAt });
 }
 
 async function refreshManualLotteryFromUrl(item) {
   const base = normalizeManualLottery(item);
   if (!/^(?:https:\/\/)?(?:www\.)?livepocket\.jp\/e\//i.test(base.url)) return base;
   try {
-    const { html } = await fetchLivePocket(base.url);
-    const heading = resolveEventHeading(html, base.url);
+    const { html, finalUrl } = await fetchLivePocket(base.url);
+    const title = currentEventHeading(html, base.url);
     const text = buildReadableText(html);
-    const parsedResult = parseLivePocketFromText(text, base.url, heading.title, { heading });
-    if (parsedResult.reviewRequired || parsedResult.confidence < 0.75 || !parsedResult.data.product) {
-      return normalizeManualLottery({
-        ...base,
-        url: base.url,
-        externalId: base.url,
-        sourceTitle: heading.title,
-        parseConfidence: parsedResult.confidence,
-        reviewRequired: true,
-        parseWarning: parsedResult.warnings.join('／') || '自動修復の確度が低いため、既存データを保持しました',
-        createdAt: base.createdAt,
-        collectedAt: base.collectedAt,
-      });
-    }
-    const parsed = parsedResult.data;
+    const parsed = parseLivePocketFromText(text, base.url, title).data;
     return normalizeManualLottery({
       ...base,
       ...Object.fromEntries(Object.entries(parsed).filter(([, value]) => value !== '' && value !== null && value !== undefined)),
       url: base.url,
       externalId: base.url,
-      sourceTitle: heading.title,
-      parseConfidence: parsedResult.confidence,
-      reviewRequired: false,
-      parseWarning: '',
       createdAt: base.createdAt,
       collectedAt: base.collectedAt,
       memo: base.memo || parsed.memo,
@@ -963,7 +857,6 @@ function dedupeManualByUrl(items) {
     let item;
     try { item = normalizeManualLottery(raw); } catch { continue; }
     const key = manualIdentity(item);
-    if (!key) continue;
     const existing = map.get(key);
     if (!existing) {
       map.set(key, item);
@@ -976,8 +869,7 @@ function dedupeManualByUrl(items) {
     map.set(key, {
       ...other,
       ...preferred,
-      externalId: normalizeHttpsUrl(preferred.url || other.url),
-      sourceKey: key,
+      externalId: key,
       url: normalizeHttpsUrl(preferred.url || other.url),
       createdAt: existing.createdAt || item.createdAt,
       updatedAt: preferred.updatedAt || new Date().toISOString(),
@@ -999,17 +891,16 @@ async function handleRepair(request, env) {
     refreshed.push(next);
   }
   const lotteries = dedupeManualByUrl(refreshed);
-  const reviewRequired = lotteries.filter(item => item.reviewRequired).length;
   const validKeys = new Set(lotteries.map(manualIdentity));
-  const deleted = current.payload.deleted.filter(entry => !validKeys.has(normalizeStoredIdentity(entry))).slice(0, 500);
+  const deleted = current.payload.deleted.filter(entry => !validKeys.has(String(entry?.key || entry || ''))).slice(0, 500);
   const payload = {
-    version: 5,
+    version: 4,
     updatedAt: new Date().toISOString(),
     lotteries,
     deleted,
   };
   await writeManualPayload(current.settings, payload, current.sha, 'admin: repair manual lotteries');
-  return jsonResponse({ ok: true, before, after: lotteries.length, repaired, reviewRequired, updatedAt: payload.updatedAt });
+  return jsonResponse({ ok: true, before, after: lotteries.length, repaired, updatedAt: payload.updatedAt });
 }
 
 async function handleAdminCheck(request, env) {
@@ -1022,50 +913,27 @@ async function handleReader(request) {
   const body = await request.json();
   const target = normalizeTarget(body?.url);
   const { html, finalUrl } = await fetchLivePocket(target);
-  const heading = resolveEventHeading(html, target);
+  const title = currentEventHeading(html, target);
   const text = buildReadableText(html);
-  const parsed = parseLivePocketFromText(text, target, heading.title, { heading });
+  // The pasted URL is the record identity. Never replace it with a redirect destination.
+  const parsed = parseLivePocketFromText(text, target, title);
   parsed.data.url = target;
-
-  if (heading.ambiguous || parsed.reviewRequired) {
-    return jsonResponse({
-      ok: false,
-      error: 'このページには商品名候補が複数あります。誤登録を防ぐため自動入力を停止しました',
-      requestedUrl: target,
-      finalUrl,
-      identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
-      candidates: parsed.evidence?.productCandidates || heading.candidates,
-      warnings: parsed.warnings,
-    }, 422);
-  }
 
   if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
     return jsonResponse({
       ok: false,
       error: 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした',
-      debug: { title: heading.title, requestedUrl: target, finalUrl, textPreview: text.slice(0, 1500) },
+      debug: { title, requestedUrl: target, finalUrl, textPreview: text.slice(0, 1500) },
     }, 422);
   }
 
   return jsonResponse({
     ok: true,
     source: 'livepocket-server',
-    title: heading.title,
+    title,
     requestedUrl: target,
     finalUrl,
-    identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
-    confidence: parsed.confidence,
-    warnings: parsed.warnings,
-    evidence: parsed.evidence,
-    data: {
-      ...parsed.data,
-      sourceKey: `url:${target}`,
-      sourceEventSlug: eventSlugFromUrl(target),
-      sourceTitle: heading.title,
-      parseConfidence: parsed.confidence,
-      reviewRequired: false,
-      parseWarning: '',
-    },
+    data: parsed.data,
     missing: parsed.missing,
     sections: parsed.sections,
     text: text.slice(0, 50000),
@@ -1084,7 +952,7 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.0',
+          version: '1.3.0',
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
