@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseSourceDocument } from "./lib/parser.mjs";
 import { dedupeItems, keepRelevant, sanitizeForPublic } from "./lib/dedupe.mjs";
 import { validateWithAI } from "./lib/ai-router.mjs";
-import { discoverCandidateLinks, pageLooksRelevant } from "./lib/discovery.mjs";
+import { discoverCandidateLinksDetailed, pageLooksRelevant } from "./lib/discovery.mjs";
 import { collectXLotteryCandidates } from "./lib/x-collector.mjs";
 import { loadProductCatalog, evaluateCandidate } from "./lib/quality-gate.mjs";
 import { verifyDestination } from "./lib/destination-verifier.mjs";
@@ -34,8 +34,24 @@ async function writeJson(file, value) {
   await fs.writeFile(file, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-async function fetchHtml(source) {
-  if (FIXTURE_PATH) return fs.readFile(FIXTURE_PATH, "utf8");
+function publicErrorMessage(error) {
+  return String(error?.message || error || "Unknown error")
+    .replace(/https?:\/\/\S+/gi, "[URL]")
+    .replace(/\/home\/runner\/work\/\S+/gi, "[PATH]")
+    .slice(0, 180);
+}
+
+async function fetchDocument(source) {
+  if (FIXTURE_PATH) {
+    const html = await fs.readFile(FIXTURE_PATH, "utf8");
+    return {
+      html,
+      statusCode: 200,
+      contentType: "text/html; fixture",
+      responseBytes: Buffer.byteLength(html, "utf8"),
+      finalHostChanged: false,
+    };
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
@@ -44,16 +60,57 @@ async function fetchHtml(source) {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; PokecaLifeCollector/1.13; +https://github.com/)",
+        "User-Agent": "Mozilla/5.0 (compatible; PokecaLifeCollector/1.21.1; +https://github.com/)",
         Accept: "text/html,application/xhtml+xml",
         "Accept-Language": "ja,en;q=0.5",
       },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.text();
+    const html = await response.text();
+    let originalHost = "";
+    let finalHost = "";
+    try { originalHost = new URL(source.url).hostname.toLowerCase(); } catch {}
+    try { finalHost = new URL(response.url).hostname.toLowerCase(); } catch {}
+    return {
+      html,
+      statusCode: response.status,
+      contentType: String(response.headers.get("content-type") || "").slice(0, 100),
+      responseBytes: Buffer.byteLength(html, "utf8"),
+      finalHostChanged: Boolean(originalHost && finalHost && originalHost !== finalHost),
+    };
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchHtml(source) {
+  return (await fetchDocument(source)).html;
+}
+
+function isLivePocketSearchSource(source) {
+  return source?.parser === "livepocket-search"
+    || String(source?.id || "").startsWith("livepocket-public-");
+}
+
+function zeroItemReason(result) {
+  if (!result.ok) return "source-fetch-failed";
+  if (!result.discovery?.enabled) return "no-current-items";
+  if (Number(result.discovery?.returnedCount || 0) === 0 && Number(result.discovery?.totalLinks || 0) === 0) {
+    return "page-contained-no-links-or-was-client-rendered";
+  }
+  if (Number(result.discovery?.returnedCount || 0) === 0 && Number(result.discovery?.totalLinks || 0) > 0) {
+    return "links-found-but-none-matched-discovery-rules";
+  }
+  if (Number(result.candidateFetchSuccessCount || 0) === 0 && Number(result.discovery?.returnedCount || 0) > 0) {
+    return "candidate-pages-could-not-be-fetched";
+  }
+  if (Number(result.relevantPageCount || 0) === 0 && Number(result.candidateFetchSuccessCount || 0) > 0) {
+    return "candidate-pages-did-not-look-relevant";
+  }
+  if (Number(result.discoveredItemCount || 0) === 0 && Number(result.relevantPageCount || 0) > 0) {
+    return "relevant-pages-were-not-parsed-into-items";
+  }
+  return "no-current-items";
 }
 
 async function enrichLivePocketCandidates(items, collectedAt) {
@@ -165,12 +222,21 @@ async function run() {
   for (const source of enabledSources) {
     const started = Date.now();
     try {
-      const html = await fetchHtml(source);
-      const documents = [{ source, html }];
-      const discovered = discoverCandidateLinks(source, html);
+      const rootDocument = await fetchDocument(source);
+      const documents = [{ source, html: rootDocument.html, kind: "root" }];
+      const discoveryResult = discoverCandidateLinksDetailed(source, rootDocument.html);
+      let crossSourceDuplicateCount = 0;
+      let candidateFetchSuccessCount = 0;
+      let candidateFetchFailureCount = 0;
+      let relevantPageCount = 0;
+      let irrelevantPageCount = 0;
+      const childErrors = [];
 
-      for (const candidate of discovered) {
-        if (seenDocumentUrls.has(candidate.url)) continue;
+      for (const candidate of discoveryResult.candidates) {
+        if (seenDocumentUrls.has(candidate.url)) {
+          crossSourceDuplicateCount += 1;
+          continue;
+        }
         seenDocumentUrls.add(candidate.url);
         const childSource = {
           ...source,
@@ -181,39 +247,99 @@ async function run() {
           discovery: { enabled: false },
         };
         try {
-          const childHtml = await fetchHtml(childSource);
-          if (pageLooksRelevant(source, childHtml)) {
-            documents.push({ source: childSource, html: childHtml });
+          const childDocument = await fetchDocument(childSource);
+          candidateFetchSuccessCount += 1;
+          if (pageLooksRelevant(source, childDocument.html)) {
+            documents.push({ source: childSource, html: childDocument.html, kind: "discovered" });
+            relevantPageCount += 1;
             let host = "";
             try { host = new URL(candidate.url).hostname.toLowerCase(); } catch {}
             if (host === "livepocket.jp" || host.endsWith(".livepocket.jp")) livePocketDiscoveredCount += 1;
+          } else {
+            irrelevantPageCount += 1;
           }
         } catch (error) {
-          // A failed child page does not fail the parent source.
+          candidateFetchFailureCount += 1;
+          if (childErrors.length < 3) childErrors.push(publicErrorMessage(error));
         }
         if (!FIXTURE_PATH) await new Promise((resolve) => setTimeout(resolve, 800));
       }
 
-      const items = documents.flatMap((document) =>
-        parseSourceDocument(document.source, document.html, startedAt)
-      );
+      const parsedDocuments = [];
+      const parseErrors = [];
+      for (const document of documents) {
+        try {
+          const documentItems = parseSourceDocument(document.source, document.html, startedAt);
+          parsedDocuments.push({ ...document, items: documentItems });
+        } catch (error) {
+          if (parseErrors.length < 3) parseErrors.push(publicErrorMessage(error));
+        }
+      }
+      const items = parsedDocuments.flatMap((document) => document.items);
+      const rootItemCount = parsedDocuments
+        .filter((document) => document.kind === "root")
+        .reduce((sum, document) => sum + document.items.length, 0);
+      const discoveredItemCount = parsedDocuments
+        .filter((document) => document.kind === "discovered")
+        .reduce((sum, document) => sum + document.items.length, 0);
       collected.push(...items);
+
+      const parseFailureCount = parseErrors.length;
       sourceResults.push({
         id: source.id,
         name: source.name,
-        ok: true,
+        parser: source.parser || "generic",
+        livePocketSearch: isLivePocketSearchSource(source),
+        ok: parseFailureCount === 0,
         itemCount: items.length,
-        discoveredPages: Math.max(0, documents.length - 1),
+        rootItemCount,
+        discoveredItemCount,
+        discoveredPages: relevantPageCount,
+        candidateFetchSuccessCount,
+        candidateFetchFailureCount,
+        relevantPageCount,
+        irrelevantPageCount,
+        crossSourceDuplicateCount,
+        discovery: discoveryResult.stats,
+        fetch: {
+          statusCode: rootDocument.statusCode,
+          contentType: rootDocument.contentType,
+          responseBytes: rootDocument.responseBytes,
+          finalHostChanged: rootDocument.finalHostChanged,
+        },
+        parseFailureCount,
+        childErrors,
+        parseErrors,
         elapsedMs: Date.now() - started,
+        error: parseFailureCount ? `Parser failed for ${parseFailureCount} document(s)` : "",
       });
     } catch (error) {
       sourceResults.push({
         id: source.id,
         name: source.name,
+        parser: source.parser || "generic",
+        livePocketSearch: isLivePocketSearchSource(source),
         ok: false,
         itemCount: 0,
+        rootItemCount: 0,
+        discoveredItemCount: 0,
+        discoveredPages: 0,
+        candidateFetchSuccessCount: 0,
+        candidateFetchFailureCount: 0,
+        relevantPageCount: 0,
+        irrelevantPageCount: 0,
+        crossSourceDuplicateCount: 0,
+        discovery: {
+          enabled: Boolean(source.discovery?.enabled),
+          totalLinks: 0,
+          acceptedBeforeDedupe: 0,
+          returnedCount: 0,
+          duplicateRejected: 0,
+          truncatedCount: 0,
+          rejected: {},
+        },
         elapsedMs: Date.now() - started,
-        error: String(error?.message || error),
+        error: publicErrorMessage(error),
       });
     }
 
@@ -332,17 +458,115 @@ async function run() {
     }
   }
 
-  const successCount = sourceResults.filter((result) => result.ok).length;
-  const failedCount = sourceResults.length - successCount;
   const webSourceResults = sourceResults.filter((result) => result.id !== "manual-admin");
+  const failedSourceResults = webSourceResults.filter((result) => !result.ok);
+  const zeroItemSourceResults = webSourceResults.filter((result) => result.ok && Number(result.itemCount || 0) === 0);
+  const sourceDiagnostics = webSourceResults.map((result) => ({
+    name: result.name,
+    parser: result.parser || "generic",
+    status: result.ok ? (Number(result.itemCount || 0) > 0 ? "items" : "no_items") : "failed",
+    itemCount: Number(result.itemCount || 0),
+    rootItemCount: Number(result.rootItemCount || 0),
+    discoveredItemCount: Number(result.discoveredItemCount || 0),
+    elapsedMs: Number(result.elapsedMs || 0),
+    fetch: result.fetch || null,
+    discovery: result.discovery || null,
+    candidateFetchSuccessCount: Number(result.candidateFetchSuccessCount || 0),
+    candidateFetchFailureCount: Number(result.candidateFetchFailureCount || 0),
+    relevantPageCount: Number(result.relevantPageCount || 0),
+    irrelevantPageCount: Number(result.irrelevantPageCount || 0),
+    crossSourceDuplicateCount: Number(result.crossSourceDuplicateCount || 0),
+    parseFailureCount: Number(result.parseFailureCount || 0),
+    zeroItemReason: Number(result.itemCount || 0) === 0 ? zeroItemReason(result) : "",
+    error: result.error || "",
+    childErrors: result.childErrors || [],
+    parseErrors: result.parseErrors || [],
+  }));
   const sourceHealth = {
     checkedCount: webSourceResults.length,
     successfulCount: webSourceResults.filter((result) => result.ok).length,
-    failedCount: webSourceResults.filter((result) => !result.ok).length,
+    failedCount: failedSourceResults.length,
     withItemsCount: webSourceResults.filter((result) => result.ok && Number(result.itemCount || 0) > 0).length,
-    zeroItemsCount: webSourceResults.filter((result) => result.ok && Number(result.itemCount || 0) === 0).length,
+    zeroItemsCount: zeroItemSourceResults.length,
     discoveredPageCount: webSourceResults.reduce((sum, result) => sum + Number(result.discoveredPages || 0), 0),
+    failedSources: failedSourceResults.map((result) => ({
+      name: result.name,
+      error: result.error || "Unknown error",
+    })),
+    zeroItemSources: zeroItemSourceResults.map((result) => ({
+      name: result.name,
+      reason: zeroItemReason(result),
+    })),
   };
+
+  const livePocketSourceResults = webSourceResults.filter((result) => result.livePocketSearch);
+  const livePocketSearchSourceCount = livePocketSourceResults.length;
+  const livePocketSearchSuccessfulCount = livePocketSourceResults.filter((result) => result.ok).length;
+  const livePocketSearchFailedCount = livePocketSourceResults.filter((result) => !result.ok).length;
+  const livePocketCandidateLinkCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.discovery?.returnedCount || 0), 0
+  );
+  const livePocketSearchLinkCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.discovery?.totalLinks || 0), 0
+  );
+  const livePocketCandidateFetchSuccessCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.candidateFetchSuccessCount || 0), 0
+  );
+  const livePocketCandidateFetchFailureCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.candidateFetchFailureCount || 0), 0
+  );
+  const livePocketRelevantPageCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.relevantPageCount || 0), 0
+  );
+  const livePocketParsedItemCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.discoveredItemCount || 0), 0
+  );
+  const livePocketCrossSourceDuplicateCount = livePocketSourceResults.reduce(
+    (sum, result) => sum + Number(result.crossSourceDuplicateCount || 0), 0
+  );
+
+  let livePocketDiscoveryStatus = "not_configured";
+  if (livePocketSearchSourceCount > 0 && livePocketSearchFailedCount === livePocketSearchSourceCount) {
+    livePocketDiscoveryStatus = "search_failed";
+  } else if (livePocketCandidateLinkCount === 0) {
+    livePocketDiscoveryStatus = "no_candidates";
+  } else if (livePocketCandidateFetchSuccessCount === 0 && livePocketCandidateFetchFailureCount > 0) {
+    livePocketDiscoveryStatus = "candidate_fetch_failed";
+  } else if (livePocketRelevantPageCount === 0) {
+    livePocketDiscoveryStatus = "no_relevant_pages";
+  } else if (livePocketParsedItemCount === 0) {
+    livePocketDiscoveryStatus = "parser_returned_zero";
+  } else if (livePocketSearchFailedCount > 0 || livePocketCandidateFetchFailureCount > 0) {
+    livePocketDiscoveryStatus = "partial";
+  } else {
+    livePocketDiscoveryStatus = "ok";
+  }
+
+  const livePocketDiscovery = {
+    status: livePocketDiscoveryStatus,
+    searchSourceCount: livePocketSearchSourceCount,
+    successfulSearchSourceCount: livePocketSearchSuccessfulCount,
+    failedSearchSourceCount: livePocketSearchFailedCount,
+    searchPageLinkCount: livePocketSearchLinkCount,
+    candidateLinkCount: livePocketCandidateLinkCount,
+    candidateFetchSuccessCount: livePocketCandidateFetchSuccessCount,
+    candidateFetchFailureCount: livePocketCandidateFetchFailureCount,
+    relevantPageCount: livePocketRelevantPageCount,
+    parsedItemCount: livePocketParsedItemCount,
+    crossSearchDuplicateCount: livePocketCrossSourceDuplicateCount,
+  };
+
+  const criticalLivePocketFailure = [
+    "search_failed",
+    "candidate_fetch_failed",
+    "parser_returned_zero",
+  ].includes(livePocketDiscoveryStatus);
+  const statusReasons = [
+    ...failedSourceResults.map((result) => `source_failed:${result.name}:${result.error || "unknown"}`),
+    ...(criticalLivePocketFailure ? [`livepocket:${livePocketDiscoveryStatus}`] : []),
+  ];
+  const runStatus = failedSourceResults.length > 0 || criticalLivePocketFailure ? "partial" : "ok";
+
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
   const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
   const quality = {
@@ -358,20 +582,24 @@ async function run() {
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.21.0",
+    collectorVersion: "1.21.1",
     lastRunAt: startedAt,
-    status: failedCount === 0 ? "ok" : "partial",
+    status: runStatus,
+    statusReasons,
     reviewCount: reviewQueue.length,
     publishedCount: published.length,
     historyDays: 35,
     manualEntryCount: manualLotteries.length,
     checkedSourceCount: enabledSources.length,
-    successfulSourceCount: sourceResults.filter((result) => result.ok && result.id !== "manual-admin").length,
-    failedSourceCount: sourceResults.filter((result) => !result.ok).length,
+    successfulSourceCount: webSourceResults.filter((result) => result.ok).length,
+    failedSourceCount: failedSourceResults.length,
     sourceHealth,
+    sourceDiagnostics,
     autoCollectedCount,
     multiProductExpandedCount,
     livePocketDiscoveredCount,
+    livePocketDiscoveryStatus,
+    livePocketDiscovery,
     xLivePocketEnrichedCount: xEnrichment.enrichedCount,
     xCollectorStatus: xResult.meta?.status || "not_configured",
     xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
@@ -401,7 +629,9 @@ async function run() {
   });
 
   console.log(JSON.stringify({
-    ok: failedCount === 0,
+    ok: runStatus === "ok",
+    status: runStatus,
+    statusReasons,
     collected: collected.length,
     published: published.length,
     review: reviewQueue.length,
@@ -409,11 +639,13 @@ async function run() {
     manualEntryCount: manualLotteries.length,
     autoCollectedCount,
     multiProductExpandedCount,
-    checkedSourceCount: enabledSources.length + 1,
-    successfulSourceCount: successCount,
-    failedSourceCount: failedCount,
+    checkedSourceCount: enabledSources.length,
+    successfulSourceCount: webSourceResults.filter((result) => result.ok).length,
+    failedSourceCount: failedSourceResults.length,
     sourceHealth,
+    sourceDiagnostics,
     livePocketDiscoveredCount,
+    livePocketDiscovery,
     xLivePocketEnrichedCount: xEnrichment.enrichedCount,
   }, null, 2));
 }
