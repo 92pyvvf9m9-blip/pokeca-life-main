@@ -1,14 +1,15 @@
 {
   "name": "pokeca-life",
   "private": true,
-  "version": "1.21.0",
+  "version": "1.21.1",
   "type": "module",
   "scripts": {
     "test": "node --test collector/tests/*.test.mjs",
     "collect": "node collector/collector.mjs",
     "sync:products": "node collector/sync-product-catalog.mjs",
     "check:layout": "node scripts/check-project-layout.mjs",
-    "repair:layout": "node scripts/repair-project-layout.mjs"
+    "repair:layout": "node scripts/repair-project-layout.mjs",
+    "report:collector": "node scripts/report-collector-health.mjs"
   },
   "engines": {
     "node": ">=20"
