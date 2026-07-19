@@ -293,6 +293,103 @@ function livePocketProduct(lines, html) {
   })[0] || "";
 }
 
+
+function googleFormTitle(html = "") {
+  const source = String(html || "");
+  const meta = source.match(/<meta[^>]+(?:property|name)=["']og:title["'][^>]+content=["']([^"']+)["']/i)?.[1]
+    || source.match(/<meta[^>]+itemprop=["']name["'][^>]+content=["']([^"']+)["']/i)?.[1]
+    || source.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+    || "";
+  return htmlToText(meta)
+    .replace(/\s*[-–—|｜]\s*Google\s*(?:Forms?|フォーム)\s*$/i, "")
+    .trim();
+}
+
+function cleanGoogleFormProduct(value = "") {
+  return cleanProduct(String(value)
+    .normalize("NFKC")
+    .replace(/^(?:対象商品|商品名|抽選対象商品|販売商品|応募商品)\s*[:：]?\s*/i, "")
+    .replace(/\s*(?:抽選販売|抽選受付|応募フォーム|エントリーフォーム|抽選販売のお知らせ).*$/i, "")
+    .replace(/[「『](.*)[」』]/, "$1")
+    .trim());
+}
+
+function googleFormProduct(lines, title = "") {
+  const candidates = [];
+  const add = (value, score = 0) => {
+    const product = cleanGoogleFormProduct(value);
+    if (!product || product.length < 3 || product.length > 180) return;
+    if (/氏名|名前|メール|電話|住所|応募期間|当選発表|受取期間|注意事項|利用規約/i.test(product)) return;
+    if (/^抽選販売(?:のお知らせ)?$|^応募フォーム$|^エントリーフォーム$/i.test(product)) return;
+    let total = score;
+    if (/ポケモンカード|ポケカ/.test(product)) total += 80;
+    if (/拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|BOX|ボックス|デッキ|セット|パック/i.test(product)) total += 60;
+    if (/^[ァ-ヶーA-Za-z0-9＆・\s]{4,80}$/.test(product)) total += 35;
+    candidates.push({ product, score: total + Math.min(product.length, 80) / 5 });
+  };
+
+  add(title, 45);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const inline = line.match(/(?:対象商品|商品名|抽選対象商品|販売商品|応募商品)\s*[:：]?\s*(.{2,180})/i)?.[1];
+    if (inline) add(inline, 100);
+    if (/^(?:対象商品|商品名|抽選対象商品|販売商品|応募商品)\s*[:：]?$/.test(line)) add(lines[index + 1] || "", 100);
+    if (/1\s*BOX|\d[,.]?\d{2,5}\s*円/.test(line)) add(lines[index - 1] || "", 45);
+    if (/ポケモンカード|ポケカ|拡張パック|ハイクラスパック|スターターセット|スタートデッキ|BOX|ボックス/i.test(line)) add(line, 30);
+  }
+
+  const seen = new Set();
+  return candidates
+    .sort((a, b) => b.score - a.score || b.product.length - a.product.length)
+    .find((item) => {
+      const key = item.product.normalize("NFKC").toLowerCase().replace(/[\s　「」『』【】［］\[\]()（）・･\-‐‑‒–—―_]/g, "");
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })?.product || "";
+}
+
+function parseGoogleForm(source, html, collectedAt) {
+  const text = htmlToText(html);
+  if (!/抽選|応募|申込|受付/.test(text)) return [];
+  const lines = normalizeLines(text);
+  const title = googleFormTitle(html);
+  const product = googleFormProduct(lines, title);
+  if (!product) return [];
+
+  const applyText = labelText(lines, ["応募期間", "応募受付期間", "抽選受付期間", "申込期間", "受付期間", "応募締切", "締切"])
+    || lines.find((line) => /応募|申込|受付/.test(line) && /締切|まで|期間/.test(line))
+    || "";
+  const resultText = labelText(lines, ["当選発表", "結果発表", "抽選結果", "当落発表", "当選通知"]);
+  const purchaseText = labelText(lines, ["購入期間", "購入期限", "受取期間", "受取期限", "引取期間", "引取期限"]);
+  const shop = inferLivePocketShop(lines, title, source.shop || "");
+  const area = inferLivePocketArea(lines, source.area || "全国");
+  const type = /発送|配送|通販|オンラインショップ|送料/.test(text) && !/店頭受取|店舗受取|受取店舗/.test(text)
+    ? "通販"
+    : (source.type || "店舗");
+
+  const record = buildRecord({
+    source,
+    product,
+    applyText,
+    resultText,
+    purchaseText,
+    html,
+    collectedAt,
+    actionUrlOverride: source.url,
+    shopOverride: shop,
+    typeOverride: type,
+    areaOverride: area,
+  });
+  repairPublishedYear(record);
+  record.sourceType = "Googleフォーム";
+  record.sourceKind = source.sourceKind || "web";
+  record.destinationType = "direct";
+  record.collectionMode = source.discoveryParentUrl ? "google-form-discovered" : "google-form-direct";
+  record.memo = "Googleフォーム本文から自動取得しました。";
+  return [record];
+}
+
 function parseLivePocket(source, html, collectedAt) {
   const text = htmlToText(html);
   if (!/ポケモンカード|ポケカ|拡張パック|ハイクラスパック|スタートデッキ|スターターセット|MEGA/i.test(text)) return [];
@@ -835,6 +932,7 @@ function parseGeneric(source, html, collectedAt) {
 
 export function parseSourceDocument(source, html, collectedAt = new Date().toISOString()) {
   if (source.parser === "livepocket") return parseLivePocket(source, html, collectedAt);
+  if (source.parser === "google-form") return parseGoogleForm(source, html, collectedAt);
   if (source.parser === "livepocket-search") return parseLivePocketSearch(source, html, collectedAt);
   if (source.parser === "amiami") return parseAmiAmi(source, html, collectedAt);
   if (source.parser === "rakuten-books") return parseRakutenBooks(source, html, collectedAt);
