@@ -41,6 +41,17 @@ function publicErrorMessage(error) {
     .slice(0, 180);
 }
 
+function classifySourceFailure(error) {
+  const message = publicErrorMessage(error);
+  if (/HTTP\s+(?:401|403|429)\b/i.test(message)) {
+    return { failureClass: "access_blocked", severity: "warning" };
+  }
+  if (/HTTP\s+5\d\d\b|abort|timeout|timed out|fetch failed|network/i.test(message)) {
+    return { failureClass: "temporary_fetch_error", severity: "warning" };
+  }
+  return { failureClass: "source_error", severity: "error" };
+}
+
 async function fetchDocument(source) {
   if (FIXTURE_PATH) {
     const html = await fs.readFile(FIXTURE_PATH, "utf8");
@@ -60,9 +71,12 @@ async function fetchDocument(source) {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; PokecaLifeCollector/1.21.1; +https://github.com/)",
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "ja,en;q=0.5",
+        "User-Agent": "Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/1.21.2; +https://github.com/)",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        "Upgrade-Insecure-Requests": "1",
       },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -308,12 +322,15 @@ async function run() {
           finalHostChanged: rootDocument.finalHostChanged,
         },
         parseFailureCount,
+        failureClass: parseFailureCount ? "parser_error" : "",
+        severity: parseFailureCount ? "error" : "",
         childErrors,
         parseErrors,
         elapsedMs: Date.now() - started,
         error: parseFailureCount ? `Parser failed for ${parseFailureCount} document(s)` : "",
       });
     } catch (error) {
+      const failure = classifySourceFailure(error);
       sourceResults.push({
         id: source.id,
         name: source.name,
@@ -339,6 +356,8 @@ async function run() {
           rejected: {},
         },
         elapsedMs: Date.now() - started,
+        failureClass: failure.failureClass,
+        severity: failure.severity,
         error: publicErrorMessage(error),
       });
     }
@@ -477,6 +496,8 @@ async function run() {
     irrelevantPageCount: Number(result.irrelevantPageCount || 0),
     crossSourceDuplicateCount: Number(result.crossSourceDuplicateCount || 0),
     parseFailureCount: Number(result.parseFailureCount || 0),
+    failureClass: result.failureClass || "",
+    severity: result.severity || "",
     zeroItemReason: Number(result.itemCount || 0) === 0 ? zeroItemReason(result) : "",
     error: result.error || "",
     childErrors: result.childErrors || [],
@@ -492,6 +513,8 @@ async function run() {
     failedSources: failedSourceResults.map((result) => ({
       name: result.name,
       error: result.error || "Unknown error",
+      failureClass: result.failureClass || "source_error",
+      severity: result.severity || "error",
     })),
     zeroItemSources: zeroItemSourceResults.map((result) => ({
       name: result.name,
@@ -561,11 +584,22 @@ async function run() {
     "candidate_fetch_failed",
     "parser_returned_zero",
   ].includes(livePocketDiscoveryStatus);
+  const fatalSourceResults = failedSourceResults.filter((result) => result.severity !== "warning");
+  const warningSourceResults = failedSourceResults.filter((result) => result.severity === "warning");
+  const allWebSourcesFailed = webSourceResults.length > 0 && webSourceResults.every((result) => !result.ok);
   const statusReasons = [
-    ...failedSourceResults.map((result) => `source_failed:${result.name}:${result.error || "unknown"}`),
+    ...fatalSourceResults.map((result) => `source_failed:${result.name}:${result.error || "unknown"}`),
     ...(criticalLivePocketFailure ? [`livepocket:${livePocketDiscoveryStatus}`] : []),
+    ...(allWebSourcesFailed ? ["all_web_sources_failed"] : []),
   ];
-  const runStatus = failedSourceResults.length > 0 || criticalLivePocketFailure ? "partial" : "ok";
+  const warningReasons = [
+    ...warningSourceResults.map((result) => `source_warning:${result.name}:${result.error || "unknown"}`),
+    ...(["no_candidates", "no_relevant_pages", "partial"].includes(livePocketDiscoveryStatus)
+      ? [`livepocket_warning:${livePocketDiscoveryStatus}`]
+      : []),
+  ];
+  const hasFatalFailure = fatalSourceResults.length > 0 || criticalLivePocketFailure || allWebSourcesFailed;
+  const runStatus = hasFatalFailure ? "partial" : warningReasons.length > 0 ? "degraded" : "ok";
 
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
   const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
@@ -582,10 +616,11 @@ async function run() {
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.21.1",
+    collectorVersion: "1.21.2",
     lastRunAt: startedAt,
     status: runStatus,
     statusReasons,
+    warningReasons,
     reviewCount: reviewQueue.length,
     publishedCount: published.length,
     historyDays: 35,
@@ -632,6 +667,7 @@ async function run() {
     ok: runStatus === "ok",
     status: runStatus,
     statusReasons,
+    warningReasons,
     collected: collected.length,
     published: published.length,
     review: reviewQueue.length,
