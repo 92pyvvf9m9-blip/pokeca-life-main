@@ -1116,7 +1116,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
   <div class="collector-card-head">
     <div>
       <h3>URL自動読取API</h3>
-      <p>LivePocketをサーバー側で読み取り、店舗・商品・日付を自動入力します。初回だけ設定します。</p>
+      <p>LivePocketとGoogleフォームをサーバー側で読み取り、店舗・商品・日付を自動入力します。初回だけ設定します。</p>
     </div>
     <span id="importApiBadge" class="collector-health idle">未設定</span>
   </div>
@@ -1128,7 +1128,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <button id="saveImportApiButton" class="secondary" type="button">API設定を保存</button>
     <button id="testImportApiButton" class="primary" type="button">接続確認</button>
   </div>
-  <p id="importApiStatus" class="sync-help">未設定です。設定後はLivePocket URLを貼るだけで読み取れます。</p>
+  <p id="importApiStatus" class="sync-help">未設定です。設定後はLivePocket・GoogleフォームのURLを貼るだけで読み取れます。</p>
 </div>
 <div class="item collector-card admin-only">
   <div class="collector-card-head">
@@ -1326,8 +1326,8 @@ nav button{height:52px;min-height:52px;max-height:52px}
 
     <div class="batch-url-block">
       <h3>抽出したURL</h3>
-      <p>1行に1件。OCRの誤認識は読取時にLivePocketへ照合して、0・O・9などを自動補正します。手入力で修正もできます。</p>
-      <textarea id="batchUrlText" class="field batch-url-text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://livepocket.jp/e/xxxxx"></textarea>
+      <p>1行に1件。OCRの誤認識は読取時に応募ページへ照合し、LivePocketの0・O・9などを自動補正します。手入力で修正もできます。</p>
+      <textarea id="batchUrlText" class="field batch-url-text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://livepocket.jp/e/xxxxx&#10;https://docs.google.com/forms/d/e/xxxxx/viewform"></textarea>
       <div class="batch-toolbar">
         <button id="batchNormalizeUrlsButton" class="secondary" type="button">URLを整理</button>
         <button id="batchReadUrlsButton" class="primary" type="button">抽選情報を一括読取</button>
@@ -1773,9 +1773,18 @@ function canonicalLotteryStateUrl(value){
   if(!normalized)return '';
   try{
     const url=new URL(normalized);
+    const host=url.hostname.toLowerCase();
     const livePocketSlug=url.pathname.match(/^\/e\/([A-Za-z0-9_-]+)/)?.[1]||'';
-    if(livePocketSlug&&/(^|\.)livepocket\.jp$/i.test(url.hostname)){
+    if(livePocketSlug&&/(^|\.)livepocket\.jp$/i.test(host)){
       return `https://livepocket.jp/e/${livePocketSlug}`;
+    }
+    const googleFormId=(host==='docs.google.com'||host==='forms.google.com')
+      ?(url.pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)\/(?:viewform|formResponse)\/?$/i)?.[1]||'')
+      :'';
+    if(googleFormId)return `https://docs.google.com/forms/d/e/${googleFormId}/viewform`;
+    if(host==='forms.gle'){
+      url.hash='';url.search='';url.pathname=url.pathname.replace(/\/+$/,'');
+      return url.pathname&&url.pathname!=='/'?`https://forms.gle${url.pathname}`:'';
     }
     for(const key of [...url.searchParams.keys()]){
       if(/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key))url.searchParams.delete(key);
@@ -4271,7 +4280,7 @@ function renderImportApiSettings(message=''){
  if(input)input.value=importApiSettings.endpoint||'';
  const ready=Boolean(importApiSettings.endpoint);
  if(badge){badge.textContent=ready?'API接続設定済':'未設定';badge.className=`collector-health ${ready?'ok':'idle'}`}
- if(status)status.textContent=message||(ready?'設定済みです。「接続確認」で動作を確認できます。':'未設定です。設定後はLivePocket URLを貼るだけで読み取れます。');
+ if(status)status.textContent=message||(ready?'設定済みです。「接続確認」でLivePocket・Googleフォームの動作を確認できます。':'未設定です。設定後はLivePocket・GoogleフォームのURLを貼るだけで読み取れます。');
 }
 function saveImportApiFromUI(){
  const endpoint=normalizeImportApiEndpoint($('#importApiEndpointInput')?.value||'');
@@ -4293,6 +4302,13 @@ async function testImportApiConnection(){
 function livePocketHost(url=''){
  try{return /(^|\.)livepocket\.jp$/i.test(new URL(url).hostname)}catch{return false}
 }
+function googleFormHost(url=''){
+ try{
+  const host=new URL(url).hostname.toLowerCase();
+  return host==='forms.gle'||host==='docs.google.com'||host==='forms.google.com';
+ }catch{return false}
+}
+function readerApiHost(url=''){return livePocketHost(url)||googleFormHost(url)}
 function livePocketSection(text,labelPattern,nextPattern){
  const t=cleanImportText(text).replace(/\n+/g,' ');
  const m=t.match(new RegExp(`(?:【|\\[)?(?:${labelPattern})(?:】|\\])?\\s*[:：]?\\s*([\\s\\S]*?)(?=(?:【|\\[)?(?:${nextPattern})(?:】|\\])?|$)`,'i'));
@@ -4350,7 +4366,7 @@ function parseLotteryImport(text,url='',title=''){
  purchaseStartDate:pu.startDate||'',purchaseStartTime:pu.startTime||'',purchaseEndDate:pu.endDate||'',purchaseEndTime:pu.endTime||'',
  type:storeType?'店舗':'通販',area:pickup?'全国':(storeType?(pref||'全国'):'全国'),memo:notes.join('\n')}
 }
-function fillLotteryImport(d){const f=$('#form');if(!f)return 0;let n=0;for(const k of ['shop','product','url','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','type','area','memo']){const el=f.elements[k];if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];el.dispatchEvent(new Event('change',{bubbles:true}));n++}}const ae=f.elements.area;if(ae){ae.disabled=d.type==='通販';if(d.type==='通販')ae.value='全国'}return n}
+function fillLotteryImport(d){const f=$('#form');if(!f)return 0;let n=0;for(const k of ['shop','product','url','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','type','area','destinationType','memo']){const el=f.elements[k];if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];el.dispatchEvent(new Event('change',{bubbles:true}));n++}}const ae=f.elements.area;if(ae){ae.disabled=d.type==='通販';if(d.type==='通販')ae.value='全国'}return n}
 
 function appendImportMemo(base,line){
  const current=String(base||'').trim();
@@ -4462,12 +4478,12 @@ async function fetchImportApi(url){
  if(!response.ok||!payload?.ok)throw new Error(payload?.error||`読取API HTTP ${response.status}`);
  return{
   parsed:payload.data||{},text:payload.text||'',title:payload.title||'',method:'専用API',missing:payload.missing||[],
-  requestedUrl:payload.requestedUrl||url,finalUrl:payload.finalUrl||'',identity:payload.identity||null,
-  confidence:Number(payload.confidence||0),warnings:Array.isArray(payload.warnings)?payload.warnings:[],evidence:payload.evidence||null
+  requestedUrl:payload.requestedUrl||url,canonicalUrl:payload.canonicalUrl||payload.data?.url||'',finalUrl:payload.finalUrl||'',identity:payload.identity||null,
+  source:payload.source||'',confidence:Number(payload.confidence||0),warnings:Array.isArray(payload.warnings)?payload.warnings:[],evidence:payload.evidence||null
  };
 }
 async function fetchImportPage(url){
- if(livePocketHost(url))return fetchImportApi(url);
+ if(readerApiHost(url))return fetchImportApi(url);
  try{
    const r=await fetchWithTimeout(url,{credentials:'omit'},10000);
    if(r.ok){const raw=await r.text(),doc=new DOMParser().parseFromString(raw,'text/html');doc.querySelectorAll('script,style,noscript,svg').forEach(x=>x.remove());const text=doc.body?.innerText||'';if(text.trim().length>80)return{text,title:doc.querySelector('meta[property="og:title"]')?.content||doc.title||'',method:'直接取得'}}
@@ -4482,19 +4498,21 @@ async function fetchImportPage(url){
  }catch{throw new Error('公開ページを取得できませんでした')}
 }
 let lotteryImportRequestSequence=0;
-function livePocketRecordKey(value){
+function importRecordKey(value){
  const url=canonicalLotteryStateUrl(value||'');
  return url?`url:${url}`:'';
 }
+function livePocketRecordKey(value){return importRecordKey(value)}
 function clearLotteryImportEvidence(){
  const form=$('#form');if(!form)return;
- for(const key of ['importSourceKey','importEventSlug','importSourceTitle','importConfidence','importWarning'])delete form.dataset[key];
+ for(const key of ['importSourceKey','importEventSlug','importFormId','importSourceTitle','importConfidence','importWarning'])delete form.dataset[key];
 }
 function storeLotteryImportEvidence(page,requestedUrl){
  const form=$('#form');if(!form)return;
  const canonical=canonicalLotteryStateUrl(requestedUrl||'');
- form.dataset.importSourceKey=page?.identity?.recordKey||livePocketRecordKey(canonical);
+ form.dataset.importSourceKey=page?.identity?.recordKey||importRecordKey(canonical);
  form.dataset.importEventSlug=page?.identity?.eventSlug||(()=>{try{return new URL(canonical).pathname.match(/^\/e\/([^/]+)/)?.[1]||''}catch{return''}})();
+ form.dataset.importFormId=page?.identity?.formId||(()=>{try{return new URL(canonical).pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)/)?.[1]||''}catch{return''}})();
  form.dataset.importSourceTitle=String(page?.title||'').slice(0,500);
  form.dataset.importConfidence=String(Number(page?.confidence||0));
  form.dataset.importWarning=(page?.warnings||[]).join('／').slice(0,500);
@@ -4521,14 +4539,16 @@ async function importFromUrl(){
   if(currentUrl!==requestedUrl)throw new Error('入力URLが変わったため、古い読取結果を破棄しました');
   const responseUrl=canonicalLotteryStateUrl(pg.requestedUrl||requestedUrl);
   if(responseUrl!==requestedUrl)throw new Error('APIの応答URLが入力URLと一致しないため、反映を停止しました');
-  const expectedKey=livePocketRecordKey(requestedUrl);
-  if(pg.identity?.recordKey&&pg.identity.recordKey!==expectedKey)throw new Error('抽選IDが入力URLと一致しないため、反映を停止しました');
-  const rawParsed=pg.parsed||parseLotteryImport(pg.text,requestedUrl,pg.title);
+  const resolvedUrl=canonicalLotteryStateUrl(pg.canonicalUrl||pg.identity?.canonicalUrl||pg.finalUrl||requestedUrl)||requestedUrl;
+  const expectedKey=importRecordKey(resolvedUrl);
+  if(pg.identity?.recordKey&&pg.identity.recordKey!==expectedKey)throw new Error('抽選IDが解析後URLと一致しないため、反映を停止しました');
+  const rawParsed=pg.parsed||parseLotteryImport(pg.text,resolvedUrl,pg.title);
   const purchaseEnrichment=enrichImportedPurchaseDates(rawParsed,pg);
   const parsed=purchaseEnrichment.data;
   clearImportedLotteryFields();
-  const n=fillLotteryImport({...parsed,url:requestedUrl});
-  storeLotteryImportEvidence(pg,requestedUrl);
+  const n=fillLotteryImport({...parsed,url:resolvedUrl});
+  const urlInput=$('#autoImportUrl');if(urlInput)urlInput.value=resolvedUrl;
+  storeLotteryImportEvidence(pg,resolvedUrl);
   if($('#autoImportText'))$('#autoImportText').value=(pg.text||'').slice(0,50000);
   const missing=[];if(!parsed.shop)missing.push('店舗名');if(!parsed.product)missing.push('商品名');if(!parsed.applyEndDate)missing.push('応募締切');if(!parsed.resultStartDate)missing.push('結果発表');
   const confidence=Number(pg.confidence||0);
@@ -4539,7 +4559,7 @@ async function importFromUrl(){
  }catch(e){
   if(requestId!==lotteryImportRequestSequence)return;
   console.warn(e);clearImportedLotteryFields();clearLotteryImportEvidence();fillLotteryImport({url:requestedUrl});
-  if(e?.code==='IMPORT_API_NOT_CONFIGURED')setImportStatus('LivePocketの自動読取APIが未設定です。設定画面の管理者設定から、Cloudflare Worker URLを1回だけ登録してください。','error');
+  if(e?.code==='IMPORT_API_NOT_CONFIGURED')setImportStatus('URL自動読取APIが未設定です。設定画面の管理者設定から、Cloudflare Worker URLを1回だけ登録してください。','error');
   else setImportStatus(`URLを読み取れませんでした：${e?.message||'取得エラー'}。誤登録防止のため、前回の内容は残していません。`,'error');
  }finally{
   if(requestId===lotteryImportRequestSequence&&b){b.disabled=false;b.textContent='URLから反映'}
@@ -4571,7 +4591,7 @@ function manualLotteryPublicItem(item){
  const canonicalUrl=canonicalLotteryStateUrl(item?.url||'');
  return{
   externalId:canonicalUrl,
-  sourceKey:canonicalUrl?`url:${canonicalUrl}`:'',sourceEventSlug:item.sourceEventSlug||'',sourceTitle:item.sourceTitle||'',
+  sourceKey:canonicalUrl?`url:${canonicalUrl}`:'',sourceEventSlug:item.sourceEventSlug||'',sourceFormId:item.sourceFormId||'',sourceTitle:item.sourceTitle||'',
   parseConfidence:Number.isFinite(Number(item.parseConfidence))?Number(item.parseConfidence):null,
   reviewRequired:Boolean(item.reviewRequired),parseWarning:item.parseWarning||'',
   manualEntry:true,adminPublished:true,sourceKind:'manual',confidence:0.99,verified:true,
@@ -4778,6 +4798,7 @@ function normalizeOcrUrlLine(value=''){
  line=line.replace(/https?\s*:\s*\/\s*\//i,match=>/^http:/i.test(match.replace(/\s/g,''))?'http://':'https://');
  line=line.replace(/https?\s*\/\s*\//i,match=>/^http/i.test(match)?'http://':'https://');
  line=line.replace(/livepocket\s*[,.]\s*jp/ig,'livepocket.jp').replace(/livepocket\s+jp/ig,'livepocket.jp');
+ line=line.replace(/docs\s*[,.]\s*google\s*[,.]\s*com/ig,'docs.google.com').replace(/forms\s*[,.]\s*gle/ig,'forms.gle');
  line=line.replace(/\s*([:\/._?=&%-])\s*/g,'$1');
  return line;
 }
@@ -4786,7 +4807,7 @@ function extractBatchUrlsFromText(text=''){
  const add=value=>{
   let candidate=normalizeOcrUrlLine(value).replace(/[）)】\]」』、。,.]+$/g,'');
   if(/^www\./i.test(candidate))candidate=`https://${candidate}`;
-  if(/^livepocket\.jp\//i.test(candidate))candidate=`https://${candidate}`;
+  if(/^(?:livepocket\.jp|docs\.google\.com\/forms|forms\.gle)\//i.test(candidate))candidate=`https://${candidate}`;
   if(!/^https?:\/\//i.test(candidate))return;
   try{
    const url=new URL(candidate);url.hash='';
@@ -4800,6 +4821,8 @@ function extractBatchUrlsFromText(text=''){
   const line=normalizeOcrUrlLine(rawLine);
   const liveMatches=line.match(/(?:https?:\/\/)?(?:www\.)?livepocket\.jp\/e\/[A-Za-z0-9_\- ]{3,40}/ig)||[];
   liveMatches.forEach(add);
+  const googleFormMatches=line.match(/(?:https?:\/\/)?(?:docs\.google\.com\/forms\/d\/(?:e\/)?[A-Za-z0-9_-]+\/(?:viewform|formResponse)|forms\.gle\/[A-Za-z0-9_-]+)/ig)||[];
+  googleFormMatches.forEach(add);
   const genericMatches=line.match(/https?:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\/[A-Za-z0-9._~:/?#@!$&()*+,;=%\-]*)?/ig)||[];
   genericMatches.forEach(add);
  }
@@ -4918,11 +4941,12 @@ async function resolveBatchLottery(inputUrl=''){
    const page=await fetchImportPage(candidate);
    const requested=canonicalLotteryStateUrl(candidate);
    const response=canonicalLotteryStateUrl(page.requestedUrl||candidate);
-   if(livePocketHost(candidate)&&response&&response!==requested)throw new Error('応答URL不一致');
-   if(livePocketHost(candidate)&&page.identity?.recordKey&&page.identity.recordKey!==livePocketRecordKey(requested))throw new Error('抽選ID不一致');
-   const raw=page.parsed||parseLotteryImport(page.text,candidate,page.title);
+   if(readerApiHost(candidate)&&response&&response!==requested)throw new Error('応答URL不一致');
+   const resolvedUrl=canonicalLotteryStateUrl(page.canonicalUrl||page.identity?.canonicalUrl||page.finalUrl||candidate)||requested;
+   if(page.identity?.recordKey&&page.identity.recordKey!==importRecordKey(resolvedUrl))throw new Error('抽選ID不一致');
+   const raw=page.parsed||parseLotteryImport(page.text,resolvedUrl,page.title);
    const enrichment=enrichImportedPurchaseDates(raw,page);
-   return{candidate,page,parsed:enrichment.data,enrichment,corrected:canonicalLotteryStateUrl(candidate)!==canonicalLotteryStateUrl(inputUrl)};
+   return{candidate:resolvedUrl,requestedCandidate:candidate,page,parsed:enrichment.data,enrichment,corrected:canonicalLotteryStateUrl(resolvedUrl)!==canonicalLotteryStateUrl(inputUrl)};
   }catch(error){lastError=error}
  }
  throw new Error(lastError?.message||'ページを読み取れませんでした');
@@ -4939,6 +4963,7 @@ function buildBatchLotteryItem(resolved,inputUrl=''){
   origin:existing?.origin||'manual-admin',manualEntry:true,adminPublished:true,
   externalId:url,remoteId:url,sourceKey:url?`url:${url}`:'',
   sourceEventSlug:(()=>{try{return new URL(url).pathname.match(/^\/e\/([^/]+)/)?.[1]||''}catch{return''}})(),
+  sourceFormId:(()=>{try{return new URL(url).pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)/)?.[1]||''}catch{return''}})(),
   sourceTitle:String(resolved.page?.title||'').slice(0,500),
   parseConfidence:Number(resolved.page?.confidence||0)||null,
   reviewRequired:Boolean(missing.length||((resolved.page?.confidence||0)>0&&(resolved.page?.confidence||0)<.75)),
@@ -5054,7 +5079,7 @@ function open(type,item){$('#backdrop').classList.remove('hide');clearFormMessag
     <button class="secondary import-url-paste" type="button" id="pasteImportUrlButton">URL貼付</button>
     <button class="import-button" type="button" id="autoImportButton">URLから反映</button>
   </div>
-  <small class="import-hint" id="importApiHint">${livePocketHost(item?.url||'')||importApiSettings.endpoint?(importApiSettings.endpoint?'LivePocket専用API：接続設定済み':'LivePocket専用API：未設定'):'LivePocketは専用APIで正確に読み取ります。'}</small>
+  <small class="import-hint" id="importApiHint">${readerApiHost(item?.url||'')||importApiSettings.endpoint?(importApiSettings.endpoint?'URL自動読取API：接続設定済み':'URL自動読取API：未設定'):'LivePocketとGoogleフォームは専用APIで正確に読み取ります。'}</small>
   <details class="text-import-details">
     <summary>本文・X投稿から入力する</summary>
     <textarea class="field import-text" id="autoImportText" placeholder="ページ本文、X投稿、アプリ内告知文などを貼り付け"></textarea>
@@ -5458,6 +5483,7 @@ $('#form').addEventListener('submit',async e=>{
         remoteId:canonicalInputUrl,
         sourceKey:canonicalInputUrl?`url:${canonicalInputUrl}`:'',
         sourceEventSlug:(()=>{try{return new URL(canonicalInputUrl).pathname.match(/^\/e\/([^/]+)/)?.[1]||''}catch{return''}})(),
+        sourceFormId:f.dataset.importFormId||(()=>{try{return new URL(canonicalInputUrl).pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)/)?.[1]||''}catch{return''}})(),
         sourceTitle:f.dataset.importSourceTitle||(canonicalLotteryStateUrl(existingLottery?.url||'')===canonicalInputUrl?existingLottery?.sourceTitle:'')||'',
         parseConfidence:f.dataset.importConfidence?Number(f.dataset.importConfidence):(existingLottery?.parseConfidence??null),
         reviewRequired:false,

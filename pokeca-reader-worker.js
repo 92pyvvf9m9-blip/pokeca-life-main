@@ -6,12 +6,20 @@
  * GET  /health
  */
 
-const ALLOWED_HOSTS = new Set([
+const LIVEPOCKET_HOSTS = new Set([
   'livepocket.jp',
   'www.livepocket.jp',
   't.livepocket.jp',
   'imageflux.livepocket.jp',
 ]);
+
+const GOOGLE_FORM_HOSTS = new Set([
+  'docs.google.com',
+  'forms.google.com',
+  'forms.gle',
+]);
+
+const ALLOWED_HOSTS = new Set([...LIVEPOCKET_HOSTS, ...GOOGLE_FORM_HOSTS]);
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -38,19 +46,70 @@ function jsonResponse(payload, status = 200) {
   });
 }
 
+function isLivePocketHost(value = '') {
+  try { return LIVEPOCKET_HOSTS.has(new URL(String(value || '')).hostname.toLowerCase()); } catch { return false; }
+}
+
+function isGoogleFormHost(value = '') {
+  try { return GOOGLE_FORM_HOSTS.has(new URL(String(value || '')).hostname.toLowerCase()); } catch { return false; }
+}
+
+function googleFormIdFromUrl(value = '') {
+  try {
+    const url = new URL(String(value || ''));
+    const host = url.hostname.toLowerCase();
+    if (!['docs.google.com', 'forms.google.com'].includes(host)) return '';
+    return url.pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)\/(?:viewform|formResponse)\/?$/i)?.[1] || '';
+  } catch { return ''; }
+}
+
+export function canonicalGoogleFormUrl(value = '') {
+  try {
+    const url = new URL(String(value || '').trim());
+    const host = url.hostname.toLowerCase();
+    if (host === 'forms.gle') {
+      url.hash = '';
+      url.search = '';
+      url.pathname = url.pathname.replace(/\/+$/, '');
+      return url.pathname && url.pathname !== '/' ? `https://forms.gle${url.pathname}` : '';
+    }
+    const id = googleFormIdFromUrl(url.toString());
+    return id ? `https://docs.google.com/forms/d/e/${id}/viewform` : '';
+  } catch { return ''; }
+}
+
+function targetKind(value = '') {
+  if (canonicalLivePocketEventUrl(value)) return 'livepocket';
+  if (canonicalGoogleFormUrl(value) || isGoogleFormHost(value)) return 'google-form';
+  return '';
+}
+
 function normalizeTarget(value) {
   const raw = String(value || '').trim();
   if (!raw) throw new Error('URLがありません');
   const url = new URL(raw);
   if (url.protocol !== 'https:') throw new Error('HTTPSのURLだけ対応しています');
-  if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase())) throw new Error('LivePocketのURLではありません');
-  if (!/^\/e\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)) throw new Error('LivePocketの応募ページURLではありません');
+  const host = url.hostname.toLowerCase();
+  if (!ALLOWED_HOSTS.has(host)) throw new Error('対応していないURLです');
   url.hash = '';
   for (const key of [...url.searchParams.keys()]) {
-    if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
+    if (/^utm_|^(ref|source|from|fbclid|gclid|usp|edit_requested)$/i.test(key)) url.searchParams.delete(key);
   }
   url.pathname = url.pathname.replace(/\/+$/, '');
-  return canonicalLivePocketEventUrl(url.toString()) || url.toString();
+
+  if (LIVEPOCKET_HOSTS.has(host)) {
+    if (!/^\/e\/[A-Za-z0-9_-]+$/.test(url.pathname)) throw new Error('LivePocketの応募ページURLではありません');
+    return canonicalLivePocketEventUrl(url.toString()) || url.toString();
+  }
+
+  if (host === 'forms.gle') {
+    if (!url.pathname || url.pathname === '/') throw new Error('Googleフォームの短縮URLではありません');
+    return `https://forms.gle${url.pathname}`;
+  }
+
+  const canonical = canonicalGoogleFormUrl(url.toString());
+  if (!canonical) throw new Error('Googleフォームの回答ページURLではありません');
+  return canonical;
 }
 
 function decodeHtmlEntities(input) {
@@ -197,6 +256,8 @@ function canonicalLivePocketEventUrl(value = '') {
 function normalizeComparableUrl(value = '') {
   const livePocket = canonicalLivePocketEventUrl(value);
   if (livePocket) return livePocket;
+  const googleForm = canonicalGoogleFormUrl(value);
+  if (googleForm) return googleForm;
   try {
     const url = new URL(String(value || ''));
     url.hash = '';
@@ -1079,6 +1140,240 @@ export function parseLivePocketFromText(text, url = '', title = '', context = {}
   };
 }
 
+
+function googleFormTitle(html = '') {
+  const source = String(html || '');
+  const itemprop = source.match(/<meta[^>]+itemprop=["']name["'][^>]+content=["']([\s\S]*?)["'][^>]*>/i)?.[1]
+    || source.match(/<meta[^>]+content=["']([\s\S]*?)["'][^>]+itemprop=["']name["'][^>]*>/i)?.[1]
+    || '';
+  return cleanLine(
+    metaContent(source, 'og:title')
+    || metaContent(source, 'twitter:title', 'name')
+    || itemprop
+    || source.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+    || '',
+  )
+    .replace(/\s*[-–—|｜]\s*Google\s*Forms?\s*$/i, '')
+    .replace(/\s*[-–—|｜]\s*Google\s*フォーム\s*$/i, '')
+    .trim();
+}
+
+function googleFormProductCandidate(value = '') {
+  return cleanLine(value)
+    .replace(/^(?:対象商品|商品名|抽選対象商品|販売商品|応募商品|ご希望の商品)\s*[:：]?\s*/i, '')
+    .replace(/^(?:ポケモンカードゲーム\s*)?(?:抽選販売|抽選受付|応募受付|予約抽選)\s*[:：]?\s*/i, '')
+    .replace(/\s*(?:抽選販売|抽選受付|応募フォーム|エントリーフォーム|抽選応募フォーム|抽選販売のお知らせ|応募受付).*$/i, '')
+    .replace(/[「『](.*)[」』]/, '$1')
+    .replace(/^[・･\-—–\s]+/, '')
+    .replace(/[|｜].*$/, '')
+    .trim()
+    .slice(0, 180);
+}
+
+function googleFormProductQuality(value = '', source = '') {
+  const candidate = googleFormProductCandidate(value);
+  if (!candidate || candidate.length < 3 || candidate.length > 180) return -9999;
+  if (/氏名|名前|メール|電話|住所|生年月日|会員番号|カード番号|店舗名|注意事項|応募期間|当選発表|受取期間|利用規約|プライバシー|必須の質問/i.test(candidate)) return -9999;
+  if (/^抽選販売(?:のお知らせ)?$|^応募フォーム$|^エントリーフォーム$|^ポケモンカード(?:ゲーム)?$/i.test(candidate)) return -9999;
+  if (/^(?:\d+\s*)?(?:BOX|ボックス|パック)\s*[¥￥]?\s*[\d,]+\s*円?$/i.test(candidate)) return -9999;
+  let score = 0;
+  if (/ポケモンカード|ポケカ/.test(candidate)) score += 80;
+  if (/拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|デッキ|セット|パック/i.test(candidate)) score += 65;
+  if (/^[ァ-ヶーA-Za-z0-9＆・\s]{4,80}$/.test(candidate)) score += 42;
+  if (/対象商品|商品名|抽選対象商品|販売商品|応募商品/.test(source)) score += 75;
+  if (/1\s*BOX|\d[,.]?\d{2,5}\s*円/.test(source)) score += 25;
+  if (/抽選|販売|応募/.test(source)) score += 10;
+  if (/\d{1,2}[\/月]\d{1,2}/.test(candidate)) score -= 80;
+  score += Math.min(candidate.length, 80) / 5;
+  return score;
+}
+
+function findGoogleFormProductResult(text = '', title = '') {
+  const generic = findProductResult(text, title);
+  if (generic.product && googleFormProductQuality(generic.product, generic.product) > 0) return generic;
+
+  const lines = normalizeTextPreserveDuplicates(`${title}\n${text}`).split('\n').map(cleanLine).filter(Boolean);
+  const candidates = [];
+  const push = (value, source, index) => {
+    const product = googleFormProductCandidate(value);
+    const score = googleFormProductQuality(value, source);
+    if (score <= -9000 || !product) return;
+    candidates.push({ product, score, source, index });
+  };
+
+  push(title, 'form-title', -1);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const inline = line.match(/(?:対象商品|商品名|抽選対象商品|販売商品|応募商品|ご希望の商品)\s*[:：]?\s*(.{2,180})/i)?.[1];
+    if (inline) push(inline, line, index);
+    if (/^(?:対象商品|商品名|抽選対象商品|販売商品|応募商品|ご希望の商品)\s*[:：]?$/.test(line)) push(lines[index + 1] || '', line, index + 1);
+    if (/1\s*BOX|\d[,.]?\d{2,5}\s*円/.test(line)) {
+      push(lines[index - 1] || '', line, index - 1);
+      push(line, line, index);
+    }
+    if (/ポケモンカード|ポケカ|拡張パック|ハイクラスパック|スターターセット|スタートデッキ|BOX|ボックス/i.test(line)) push(line, line, index);
+  }
+
+  const distinct = new Map();
+  for (const candidate of candidates.sort((a, b) => b.score - a.score || a.index - b.index)) {
+    const key = normalizeProductConsensus(candidate.product);
+    if (key && !distinct.has(key)) distinct.set(key, candidate);
+  }
+  const ranked = [...distinct.values()];
+  const top = ranked[0];
+  return top
+    ? {
+        product: top.product,
+        confidence: Math.max(0.58, Math.min(0.92, top.score / 210)),
+        ambiguous: false,
+        hasAlternatives: Boolean(ranked[1] && ranked[1].score >= top.score - 18),
+        candidates: ranked.slice(0, 8).map(item => item.product),
+        source: top.source === 'form-title' ? 'google-form-title' : 'google-form-body',
+      }
+    : { product: '', confidence: 0, ambiguous: false, candidates: [], source: 'none' };
+}
+
+function googleFormShopCandidate(value = '') {
+  return normalizeShopCandidate(value)
+    .replace(/\s*(?:抽選販売|抽選受付|応募フォーム|エントリーフォーム).*$/i, '')
+    .trim();
+}
+
+function findGoogleFormShop(text = '', title = '') {
+  const generic = findShop(text, title);
+  if (generic) return generic;
+  const lines = normalizeTextPreserveDuplicates(`${title}\n${text}`).split('\n').map(cleanLine).filter(Boolean);
+  const candidates = [];
+  const push = (value, score = 0) => {
+    const shop = googleFormShopCandidate(value);
+    if (!shop || shop.length < 2 || shop.length > 120) return;
+    if (/応募期間|当選発表|受取期間|対象商品|商品名|氏名|メール|電話|住所|注意事項/i.test(shop)) return;
+    candidates.push({ shop, score: score + shopQuality(shop) });
+  };
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const inline = line.match(/(?:店舗名|販売店|販売元|主催者|開催店舗|受取店舗)\s*[:：]?\s*(.{2,120})/i)?.[1];
+    if (inline) push(inline, 100);
+    if (/^(?:店舗名|販売店|販売元|主催者|開催店舗|受取店舗)\s*[:：]?$/.test(line)) push(lines[index + 1] || '', 100);
+    if (/カードショップ|トレカショップ|トレカ|BOOK\s*OFF|ブックオフ|古本市場|ふるいち|ホビーステーション|ホビステ|カードラボ|フタバ図書|TSUTAYA|店$|本店$|支店$/i.test(line)) push(line, 35);
+    const owner = line.match(/(?:このフォームは|This form was created inside of)\s*(.{2,100}?)(?:内で作成|\.|$)/i)?.[1];
+    if (owner) push(owner, 20);
+  }
+  push(title, 15);
+  return candidates.sort((a, b) => b.score - a.score || b.shop.length - a.shop.length)[0]?.shop || '';
+}
+
+function googleFormAccessState(text = '') {
+  const source = normalizeTextPreserveDuplicates(text);
+  if (/回答の受け付けを終了|回答を受け付けていません|no longer accepting responses|not accepting responses/i.test(source)) return 'closed';
+  if (/権限が必要|アクセス権が必要|組織内のユーザーのみ|You need permission|only be viewed by users in/i.test(source)) return 'restricted';
+  return 'open';
+}
+
+function googleFormType(text = '', shop = '') {
+  const context = `${text}\n${shop}`;
+  if (/発送|配送|通販|オンラインショップ|送料|お届け先/.test(context) && !/店頭受取|店舗受取|受取店舗/.test(context)) return '通販';
+  if (/店頭|店舗受取|店頭受取|受取店舗|来店|レジ|営業時間/.test(context) || /店$|本店$|支店$/.test(shop)) return '店舗';
+  return '店舗';
+}
+
+export function parseGoogleFormFromText(text, url = '', title = '', context = {}) {
+  const heading = cleanLine(title || '');
+  const base = parseLivePocketFromText(text, url, heading, context);
+  const normalized = normalizeText(text);
+  const productResult = findGoogleFormProductResult(normalized, heading);
+  const shop = findGoogleFormShop(normalized, heading);
+  const accessState = googleFormAccessState(normalized);
+  const areaSource = `${shop}\n${heading}\n${normalized}`;
+  const area = PREFECTURES.find(prefecture => areaSource.includes(prefecture))
+    || PREFECTURES.find(prefecture => {
+      const short = prefecture.replace(/[都道府県]$/, '');
+      return short.length >= 2 && areaSource.includes(short);
+    })
+    || '全国';
+
+  const data = {
+    ...base.data,
+    shop: shop || base.data.shop,
+    product: productResult.product || base.data.product,
+    url,
+    type: googleFormType(normalized, shop || base.data.shop),
+    area,
+    destinationType: 'direct',
+    status: accessState === 'closed' ? 'closed' : 'open',
+    memo: `Googleフォームから自動取得${base.data.memo?.includes('営業時間終了まで') ? '\n購入期限時刻：営業時間終了まで' : ''}`,
+  };
+
+  const missing = [];
+  if (!data.shop) missing.push('店舗名');
+  if (!data.product) missing.push('商品名');
+  if (!data.applyEndDate) missing.push('応募締切');
+  if (!data.resultStartDate) missing.push('結果発表');
+
+  const warnings = [...(base.warnings || [])];
+  if (accessState === 'closed') warnings.push('このGoogleフォームは回答受付を終了しています');
+  if (accessState === 'restricted') warnings.push('Googleアカウントまたは組織内アカウントが必要なフォームです');
+  if (productResult.hasAlternatives) warnings.push('複数の商品候補を検出したため、最も可能性が高い商品名を反映しました');
+  const coverage = [data.shop, data.product, data.applyEndDate, data.resultStartDate, data.purchaseEndDate].filter(Boolean).length / 5;
+  let confidence = Math.min(
+    productResult.confidence || base.confidence || 0.5,
+    data.shop ? 0.96 : 0.65,
+    0.48 + coverage * 0.52,
+  );
+  if (missing.length) confidence = Math.min(confidence, 0.74);
+  if (accessState !== 'open') confidence = Math.min(confidence, 0.68);
+
+  return {
+    ...base,
+    data,
+    missing,
+    warnings: [...new Set(warnings)],
+    confidence: Math.max(0, Math.min(1, confidence)),
+    reviewRequired: missing.length > 0 || accessState !== 'open',
+    evidence: {
+      ...(base.evidence || {}),
+      formId: googleFormIdFromUrl(url),
+      formAccessState: accessState,
+      productSource: productResult.source,
+      productCandidates: productResult.candidates,
+      titleSource: context?.heading?.source || 'google-form-title',
+    },
+  };
+}
+
+async function fetchGoogleForm(url) {
+  const response = await fetch(url, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4',
+      'Cache-Control': 'no-cache',
+    },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error(`Googleフォーム取得失敗（HTTP ${response.status}）`);
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('text/html')) throw new Error('GoogleフォームのHTMLを取得できませんでした');
+  const html = await response.text();
+  if (html.length < 200) throw new Error('Googleフォーム本文が空です');
+  if (html.length > 4_000_000) throw new Error('Googleフォームが大きすぎます');
+  const finalUrl = response.url || url;
+  const canonicalUrl = canonicalGoogleFormUrl(finalUrl);
+  if (!canonicalUrl || !googleFormIdFromUrl(canonicalUrl)) throw new Error('Googleフォーム以外へ転送されました');
+  return { html, finalUrl, canonicalUrl };
+}
+
+async function readAndParseGoogleForm(target) {
+  const page = await fetchGoogleForm(target);
+  const title = googleFormTitle(page.html);
+  const heading = { title, source: 'google-form-title', confidence: title ? 0.96 : 0.7, candidates: title ? [{ title, source: 'google-form-title' }] : [] };
+  const text = buildReadableText(page.html);
+  const parsed = parseGoogleFormFromText(text, page.canonicalUrl, title, { heading });
+  parsed.evidence = { ...(parsed.evidence || {}), representations: [{ url: target, finalUrl: page.finalUrl, kind: 'google-form' }] };
+  return { parsed, heading, text, finalUrl: page.finalUrl, canonicalUrl: page.canonicalUrl, representations: parsed.evidence.representations };
+}
+
 async function fetchLivePocket(url) {
   const response = await fetch(url, {
     redirect: 'follow',
@@ -1162,6 +1457,8 @@ export function normalizeHttpsUrl(value = '') {
   if (!raw) return '';
   const livePocket = canonicalLivePocketEventUrl(raw);
   if (livePocket) return livePocket;
+  const googleForm = canonicalGoogleFormUrl(raw);
+  if (googleForm) return googleForm;
   try {
     const url = new URL(raw);
     if (url.protocol !== 'https:') return '';
@@ -1540,34 +1837,55 @@ async function handleAdminCheck(request, env) {
 async function handleReader(request) {
   const body = await request.json();
   const target = normalizeTarget(body?.url);
-  const { parsed, heading, text, finalUrl, representations } = await readAndParseLivePocket(target);
-  parsed.data.url = target;
+  const kind = targetKind(target);
+  if (!kind) throw new Error('対応していないURLです');
 
+  const result = kind === 'livepocket'
+    ? await readAndParseLivePocket(target)
+    : await readAndParseGoogleForm(target);
+  const canonicalUrl = kind === 'livepocket'
+    ? canonicalLivePocketEventUrl(target)
+    : result.canonicalUrl;
+  const { parsed, heading, text, finalUrl, representations } = result;
+  parsed.data.url = canonicalUrl;
 
-  if (!parsed.data.product && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
+  if (!parsed.data.product && !parsed.data.shop && !parsed.data.applyEndDate && !parsed.data.resultStartDate) {
     return jsonResponse({
       ok: false,
-      error: 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした',
+      error: kind === 'livepocket'
+        ? 'LivePocket本文は取得できましたが、抽選情報を判定できませんでした'
+        : 'Googleフォーム本文は取得できましたが、ポケカ抽選情報を判定できませんでした',
       debug: { title: heading.title, requestedUrl: target, finalUrl, textPreview: text.slice(0, 1500) },
     }, 422);
   }
 
+  const source = kind === 'livepocket' ? 'livepocket-server' : 'google-form-server';
+  const recordKey = `url:${canonicalUrl}`;
   return jsonResponse({
     ok: true,
-    source: 'livepocket-server',
+    source,
     title: heading.title,
     requestedUrl: target,
+    canonicalUrl,
     finalUrl,
     representations,
-    readerVersion: '1.4.5',
-    identity: { recordKey: `url:${target}`, eventSlug: eventSlugFromUrl(target), requestedUrl: target },
+    readerVersion: '1.5.0',
+    identity: {
+      recordKey,
+      eventSlug: kind === 'livepocket' ? eventSlugFromUrl(canonicalUrl) : '',
+      formId: kind === 'google-form' ? googleFormIdFromUrl(canonicalUrl) : '',
+      requestedUrl: target,
+      canonicalUrl,
+      sourceKind: kind,
+    },
     confidence: parsed.confidence,
     warnings: parsed.warnings,
     evidence: parsed.evidence,
     data: {
       ...parsed.data,
-      sourceKey: `url:${target}`,
-      sourceEventSlug: eventSlugFromUrl(target),
+      sourceKey: recordKey,
+      sourceEventSlug: kind === 'livepocket' ? eventSlugFromUrl(canonicalUrl) : '',
+      sourceFormId: kind === 'google-form' ? googleFormIdFromUrl(canonicalUrl) : '',
       sourceTitle: heading.title,
       parseConfidence: parsed.confidence,
       reviewRequired: parsed.reviewRequired,
@@ -1591,7 +1909,8 @@ export default {
         return jsonResponse({
           ok: true,
           service: 'pokeca-life-reader',
-          version: '1.4.5',
+          version: '1.5.0',
+          supportedReaders: ['LivePocket', 'Google Forms'],
           publishConfigured: Boolean(env.POKECA_GITHUB_TOKEN && env.POKECA_ADMIN_KEY && env.GITHUB_OWNER && env.GITHUB_REPO),
         });
       }
