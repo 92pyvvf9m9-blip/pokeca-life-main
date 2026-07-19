@@ -38,19 +38,26 @@ export function buildCollectorHealthReport(status = {}) {
     status: status.livePocketDiscoveryStatus || "not_configured",
   };
   const livePocketStatus = String(livePocket.status || "not_configured");
-  const collectorPartial = status.status === "partial" || number(status.failedSourceCount) > 0;
+  const fatalFailedSources = failedSources.filter((source) => source.severity !== "warning");
+  const warningFailedSources = failedSources.filter((source) => source.severity === "warning");
+  const allSourcesFailed = number(status.checkedSourceCount) > 0
+    && number(status.successfulSourceCount) === 0;
+  const collectorFatal = fatalFailedSources.length > 0 || allSourcesFailed;
   const livePocketCritical = CRITICAL_LIVEPOCKET_STATUSES.has(livePocketStatus);
   const livePocketWarning = WARNING_LIVEPOCKET_STATUSES.has(livePocketStatus);
 
   let level = "ok";
-  if (collectorPartial || livePocketCritical) level = "error";
-  else if (livePocketWarning) level = "warning";
+  if (collectorFatal || livePocketCritical) level = "error";
+  else if (warningFailedSources.length > 0 || livePocketWarning || status.status === "degraded") level = "warning";
 
   const annotations = [];
   for (const source of failedSources) {
+    const sourceLevel = source.severity === "warning" ? "warning" : "error";
     annotations.push({
-      level: "error",
-      title: `取得元エラー: ${source.name || "不明"}`,
+      level: sourceLevel,
+      title: sourceLevel === "warning"
+        ? `取得元警告: ${source.name || "不明"}`
+        : `取得元エラー: ${source.name || "不明"}`,
       message: source.error || "原因不明の取得エラー",
     });
   }
@@ -73,7 +80,7 @@ export function buildCollectorHealthReport(status = {}) {
         "",
         "## 失敗した取得元",
         "",
-        ...failedSources.map((source) => `- **${md(source.name || "不明")}**: ${md(source.error || "原因不明")}`),
+        ...failedSources.map((source) => `- ${source.severity === "warning" ? "⚠️" : "❌"} **${md(source.name || "不明")}**: ${md(source.error || "原因不明")}`),
       ]
     : [];
 
@@ -105,7 +112,7 @@ export function buildCollectorHealthReport(status = {}) {
 
   for (const source of diagnostics) {
     lines.push(
-      `| ${statusMark(source.status)} | ${md(source.name)} | ${number(source.itemCount)} | ${number(source.discovery?.returnedCount)} | ${number(source.relevantPageCount)} | ${md(source.error || source.zeroItemReason)} |`
+      `| ${source.status === "failed" && source.severity === "warning" ? "⚠️" : statusMark(source.status)} | ${md(source.name)} | ${number(source.itemCount)} | ${number(source.discovery?.returnedCount)} | ${number(source.relevantPageCount)} | ${md(source.error || source.zeroItemReason)} |`
     );
   }
 
@@ -118,7 +125,7 @@ export function buildCollectorHealthReport(status = {}) {
     level === "error"
       ? "**判定: 収集処理は完走しましたが、失敗があるためWorkflowを失敗扱いにします。診断JSONは保存済みです。**"
       : level === "warning"
-        ? "**判定: 致命的エラーはありませんが、自動発見結果の確認が必要です。**"
+        ? "**判定: 収集・公開データ更新は完了しました。取得元の一部に警告がありますが、Workflowは成功扱いです。**"
         : "**判定: 取得元・自動発見とも正常です。**",
     ""
   );

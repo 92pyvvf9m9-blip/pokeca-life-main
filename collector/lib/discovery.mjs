@@ -31,6 +31,51 @@ function canonicalCandidateUrl(value) {
   return url.href;
 }
 
+function decodeHtmlEntities(value = "") {
+  return String(value || "")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#x2f;/gi, "/")
+    .replace(/&#47;/g, "/")
+    .replace(/\\\//g, "/")
+    .replace(/\u002f/gi, "/");
+}
+
+/**
+ * LivePocket search cards sometimes expose the event URL in JSON/data
+ * attributes while the clickable anchor itself has no useful text. Scan the
+ * raw response and keep a short nearby context so the normal keyword gate can
+ * still reject unrelated pickup events.
+ */
+function extractEmbeddedLivePocketLinks(html = "") {
+  const decoded = decodeHtmlEntities(html);
+  const matches = [];
+  const patterns = [
+    /https?:\/\/(?:[a-z0-9-]+\.)?livepocket\.jp\/e\/[a-z0-9_-]+/gi,
+    /(?:^|["'\s(=])\/e\/[a-z0-9_-]+/gi,
+  ];
+  const seen = new Set();
+
+  for (const pattern of patterns) {
+    for (const match of decoded.matchAll(pattern)) {
+      let raw = String(match[0] || "").replace(/^["'\s(=]+/, "");
+      if (!raw) continue;
+      const index = Number(match.index || 0);
+      const context = decoded
+        .slice(Math.max(0, index - 500), index + raw.length + 500)
+        .replace(/<[^>]+>/g, " ")
+        .replace(/[{}[\]"']/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const url = raw.startsWith("/") ? new URL(raw, "https://t.livepocket.jp/").href : raw;
+      if (seen.has(url)) continue;
+      seen.add(url);
+      matches.push({ url, text: context, embedded: true });
+    }
+  }
+
+  return matches;
+}
+
 function baseDiscoveryStats(source) {
   return {
     enabled: Boolean(source.discovery?.enabled),
@@ -39,6 +84,7 @@ function baseDiscoveryStats(source) {
     returnedCount: 0,
     duplicateRejected: 0,
     truncatedCount: 0,
+    embeddedEventLinks: 0,
     rejected: {
       invalidUrl: 0,
       protocol: 0,
@@ -77,7 +123,32 @@ export function discoverCandidateLinksDetailed(source, html) {
     : [];
   const requiredPathPatterns = source.discovery.requiredPathPatterns || [];
 
-  const links = extractLinks(html, source.url);
+  const normalLinks = extractLinks(html, source.url);
+  const livePocketDiscovery = source.parser === "livepocket-search"
+    || source.discovery?.childParser === "livepocket"
+    || source.childParser === "livepocket";
+  const embeddedLinks = livePocketDiscovery
+    ? extractEmbeddedLivePocketLinks(html)
+    : [];
+  stats.embeddedEventLinks = embeddedLinks.length;
+  const mergedLinks = new Map();
+  for (const link of [...normalLinks, ...embeddedLinks]) {
+    const key = String(link.url || "");
+    if (!key) continue;
+    const previous = mergedLinks.get(key);
+    if (!previous) {
+      mergedLinks.set(key, link);
+      continue;
+    }
+    mergedLinks.set(key, {
+      ...previous,
+      text: String(previous.text || "").trim()
+        ? previous.text
+        : String(link.text || "").trim(),
+      embedded: Boolean(previous.embedded || link.embedded),
+    });
+  }
+  const links = [...mergedLinks.values()];
   stats.totalLinks = links.length;
 
   const accepted = [];
