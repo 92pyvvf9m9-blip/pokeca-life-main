@@ -1,25 +1,478 @@
 {
-  "collectorVersion": "1.21.0",
-  "lastRunAt": "2026-07-18T23:36:19.605Z",
+  "collectorVersion": "1.21.1",
+  "lastRunAt": "2026-07-19T00:34:19.766Z",
   "status": "partial",
-  "reviewCount": 7,
-  "publishedCount": 78,
+  "statusReasons": [
+    "source_failed:あみあみ:HTTP 403"
+  ],
+  "reviewCount": 23,
+  "publishedCount": 93,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 10,
-  "successfulSourceCount": 7,
-  "failedSourceCount": 3,
+  "successfulSourceCount": 9,
+  "failedSourceCount": 1,
   "sourceHealth": {
     "checkedCount": 10,
-    "successfulCount": 7,
-    "failedCount": 3,
-    "withItemsCount": 2,
-    "zeroItemsCount": 5,
-    "discoveredPageCount": 4
+    "successfulCount": 9,
+    "failedCount": 1,
+    "withItemsCount": 3,
+    "zeroItemsCount": 6,
+    "discoveredPageCount": 4,
+    "failedSources": [
+      {
+        "name": "あみあみ",
+        "error": "HTTP 403"
+      }
+    ],
+    "zeroItemSources": [
+      {
+        "name": "LivePocket公開抽選",
+        "reason": "links-found-but-none-matched-discovery-rules"
+      },
+      {
+        "name": "LivePocket公開抽選",
+        "reason": "links-found-but-none-matched-discovery-rules"
+      },
+      {
+        "name": "楽天ブックス",
+        "reason": "links-found-but-none-matched-discovery-rules"
+      },
+      {
+        "name": "ふるいち",
+        "reason": "relevant-pages-were-not-parsed-into-items"
+      },
+      {
+        "name": "ホビーサーチ",
+        "reason": "candidate-pages-could-not-be-fetched"
+      },
+      {
+        "name": "おたいち（お宝市番館）イオン広店",
+        "reason": "candidate-pages-did-not-look-relevant"
+      }
+    ]
   },
-  "autoCollectedCount": 21,
+  "sourceDiagnostics": [
+    {
+      "name": "LivePocket公開抽選",
+      "parser": "livepocket-search",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1317,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 108069,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 120,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 5,
+          "includePattern": 99,
+          "excludePattern": 16,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "LivePocket公開抽選",
+      "parser": "livepocket-search",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1609,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 108685,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 120,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 5,
+          "includePattern": 99,
+          "excludePattern": 16,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "ゲオ",
+      "parser": "geo-lottery",
+      "status": "items",
+      "itemCount": 9,
+      "rootItemCount": 2,
+      "discoveredItemCount": 7,
+      "elapsedMs": 3323,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 40861,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 152,
+        "acceptedBeforeDedupe": 5,
+        "returnedCount": 3,
+        "duplicateRejected": 2,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 147,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 3,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 3,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "楽天ブックス",
+      "parser": "rakuten-books",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 10441,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=euc-jp",
+        "responseBytes": 71197,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 107,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 107,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "あみあみ",
+      "parser": "amiami",
+      "status": "failed",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 258,
+      "fetch": null,
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 0,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {}
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "source-fetch-failed",
+      "error": "HTTP 403",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "ホビーステーション",
+      "parser": "hobby-station-news",
+      "status": "items",
+      "itemCount": 12,
+      "rootItemCount": 12,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1554,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 54608,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 34,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 34,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "ふるいち",
+      "parser": "furuichi-news",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1684,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 82831,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 129,
+        "acceptedBeforeDedupe": 2,
+        "returnedCount": 1,
+        "duplicateRejected": 1,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 4,
+          "includePattern": 121,
+          "excludePattern": 2,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 1,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 1,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "relevant-pages-were-not-parsed-into-items",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "ホビーサーチ",
+      "parser": "hobby-search",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 3661,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=utf-8",
+        "responseBytes": 242355,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 899,
+        "acceptedBeforeDedupe": 4,
+        "returnedCount": 4,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 895,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 4,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "candidate-pages-could-not-be-fetched",
+      "error": "",
+      "childErrors": [
+        "HTTP 403",
+        "HTTP 403",
+        "HTTP 403"
+      ],
+      "parseErrors": []
+    },
+    {
+      "name": "おたいち（お宝市番館）イオン広店",
+      "parser": "generic",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1824,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 72480,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 42,
+        "acceptedBeforeDedupe": 1,
+        "returnedCount": 1,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 41,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 1,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 1,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "candidate-pages-did-not-look-relevant",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "外部抽選情報解析",
+      "parser": "listing-intelligence-v1",
+      "status": "items",
+      "itemCount": 31,
+      "rootItemCount": 31,
+      "discoveredItemCount": 0,
+      "elapsedMs": 1029,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 848988,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": false,
+        "totalLinks": 0,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 0,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "zeroItemReason": "",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    }
+  ],
+  "autoCollectedCount": 52,
   "multiProductExpandedCount": 9,
   "livePocketDiscoveredCount": 0,
+  "livePocketDiscoveryStatus": "no_candidates",
+  "livePocketDiscovery": {
+    "status": "no_candidates",
+    "searchSourceCount": 2,
+    "successfulSearchSourceCount": 2,
+    "failedSearchSourceCount": 0,
+    "searchPageLinkCount": 240,
+    "candidateLinkCount": 0,
+    "candidateFetchSuccessCount": 0,
+    "candidateFetchFailureCount": 0,
+    "relevantPageCount": 0,
+    "parsedItemCount": 0,
+    "crossSearchDuplicateCount": 0
+  },
   "xLivePocketEnrichedCount": 0,
   "xCollectorStatus": "not_configured",
   "xOfficialAccountCount": 10,
@@ -27,13 +480,13 @@
   "xItemCount": 0,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 85,
-    "publishedCount": 78,
-    "reviewCount": 7,
+    "candidateCount": 116,
+    "publishedCount": 93,
+    "reviewCount": 23,
     "rejectedCount": 0,
-    "directVerifiedCount": 59,
-    "catalogMatchedCount": 85,
-    "autoCollectedCount": 21,
+    "directVerifiedCount": 74,
+    "catalogMatchedCount": 116,
+    "autoCollectedCount": 52,
     "multiProductExpandedCount": 9,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
   }
