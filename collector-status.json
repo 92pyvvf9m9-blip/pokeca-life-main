@@ -1,38 +1,46 @@
 {
-  "collectorVersion": "1.21.1",
-  "lastRunAt": "2026-07-19T00:34:19.766Z",
-  "status": "partial",
-  "statusReasons": [
-    "source_failed:あみあみ:HTTP 403"
+  "collectorVersion": "1.21.2",
+  "lastRunAt": "2026-07-19T01:06:23.952Z",
+  "status": "degraded",
+  "statusReasons": [],
+  "warningReasons": [
+    "source_warning:あみあみ:HTTP 403",
+    "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 23,
-  "publishedCount": 93,
+  "reviewCount": 28,
+  "publishedCount": 94,
   "historyDays": 35,
   "manualEntryCount": 13,
-  "checkedSourceCount": 10,
-  "successfulSourceCount": 9,
+  "checkedSourceCount": 11,
+  "successfulSourceCount": 10,
   "failedSourceCount": 1,
   "sourceHealth": {
-    "checkedCount": 10,
-    "successfulCount": 9,
+    "checkedCount": 11,
+    "successfulCount": 10,
     "failedCount": 1,
     "withItemsCount": 3,
-    "zeroItemsCount": 6,
+    "zeroItemsCount": 7,
     "discoveredPageCount": 4,
     "failedSources": [
       {
         "name": "あみあみ",
-        "error": "HTTP 403"
+        "error": "HTTP 403",
+        "failureClass": "access_blocked",
+        "severity": "warning"
       }
     ],
     "zeroItemSources": [
       {
-        "name": "LivePocket公開抽選",
-        "reason": "links-found-but-none-matched-discovery-rules"
+        "name": "LivePocket公開抽選（ポケモンカード）",
+        "reason": "page-contained-no-links-or-was-client-rendered"
       },
       {
-        "name": "LivePocket公開抽選",
-        "reason": "links-found-but-none-matched-discovery-rules"
+        "name": "LivePocket公開抽選（ポケカ）",
+        "reason": "page-contained-no-links-or-was-client-rendered"
+      },
+      {
+        "name": "LivePocket公開抽選（カードゲーム）",
+        "reason": "page-contained-no-links-or-was-client-rendered"
       },
       {
         "name": "楽天ブックス",
@@ -44,7 +52,7 @@
       },
       {
         "name": "ホビーサーチ",
-        "reason": "candidate-pages-could-not-be-fetched"
+        "reason": "links-found-but-none-matched-discovery-rules"
       },
       {
         "name": "おたいち（お宝市番館）イオン広店",
@@ -54,31 +62,32 @@
   },
   "sourceDiagnostics": [
     {
-      "name": "LivePocket公開抽選",
+      "name": "LivePocket公開抽選（ポケモンカード）",
       "parser": "livepocket-search",
       "status": "no_items",
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1317,
+      "elapsedMs": 337,
       "fetch": {
         "statusCode": 200,
-        "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 108069,
+        "contentType": "text/html",
+        "responseBytes": 22229,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 120,
+        "totalLinks": 0,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
-          "protocol": 5,
-          "includePattern": 99,
-          "excludePattern": 16,
+          "protocol": 0,
+          "includePattern": 0,
+          "excludePattern": 0,
           "host": 0,
           "path": 0
         }
@@ -89,37 +98,40 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
-      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "page-contained-no-links-or-was-client-rendered",
       "error": "",
       "childErrors": [],
       "parseErrors": []
     },
     {
-      "name": "LivePocket公開抽選",
+      "name": "LivePocket公開抽選（ポケカ）",
       "parser": "livepocket-search",
       "status": "no_items",
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1609,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
-        "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 108685,
+        "contentType": "text/html",
+        "responseBytes": 22229,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 120,
+        "totalLinks": 0,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
-          "protocol": 5,
-          "includePattern": 99,
-          "excludePattern": 16,
+          "protocol": 0,
+          "includePattern": 0,
+          "excludePattern": 0,
           "host": 0,
           "path": 0
         }
@@ -130,7 +142,53 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
-      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "page-contained-no-links-or-was-client-rendered",
+      "error": "",
+      "childErrors": [],
+      "parseErrors": []
+    },
+    {
+      "name": "LivePocket公開抽選（カードゲーム）",
+      "parser": "livepocket-search",
+      "status": "no_items",
+      "itemCount": 0,
+      "rootItemCount": 0,
+      "discoveredItemCount": 0,
+      "elapsedMs": 11,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html",
+        "responseBytes": 22229,
+        "finalHostChanged": false
+      },
+      "discovery": {
+        "enabled": true,
+        "totalLinks": 0,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
+        "duplicateRejected": 0,
+        "truncatedCount": 0,
+        "embeddedEventLinks": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 0,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
+      },
+      "candidateFetchSuccessCount": 0,
+      "candidateFetchFailureCount": 0,
+      "relevantPageCount": 0,
+      "irrelevantPageCount": 0,
+      "crossSourceDuplicateCount": 0,
+      "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "page-contained-no-links-or-was-client-rendered",
       "error": "",
       "childErrors": [],
       "parseErrors": []
@@ -142,24 +200,25 @@
       "itemCount": 9,
       "rootItemCount": 2,
       "discoveredItemCount": 7,
-      "elapsedMs": 3323,
+      "elapsedMs": 3325,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 40861,
+        "responseBytes": 40866,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 152,
-        "acceptedBeforeDedupe": 5,
+        "totalLinks": 126,
+        "acceptedBeforeDedupe": 3,
         "returnedCount": 3,
-        "duplicateRejected": 2,
+        "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 147,
+          "includePattern": 123,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -171,6 +230,8 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "",
       "error": "",
       "childErrors": [],
@@ -183,7 +244,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10441,
+      "elapsedMs": 10172,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -192,15 +253,16 @@
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 107,
+        "totalLinks": 88,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 107,
+          "includePattern": 88,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -212,6 +274,8 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "links-found-but-none-matched-discovery-rules",
       "error": "",
       "childErrors": [],
@@ -224,7 +288,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 258,
+      "elapsedMs": 369,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -241,6 +305,8 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "access_blocked",
+      "severity": "warning",
       "zeroItemReason": "source-fetch-failed",
       "error": "HTTP 403",
       "childErrors": [],
@@ -253,7 +319,7 @@
       "itemCount": 12,
       "rootItemCount": 12,
       "discoveredItemCount": 0,
-      "elapsedMs": 1554,
+      "elapsedMs": 940,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -262,15 +328,16 @@
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 34,
+        "totalLinks": 24,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 34,
+          "includePattern": 24,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -282,6 +349,8 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "",
       "error": "",
       "childErrors": [],
@@ -294,7 +363,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1684,
+      "elapsedMs": 1440,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -303,16 +372,17 @@
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 129,
-        "acceptedBeforeDedupe": 2,
+        "totalLinks": 66,
+        "acceptedBeforeDedupe": 1,
         "returnedCount": 1,
-        "duplicateRejected": 1,
+        "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
-          "protocol": 4,
-          "includePattern": 121,
-          "excludePattern": 2,
+          "protocol": 1,
+          "includePattern": 63,
+          "excludePattern": 1,
           "host": 0,
           "path": 0
         }
@@ -323,6 +393,8 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "relevant-pages-were-not-parsed-into-items",
       "error": "",
       "childErrors": [],
@@ -335,7 +407,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 3661,
+      "elapsedMs": 273,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -344,33 +416,32 @@
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 899,
-        "acceptedBeforeDedupe": 4,
-        "returnedCount": 4,
+        "totalLinks": 445,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 895,
+          "includePattern": 445,
           "excludePattern": 0,
           "host": 0,
           "path": 0
         }
       },
       "candidateFetchSuccessCount": 0,
-      "candidateFetchFailureCount": 4,
+      "candidateFetchFailureCount": 0,
       "relevantPageCount": 0,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
-      "zeroItemReason": "candidate-pages-could-not-be-fetched",
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
       "error": "",
-      "childErrors": [
-        "HTTP 403",
-        "HTTP 403",
-        "HTTP 403"
-      ],
+      "childErrors": [],
       "parseErrors": []
     },
     {
@@ -380,7 +451,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1824,
+      "elapsedMs": 1585,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -389,15 +460,16 @@
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 42,
+        "totalLinks": 29,
         "acceptedBeforeDedupe": 1,
         "returnedCount": 1,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 41,
+          "includePattern": 28,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -409,6 +481,8 @@
       "irrelevantPageCount": 1,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "candidate-pages-did-not-look-relevant",
       "error": "",
       "childErrors": [],
@@ -418,14 +492,14 @@
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
       "status": "items",
-      "itemCount": 31,
-      "rootItemCount": 31,
+      "itemCount": 38,
+      "rootItemCount": 38,
       "discoveredItemCount": 0,
-      "elapsedMs": 1029,
+      "elapsedMs": 709,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 848988,
+        "responseBytes": 879304,
         "finalHostChanged": false
       },
       "discovery": {
@@ -435,6 +509,7 @@
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
+        "embeddedEventLinks": 0,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
@@ -450,22 +525,24 @@
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "parseFailureCount": 0,
+      "failureClass": "",
+      "severity": "",
       "zeroItemReason": "",
       "error": "",
       "childErrors": [],
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 52,
+  "autoCollectedCount": 59,
   "multiProductExpandedCount": 9,
   "livePocketDiscoveredCount": 0,
   "livePocketDiscoveryStatus": "no_candidates",
   "livePocketDiscovery": {
     "status": "no_candidates",
-    "searchSourceCount": 2,
-    "successfulSearchSourceCount": 2,
+    "searchSourceCount": 3,
+    "successfulSearchSourceCount": 3,
     "failedSearchSourceCount": 0,
-    "searchPageLinkCount": 240,
+    "searchPageLinkCount": 0,
     "candidateLinkCount": 0,
     "candidateFetchSuccessCount": 0,
     "candidateFetchFailureCount": 0,
@@ -480,13 +557,13 @@
   "xItemCount": 0,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 116,
-    "publishedCount": 93,
-    "reviewCount": 23,
+    "candidateCount": 122,
+    "publishedCount": 94,
+    "reviewCount": 28,
     "rejectedCount": 0,
-    "directVerifiedCount": 74,
-    "catalogMatchedCount": 116,
-    "autoCollectedCount": 52,
+    "directVerifiedCount": 75,
+    "catalogMatchedCount": 122,
+    "autoCollectedCount": 59,
     "multiProductExpandedCount": 9,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
   }
