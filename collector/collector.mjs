@@ -61,6 +61,7 @@ async function fetchDocument(source) {
       contentType: "text/html; fixture",
       responseBytes: Buffer.byteLength(html, "utf8"),
       finalHostChanged: false,
+      finalUrl: source.url,
     };
   }
 
@@ -71,7 +72,7 @@ async function fetchDocument(source) {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/1.21.2; +https://github.com/)",
+        "User-Agent": "Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/1.22.0; +https://github.com/)",
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4",
         "Cache-Control": "no-cache",
@@ -91,6 +92,7 @@ async function fetchDocument(source) {
       contentType: String(response.headers.get("content-type") || "").slice(0, 100),
       responseBytes: Buffer.byteLength(html, "utf8"),
       finalHostChanged: Boolean(originalHost && finalHost && originalHost !== finalHost),
+      finalUrl: response.url || source.url,
     };
   } finally {
     clearTimeout(timer);
@@ -127,32 +129,60 @@ function zeroItemReason(result) {
   return "no-current-items";
 }
 
-async function enrichLivePocketCandidates(items, collectedAt) {
+function canonicalGoogleFormUrl(value = "") {
+  try {
+    const url = new URL(String(value || ""));
+    const host = url.hostname.toLowerCase();
+    if (host === "forms.gle") {
+      url.hash = "";
+      url.search = "";
+      url.pathname = url.pathname.replace(/\/+$/, "");
+      return url.pathname && url.pathname !== "/" ? `https://forms.gle${url.pathname}` : "";
+    }
+    if (host !== "docs.google.com" && host !== "forms.google.com") return "";
+    const id = url.pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)\/(?:viewform|formResponse)\/?$/i)?.[1] || "";
+    return id ? `https://docs.google.com/forms/d/e/${id}/viewform` : "";
+  } catch { return ""; }
+}
+
+async function enrichApplicationCandidates(items, collectedAt) {
   const output = [];
   let enrichedCount = 0;
+  let livePocketEnrichedCount = 0;
+  let googleFormEnrichedCount = 0;
+
   for (const item of items) {
     let host = "";
     try { host = new URL(item.url || "").hostname.toLowerCase(); } catch {}
-    if (!(host === "livepocket.jp" || host.endsWith(".livepocket.jp"))) {
+    const isLivePocket = host === "livepocket.jp" || host.endsWith(".livepocket.jp");
+    const isGoogleForm = host === "forms.gle" || host === "docs.google.com" || host === "forms.google.com";
+    if (!isLivePocket && !isGoogleForm) {
       output.push(item);
       continue;
     }
 
+    const parser = isLivePocket ? "livepocket" : "google-form";
+    const sourceLabel = isLivePocket ? "LivePocket" : "Googleフォーム";
+    const officialDomains = isLivePocket ? ["livepocket.jp"] : ["docs.google.com", "forms.gle", "forms.google.com"];
+
     try {
-      const html = await fetchHtml({ url: item.url });
+      const page = await fetchDocument({ url: item.url });
+      const resolvedUrl = isGoogleForm
+        ? (canonicalGoogleFormUrl(page.finalUrl || item.url) || canonicalGoogleFormUrl(item.url) || item.url)
+        : item.url;
       const [parsed] = parseSourceDocument({
-        id: `x-livepocket-${item.xPostId || item.externalId}`,
-        name: item.shop || "LivePocket",
+        id: `x-${parser}-${item.xPostId || item.externalId}`,
+        name: item.shop || sourceLabel,
         shop: item.shop || "",
-        url: item.url,
-        parser: "livepocket",
+        url: resolvedUrl,
+        parser,
         type: item.type || "店舗",
         area: item.area || "全国",
         sourceKind: "x",
-        publicSourceType: "LivePocket",
-        officialDomains: ["livepocket.jp"],
+        publicSourceType: sourceLabel,
+        officialDomains,
         purchaseStartPolicy: "catalog-release",
-      }, html, collectedAt);
+      }, page.html, collectedAt);
       if (parsed) {
         output.push({
           ...item,
@@ -169,6 +199,8 @@ async function enrichLivePocketCandidates(items, collectedAt) {
           confidence: Math.max(Number(item.confidence || 0), Number(parsed.confidence || 0), 0.9),
         });
         enrichedCount += 1;
+        if (isLivePocket) livePocketEnrichedCount += 1;
+        if (isGoogleForm) googleFormEnrichedCount += 1;
       } else {
         output.push(item);
       }
@@ -177,7 +209,7 @@ async function enrichLivePocketCandidates(items, collectedAt) {
     }
     if (!FIXTURE_PATH) await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  return { items: output, enrichedCount };
+  return { items: output, enrichedCount, livePocketEnrichedCount, googleFormEnrichedCount };
 }
 
 function applyCatalogPurchaseStart(candidate, catalogProduct) {
@@ -374,8 +406,8 @@ async function run() {
         privateAccountsJson: process.env.X_MONITOR_ACCOUNTS_JSON || "",
       });
   const xEnrichment = FIXTURE_PATH
-    ? { items: xResult.items, enrichedCount: 0 }
-    : await enrichLivePocketCandidates(xResult.items, startedAt);
+    ? { items: xResult.items, enrichedCount: 0, livePocketEnrichedCount: 0, googleFormEnrichedCount: 0 }
+    : await enrichApplicationCandidates(xResult.items, startedAt);
   collected.push(...xEnrichment.items);
 
   const merged = keepRelevant(dedupeItems([
@@ -635,7 +667,8 @@ async function run() {
     livePocketDiscoveredCount,
     livePocketDiscoveryStatus,
     livePocketDiscovery,
-    xLivePocketEnrichedCount: xEnrichment.enrichedCount,
+    xLivePocketEnrichedCount: xEnrichment.livePocketEnrichedCount,
+    xGoogleFormEnrichedCount: xEnrichment.googleFormEnrichedCount,
     xCollectorStatus: xResult.meta?.status || "not_configured",
     xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
     xPostCount: Number(xResult.meta?.postCount || 0),
@@ -682,7 +715,8 @@ async function run() {
     sourceDiagnostics,
     livePocketDiscoveredCount,
     livePocketDiscovery,
-    xLivePocketEnrichedCount: xEnrichment.enrichedCount,
+    xLivePocketEnrichedCount: xEnrichment.livePocketEnrichedCount,
+    xGoogleFormEnrichedCount: xEnrichment.googleFormEnrichedCount,
   }, null, 2));
 }
 
