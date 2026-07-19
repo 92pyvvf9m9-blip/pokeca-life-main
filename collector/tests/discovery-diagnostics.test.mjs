@@ -42,3 +42,18 @@ test("リンクが無いJS描画ページを判別できる", () => {
   assert.equal(result.stats.totalLinks, 0);
   assert.equal(result.stats.returnedCount, 0);
 });
+
+test("LivePocketのJSON内イベントURLと周辺タイトルから候補を発見する", () => {
+  const html = `
+    <script>
+      window.__EVENTS__ = [{
+        "url":"https:\\/\\/t.livepocket.jp\\/e\\/storm01",
+        "title":"ポケモンカードゲーム ストームエメラルダ 抽選販売"
+      }];
+    </script>
+  `;
+  const result = discoverCandidateLinksDetailed(source, html);
+  assert.equal(result.candidates.length, 1);
+  assert.equal(result.candidates[0].url, "https://t.livepocket.jp/e/storm01");
+  assert.ok(result.stats.embeddedEventLinks >= 1);
+});

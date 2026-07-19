@@ -7,7 +7,7 @@ test("取得元失敗があればWorkflowを失敗扱いにする", () => {
     collectorVersion: "1.21.1",
     status: "partial",
     failedSourceCount: 1,
-    sourceHealth: { failedSources: [{ name: "取得元A", error: "HTTP 403" }] },
+    sourceHealth: { failedSources: [{ name: "取得元A", error: "Parser failed", severity: "error" }] },
     livePocketDiscovery: { status: "no_candidates" },
   });
   assert.equal(report.level, "error");
