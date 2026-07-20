@@ -859,6 +859,8 @@ nav button{height:52px;min-height:52px;max-height:52px}
 .batch-publish-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:16px;padding:12px 0 calc(4px + env(safe-area-inset-bottom));background:#111116;border-top:1px solid var(--line)}
 @media(max-width:390px){.batch-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.batch-toolbar{grid-template-columns:1fr}.batch-result-dates{grid-template-columns:1fr 1fr}.batch-publish-actions{grid-template-columns:1fr}}
 
+
+.app-destination-card{margin:14px 0;padding:14px;border:1px solid #a855f755;background:#7c3aed18;border-radius:16px;display:grid;gap:6px}.app-destination-card strong{font-size:15px}.app-destination-card small{color:var(--muted);line-height:1.55}.app-launch-sheet{display:grid;gap:14px}.app-launch-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--p),var(--p2));font-size:28px}.app-launch-copy{display:grid;gap:5px}.app-launch-copy h3{margin:0;font-size:20px}.app-launch-copy p{margin:0;color:var(--muted);line-height:1.6}.app-launch-actions{display:grid;gap:10px}.app-launch-actions button,.app-launch-actions a{text-align:center;text-decoration:none}.app-launch-note{font-size:12px;color:var(--muted);line-height:1.55}.app-badge{display:inline-flex;align-items:center;gap:5px;background:#7c3aed35;color:#e9d5ff;border:1px solid #a855f766;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800}
 </style></head><body><div class="app"><header><div><p class="eyebrow">POKECA LIFE</p><h1 id="title">ホーム</h1></div><button class="icon" id="bellButton" aria-label="お知らせを開く">🔔<span id="notificationBadge" class="hide">0</span></button></header><main>
 <section class="screen on" data-screen="home"><div class="hero home-module" data-home-section="tasks"><p class="muted">おかえりなさい</p><h2>今日やることを、すぐ確認。</h2><div id="tasks" class="tasks"></div></div>
 <div class="section home-module today-deadline-section" data-home-section="deadlines">
@@ -1253,7 +1255,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.22.1</h3><p>日本語スクショOCR・URL手入力合体・日付自動反映</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.23.0</h3><p>アプリ応募起動・複数商品分離・公開JS配備</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1294,6 +1296,19 @@ nav button{height:52px;min-height:52px;max-height:52px}
       <button id="detailClose" class="icon">✕</button>
     </div>
     <div id="detailBody"></div>
+  </div>
+</div>
+
+<div id="appLaunchBackdrop" class="backdrop hide">
+  <div class="sheet detailmodal">
+    <div class="modalhead">
+      <div>
+        <p class="eyebrow">APP APPLICATION</p>
+        <h2>アプリで応募</h2>
+      </div>
+      <button id="appLaunchClose" class="icon" type="button">✕</button>
+    </div>
+    <div id="appLaunchBody" class="app-launch-sheet"></div>
   </div>
 </div>
 
@@ -1362,6 +1377,8 @@ nav button{height:52px;min-height:52px;max-height:52px}
 </div>
 <div id="backdrop" class="backdrop hide"><div class="sheet"><div class="modalhead"><h2 id="modalTitle"></h2><button id="close" class="icon">✕</button></div><form id="form" class="form"></form></div></div><div id="toast" class="toast hide"></div>
 <script src="./ocr-import-core.js"></script>
+<script src="./app-destination-core.js"></script>
+<script src="./lottery-identity-core.js"></script>
 <script>
 (()=>{const KEY='beta_v01';const uid=()=>crypto.randomUUID();const defaults={lotteries:[],cards:[],stores:[]};let D;try{D=JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch{D=structuredClone(defaults)}let lf='all',cf='all',active='home',lotterySort='deadline',areaFilter='home',typeFilter='all',lotteryView='list',todayDeadlineKind='all';
 let openProductYears=new Set();
@@ -1564,6 +1581,7 @@ function showOnboardingIfNeeded(){fillProfileSelects();$('#onboardingBackdrop')?
 function completeOnboarding(){const pref=$('#onboardingPrefecture')?.value||'';if(!pref)return toast('都道府県を選択してください');userProfile={prefecture:pref,rangeMode:'auto',onboarded:true};saveUserProfile();$('#onboardingBackdrop')?.classList.add('hide');areaFilter='home';renderProfileUI();renderAllSafely();toast(`${pref}をホーム地域に設定しました`)}
 function saveProfileFromSettings(){const pref=$('#profilePrefectureSelect')?.value||'';if(!pref)return toast('都道府県を選択してください');userProfile.prefecture=pref;userProfile.rangeMode=$('#profileRangeSelect')?.value||'auto';userProfile.onboarded=true;saveUserProfile();areaFilter='home';const areaSelect=$('#areaFilter');if(areaSelect)areaSelect.value='home';renderProfileUI();renderAllSafely();toast('ホームの表示地域を更新しました')}
 const normalizeUrl=v=>{v=(v||'').trim();if(!v)return'';return /^https?:\/\//i.test(v)?v:'https://'+v};
+const normalizeLaunchUrl=v=>window.PokecaAppDestinationCore?.normalizeLaunchUrl(v)||'';
 
 const IMAGE_DB_NAME='pokeca_life_images';
 const IMAGE_STORE='card_images';
@@ -1752,13 +1770,12 @@ function periodBlockHTML(label,data,showProgress=false){
 }
 
 function lotteryIdentity(x){
+  if(window.PokecaLotteryIdentityCore)return window.PokecaLotteryIdentityCore.identity(x||{});
   const url=canonicalLotteryStateUrl(x?.url||x?.appUrl||x?.fallbackUrl||'');
-  if(url)return `url:${url}`;
-  return `fallback:${[
-    (x?.shop||'').trim().toLowerCase(),
-    (x?.product||'').trim().toLowerCase(),
-    x?.applyEndDate||x?.deadline||''
-  ].join('|')}`;
+  const shop=normalizeLotteryStateKeyText(x?.shop||'');
+  const product=normalizeLotteryStateKeyText(displayLotteryProduct(x?.product||''));
+  const deadline=x?.applyEndDate||x?.deadline||'';
+  return url?`url:${url}|variant:${shop}|${product}|${deadline}`:`fallback:${shop}|${product}|${deadline}`;
 }
 
 function normalizeLotteryStateKeyText(value){
@@ -1770,7 +1787,9 @@ function normalizeLotteryStateKeyText(value){
     .trim();
 }
 function canonicalLotteryStateUrl(value){
-  const normalized=normalizeUrl(value||'');
+  const raw=String(value||'').trim();
+  if(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)&&!/^https?:\/\//i.test(raw))return '';
+  const normalized=normalizeUrl(raw);
   if(!normalized)return '';
   try{
     const url=new URL(normalized);
@@ -1797,26 +1816,12 @@ function canonicalLotteryStateUrl(value){
 }
 function lotteryUserStateKeys(item){
   if(!item)return [];
-  const url=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
-  if(url){
-    // URL付き抽選はURLだけで状態を引き継ぐ。店舗名・商品名・締切が似ていても別URLへ混ぜない。
-    const externalUrl=canonicalLotteryStateUrl(item.externalId||'');
-    const remoteUrl=canonicalLotteryStateUrl(item.remoteId||'');
-    return [...new Set([
-      `url:${url}`,
-      item.id?`id:${item.id}`:'',
-      externalUrl===url?`external:${url}`:'',
-      remoteUrl===url?`remote:${url}`:''
-    ].filter(Boolean))];
-  }
-  const shop=normalizeLotteryStateKeyText(item.shop);
-  const product=normalizeLotteryStateKeyText(displayLotteryProduct(item.product));
-  const deadline=item.applyEndDate||item.deadline||'';
+  const composite=lotteryIdentity(item);
   return [...new Set([
+    composite?`identity:${composite}`:'',
     item.id?`id:${item.id}`:'',
-    item.externalId?`external:${item.externalId}`:'',
-    item.remoteId?`remote:${item.remoteId}`:'',
-    shop&&product&&deadline?`lottery:${shop}|${product}|${deadline}`:''
+    item.externalId&&!/^https?:\/\//i.test(String(item.externalId))?`external:${item.externalId}|${composite}`:'',
+    item.remoteId&&!/^https?:\/\//i.test(String(item.remoteId))?`remote:${item.remoteId}|${composite}`:''
   ].filter(Boolean))];
 }
 function loadLotteryUserStates(){
@@ -1983,7 +1988,7 @@ function repairDuplicateLotteries(){
     const item={...raw};
     const cleanedShop=String(item.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim();
     if(cleanedShop!==item.shop){item.shop=cleanedShop;changed=true}
-    const canonical=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
+    const canonical=canonicalLotteryStateUrl(item.url||'');
     if(canonical&&item.url!==canonical){item.url=canonical;changed=true}
     if(canonical){
       item.externalId=canonical;
@@ -2080,6 +2085,37 @@ function displayLotteryProduct(value){
 
 
 
+function appDestinationCore(){return window.PokecaAppDestinationCore||null}
+function enrichedAppDestination(item){
+  const core=appDestinationCore();
+  return core?core.enrich(item||{}):{...(item||{})};
+}
+function resolvedAppDestination(item){
+  const core=appDestinationCore();
+  return core?core.resolve(enrichedAppDestination(item||{})):{isApp:false};
+}
+function applyDetectedAppProfileToForm(){
+  const form=$('#form');if(!form)return;
+  const destination=form.elements.destinationType?.value||'direct';
+  if(destination!=='app')return;
+  const core=appDestinationCore();if(!core)return;
+  const candidate={
+    destinationType:'app',
+    shop:form.elements.shop?.value||'',
+    appId:form.elements.appId?.value||'',
+    appName:form.elements.appName?.value||'',
+    appUrl:form.elements.appUrl?.value||'',
+    iosAppStoreUrl:form.elements.iosAppStoreUrl?.value||'',
+    appOfficialUrl:form.elements.appOfficialUrl?.value||'',
+    fallbackUrl:form.elements.fallbackUrl?.value||'',
+    instructions:form.elements.instructions?.value||''
+  };
+  const enriched=core.enrich(candidate);
+  for(const [name,value] of Object.entries(enriched)){
+    const field=form.elements[name];
+    if(field&&!field.value&&value)field.value=value;
+  }
+}
 function bindDestinationTypeUI(){
   const select=$('#destinationTypeSelect');
   const appFields=$('#appDestinationFields');
@@ -2089,15 +2125,21 @@ function bindDestinationTypeUI(){
     if(select.value==='app'){
       const details=$('#lotteryAdvancedFields');
       if(details)details.open=true;
+      applyDetectedAppProfileToForm();
     }
   };
   select.addEventListener('change',update);
+  $('#form [name="shop"]')?.addEventListener('blur',applyDetectedAppProfileToForm);
+  $('#form [name="appName"]')?.addEventListener('blur',applyDetectedAppProfileToForm);
   update();
 }
 
 function destinationLabel(item){
   const type=item?.destinationType||'direct';
-  if(type==='app')return item.appName?`${item.appName}を開く`:'アプリを開く';
+  if(type==='app'){
+    const resolved=resolvedAppDestination(item);
+    return resolved.label||`${item.appName||'アプリ'}で応募`;
+  }
   if(type==='website')return '公式サイトを開く';
   if(type==='x')return 'Xで確認';
   if(type==='store')return '店頭受付を確認';
@@ -2106,12 +2148,72 @@ function destinationLabel(item){
 }
 function destinationPrimaryUrl(item){
   const type=item?.destinationType||'direct';
-  if(type==='app')return item.appUrl||item.fallbackUrl||item.url||'';
+  if(type==='app'){
+    const resolved=resolvedAppDestination(item);
+    return resolved.launchUrl||resolved.fallbackUrl||resolved.officialUrl||'';
+  }
   if(type==='website'||type==='x')return item.url||item.fallbackUrl||'';
   if(type==='store'||type==='none')return item.fallbackUrl||'';
   return item.url||item.fallbackUrl||'';
 }
+function closeAppLaunchOptions(){
+  $('#appLaunchBackdrop')?.classList.add('hide');
+  const body=$('#appLaunchBody');if(body)body.innerHTML='';
+}
+function showAppLaunchOptions(item,reason=''){
+  const resolved=resolvedAppDestination(item);
+  const core=appDestinationCore();
+  const fallback=core?.preferredFallback(resolved)||resolved.fallbackUrl||resolved.officialUrl||'';
+  const storeUrl=resolved.iosStoreUrl||resolved.androidStoreUrl||'';
+  const officialUrl=resolved.officialUrl||'';
+  const body=$('#appLaunchBody');if(!body)return;
+  body.innerHTML=`
+    <div class="app-launch-icon">📱</div>
+    <div class="app-launch-copy">
+      <h3>${esc(resolved.appName||item?.appName||'応募アプリ')}</h3>
+      <p>${esc(reason||'この抽選はアプリ内から応募します。')}</p>
+    </div>
+    <div class="app-launch-actions">
+      ${resolved.launchUrl?`<button type="button" class="primary" data-retry-app-launch="${esc(item.id||'')}">${esc(resolved.appName||'アプリ')}をもう一度開く</button>`:''}
+      ${storeUrl?`<a class="secondary" href="${esc(storeUrl)}" target="_blank" rel="noopener">アプリを入れる・確認する</a>`:''}
+      ${officialUrl&&officialUrl!==storeUrl?`<a class="secondary" href="${esc(officialUrl)}" target="_blank" rel="noopener">公式案内を見る</a>`:''}
+      ${fallback&&!storeUrl&&!officialUrl?`<a class="secondary" href="${esc(fallback)}" target="_blank" rel="noopener">案内ページを開く</a>`:''}
+    </div>
+    <div class="app-launch-note">アプリ側が起動リンクを公開している抽選は直接開きます。起動リンクがない場合は、公式のアプリ入手先または案内ページを表示します。</div>`;
+  $('#appLaunchBackdrop')?.classList.remove('hide');
+}
+function attemptAppLaunch(item){
+  const resolved=resolvedAppDestination(item);
+  if(!resolved.isApp)return false;
+  if(!resolved.launchUrl){
+    showAppLaunchOptions(item,`${resolved.appName||'応募アプリ'}を開く専用リンクが抽選データにないため、公式の案内先を表示します。`);
+    return true;
+  }
+  let leftPage=false;
+  const onVisibility=()=>{if(document.hidden)leftPage=true};
+  document.addEventListener('visibilitychange',onVisibility,{once:true});
+  try{
+    if(appDestinationCore()?.isCustomScheme(resolved.launchUrl)||/^intent:\/\//i.test(resolved.launchUrl)){
+      window.location.href=resolved.launchUrl;
+    }else{
+      window.location.assign(resolved.launchUrl);
+    }
+  }catch(error){
+    document.removeEventListener('visibilitychange',onVisibility);
+    showAppLaunchOptions(item,'アプリを直接起動できませんでした。公式の案内先から開いてください。');
+    return true;
+  }
+  window.setTimeout(()=>{
+    document.removeEventListener('visibilitychange',onVisibility);
+    if(!leftPage&&!document.hidden)showAppLaunchOptions(item,'アプリが開かなかった場合は、下のボタンからアプリを確認してください。');
+  },1400);
+  return true;
+}
 function openLotteryDestination(item){
+  if((item?.destinationType||'direct')==='app'){
+    attemptAppLaunch(item);
+    return;
+  }
   const url=destinationPrimaryUrl(item);
   if(!url){toast(item?.destinationType==='none'?'応募先はまだ公開されていません':'開けるURLが登録されていません');return}
   window.open(url,'_blank','noopener');
@@ -2445,7 +2547,8 @@ function openDetail(item){
     ${periodBlockHTML('応募期間',p.apply,true)}
     ${periodBlockHTML('結果発表',p.result,false)}
     ${periodBlockHTML('購入期間',p.purchase,item.status==='won')}
-    ${item.instructions?`<div class="instructions-box"><strong>応募手順</strong><p>${esc(item.instructions)}</p></div>`:''}
+    ${item.destinationType==='app'?(()=>{const app=resolvedAppDestination(item);return `<div class="app-destination-card"><span class="app-badge">📱 アプリ応募</span><strong>${esc(app.appName||item.appName||'応募アプリ')}</strong><small>${esc(item.instructions||'アプリ内の抽選案内から応募してください。')}</small></div>`})():''}
+    ${item.instructions&&item.destinationType!=='app'?`<div class="instructions-box"><strong>応募手順</strong><p>${esc(item.instructions)}</p></div>`:''}
     ${item.memo?`<div class="detailmemo">${esc(item.memo)}</div>`:''}
     <div class="instructions-box">
       <strong>自分の応募状況</strong>
@@ -2455,7 +2558,7 @@ function openDetail(item){
       <div class="application-status-note">最終更新：${esc(formatStatusUpdatedAt(item.userStatusUpdatedAt))}。自動同期で情報が更新されても、この応募状況は保持されます。</div>
     </div>
     <div class="detailactions">
-      ${destinationPrimaryUrl(item)
+      ${(item.destinationType==='app'||destinationPrimaryUrl(item))
         ? `<button class="primary" data-open-destination="${item.id}">${esc(destinationLabel(item))} ↗</button>`
         : item.origin==='remote'
           ? '<button class="secondary" disabled>応募先を確認中</button>'
@@ -2479,6 +2582,8 @@ function syncAreaByType(){
 }
 
 function closeDetail(){ $('#detailBackdrop').classList.add('hide'); }
+$('#appLaunchClose')?.addEventListener('click',closeAppLaunchOptions);
+$('#appLaunchBackdrop')?.addEventListener('click',event=>{if(event.target?.id==='appLaunchBackdrop')closeAppLaunchOptions()});
 
 
 
@@ -2537,25 +2642,15 @@ function saveSyncPreferences(){
   try{localStorage.setItem(SYNC_STATE_KEY,JSON.stringify(syncState))}catch(err){console.warn(err)}
 }
 function remoteIdentity(item){
-  const canonicalUrl=canonicalLotteryStateUrl(item?.url||item?.appUrl||item?.fallbackUrl||'');
-  return String(
-    canonicalUrl||
-    item.externalId||
-    item.remoteId||
-    [
-      item.shop||'',
-      item.product||'',
-      item.applyEndDate||item.deadline||''
-    ].join('|')
-  ).trim();
+  return lotteryIdentity(item||{});
 }
 function normalizeRemoteLottery(item){
   const now=new Date().toISOString();
-  const canonicalUrl=canonicalLotteryStateUrl(item.url||item.appUrl||item.fallbackUrl||'');
-  return {
+  const canonicalUrl=canonicalLotteryStateUrl(item.url||'');
+  const normalized={
     id:item.id||uid(),
-    remoteId:canonicalUrl||remoteIdentity(item),
-    externalId:canonicalUrl||item.externalId||item.remoteId||'',
+    remoteId:item.remoteId||item.externalId||'',
+    externalId:item.externalId||item.remoteId||'',
     origin:'remote',
     verified:Boolean(item.verified),
     confidence:Number(item.confidence||0),
@@ -2585,24 +2680,27 @@ function normalizeRemoteLottery(item){
     resultDate:item.resultStartDate||item.resultDate||'',
     purchaseDeadline:item.purchaseEndDate||item.purchaseDeadline||'',
     destinationType:item.destinationType||'direct',
+    appId:item.appId||'',
     appName:item.appName||'',
-    appUrl:normalizeUrl(item.appUrl||''),
+    appUrl:normalizeLaunchUrl(item.appUrl||''),
+    iosAppStoreUrl:normalizeUrl(item.iosAppStoreUrl||''),
+    androidAppStoreUrl:normalizeUrl(item.androidAppStoreUrl||''),
+    appOfficialUrl:normalizeUrl(item.appOfficialUrl||''),
     fallbackUrl:normalizeUrl(item.fallbackUrl||''),
     instructions:item.instructions||'',
     memo:item.memo||'',
     manualEntry:Boolean(item.manualEntry),
     adminPublished:Boolean(item.adminPublished||item.manualEntry)
   };
+  const enriched=enrichedAppDestination(normalized);
+  const identity=lotteryIdentity(enriched);
+  enriched.remoteId=enriched.remoteId||identity;
+  enriched.externalId=enriched.externalId||identity;
+  return enriched;
 }
 function mergeRemoteLottery(remote){
   const key=remoteIdentity(remote);
-  const remoteUrl=canonicalLotteryStateUrl(remote.url||remote.appUrl||remote.fallbackUrl||'');
-  let existing=D.lotteries.find(x=>{
-    const existingUrl=canonicalLotteryStateUrl(x.url||x.appUrl||x.fallbackUrl||'');
-    if(remoteUrl)return existingUrl===remoteUrl;
-    if(existingUrl)return false;
-    return remoteIdentity(x)===key;
-  });
+  let existing=D.lotteries.find(x=>remoteIdentity(x)===key);
 
   if(!existing){
     remote.id=uid();
@@ -5006,9 +5104,10 @@ function batchRequiredMissing(item){
  if(!item?.shop)missing.push('店舗名');if(!item?.product)missing.push('商品名');if(!item?.applyEndDate)missing.push('応募締切');if(!item?.resultStartDate)missing.push('結果発表');
  return missing;
 }
-function batchExistingLottery(url=''){
- const canonical=canonicalLotteryStateUrl(url||'');
- return D.lotteries.find(item=>canonicalLotteryStateUrl(item?.url||item?.appUrl||item?.fallbackUrl||'')===canonical)||null;
+function batchExistingLottery(candidate={}){
+ const target=typeof candidate==='string'?{url:candidate}:candidate;
+ const identity=lotteryIdentity(target||{});
+ return D.lotteries.find(item=>lotteryIdentity(item)===identity)||null;
 }
 async function resolveBatchLottery(inputUrl=''){
  const candidates=batchUrlCandidates(inputUrl);if(!candidates.length)throw new Error('URL形式を確認してください');
@@ -5029,7 +5128,7 @@ async function resolveBatchLottery(inputUrl=''){
  throw new Error(lastError?.message||'ページを読み取れませんでした');
 }
 function buildBatchItemFromParsed(parsed={},inputUrl='',options={}){
- const url=canonicalLotteryStateUrl(inputUrl||parsed.url||''),existing=url?batchExistingLottery(url):null,now=new Date().toISOString();
+ const url=canonicalLotteryStateUrl(inputUrl||parsed.url||''),draft={...parsed,url},existing=batchExistingLottery(draft),now=new Date().toISOString();
  const missing=batchRequiredMissing(parsed),warnings=[...(options.warnings||[])];
  if(options.warning)warnings.push(options.warning);
  if(missing.length)warnings.push(`未取得：${missing.join('・')}`);
@@ -5158,8 +5257,8 @@ async function publishBatchResults(){
  for(let index=0;index<targets.length;index++){
   const result=targets[index];result.state='publishing';renderBatchResults();setBatchStatus(`${index+1}/${targets.length}件を公開しています…`,'loading',Math.round((index/targets.length)*100));
   try{
-   const current=batchExistingLottery(result.item.url),item={...current,...result.item,id:current?.id||result.item.id,updatedAt:new Date().toISOString()};
-   const existingIndex=D.lotteries.findIndex(entry=>entry.id===item.id||canonicalLotteryStateUrl(entry.url||'')===canonicalLotteryStateUrl(item.url||''));
+   const current=batchExistingLottery(result.item),item={...current,...result.item,id:current?.id||result.item.id,updatedAt:new Date().toISOString()};
+   const existingIndex=D.lotteries.findIndex(entry=>entry.id===item.id||lotteryIdentity(entry)===lotteryIdentity(item));
    if(existingIndex>=0)D.lotteries[existingIndex]=item;else D.lotteries.unshift(item);
    repairDuplicateLotteries();
    if(!await save())throw new Error('端末への保存に失敗しました');
@@ -5234,9 +5333,13 @@ field('応募URL','url',item?.url,'','url')+
     </div>
     <div id="appDestinationFields">
       ${field('アプリ名','appName',item?.appName)}
-      ${field('アプリ起動URL','appUrl',item?.appUrl,'','url')}
+      ${field('アプリID（自動判定・任意）','appId',item?.appId)}
+      ${field('アプリ起動URL・ディープリンク','appUrl',item?.appUrl)}
+      ${field('iPhone App Store URL','iosAppStoreUrl',item?.iosAppStoreUrl,'','url')}
+      ${field('アプリ公式案内URL','appOfficialUrl',item?.appOfficialUrl,'','url')}
       ${field('予備URL','fallbackUrl',item?.fallbackUrl,'','url')}
       ${area('応募手順','instructions',item?.instructions)}
+      <small class="area-note">起動URLが分かる場合は直接アプリを開き、分からない場合は公式のアプリ入手先・案内先へ誘導します。</small>
     </div>
 <h3 class="period-heading">応募開始</h3>
     <div class="datetime-grid">
@@ -5385,6 +5488,13 @@ if(monitorToggle){
   if(source){source.enabled=monitorToggle.checked;saveMonitorSettings();renderMonitorSources()}
   return;
 }
+const retryAppButton=e.target.closest('[data-retry-app-launch]');
+if(retryAppButton){
+  const item=D.lotteries.find(x=>x.id===retryAppButton.dataset.retryAppLaunch);
+  closeAppLaunchOptions();
+  if(item)attemptAppLaunch(item);
+  return;
+}
 const destinationButton=e.target.closest('[data-open-destination]');
 if(destinationButton){
   const item=D.lotteries.find(x=>x.id===destinationButton.dataset.openDestination);
@@ -5492,10 +5602,15 @@ $('#form').addEventListener('submit',async e=>{
       o.area=(o.area||'').trim();
       o.url=normalizeUrl(o.url);
       o.destinationType=String(o.destinationType||'direct');
+      o.appId=String(o.appId||'').trim();
       o.appName=String(o.appName||'').trim();
-      o.appUrl=normalizeUrl(o.appUrl);
+      o.appUrl=normalizeLaunchUrl(o.appUrl);
+      o.iosAppStoreUrl=normalizeUrl(o.iosAppStoreUrl);
+      o.androidAppStoreUrl=normalizeUrl(o.androidAppStoreUrl);
+      o.appOfficialUrl=normalizeUrl(o.appOfficialUrl);
       o.fallbackUrl=normalizeUrl(o.fallbackUrl);
       o.instructions=String(o.instructions||'').trim();
+      if(o.destinationType==='app')o=enrichedAppDestination(o);
       o.status=o.status||'open';
       const previousLottery=D.lotteries.find(item=>item.id===id);
       if(!previousLottery||previousLottery.status!==o.status){
@@ -5549,16 +5664,8 @@ $('#form').addEventListener('submit',async e=>{
       o.resultDate=o.resultStartDate;
       o.purchaseDeadline=o.purchaseEndDate||'';
 
-      const canonicalInputUrl=canonicalLotteryStateUrl(o.url||'');
-      const duplicate=D.lotteries.find(x=>{
-        if(x.id===id)return false;
-        const existingUrl=canonicalLotteryStateUrl(x.url||x.appUrl||x.fallbackUrl||'');
-        if(canonicalInputUrl)return existingUrl===canonicalInputUrl;
-        if(existingUrl)return false;
-        return (x.shop||'').trim()===o.shop &&
-          (x.product||'').trim()===o.product &&
-          (x.applyEndDate||x.deadline||'')===o.applyEndDate;
-      });
+      const duplicateIdentity=lotteryIdentity(o);
+      const duplicate=D.lotteries.find(x=>x.id!==id&&lotteryIdentity(x)===duplicateIdentity);
 
       // 既存データが見えなくなっている場合でも、同一抽選を上書き復旧する
       if(duplicate){
@@ -5761,6 +5868,22 @@ function removeLegacyDemoData(){
   return changed;
 }
 
+function migrateAppDestinations(){
+  const core=appDestinationCore();
+  if(!core)return false;
+  let changed=false;
+  for(const item of D.lotteries){
+    const enriched=core.enrich(item);
+    for(const key of ['destinationType','appId','appName','appUrl','iosAppStoreUrl','androidAppStoreUrl','appOfficialUrl','fallbackUrl','instructions']){
+      if((enriched[key]||'')!==(item[key]||'')){
+        item[key]=enriched[key]||'';
+        changed=true;
+      }
+    }
+  }
+  return changed;
+}
+
 function migrateAreas(){
   let changed=false;
   for(const item of D.lotteries){
@@ -5840,6 +5963,7 @@ async function initializeCardImages(){
 
     if(removeLegacyDemoData())migrated=true;
     if(migrateAreas())migrated=true;
+    if(migrateAppDestinations())migrated=true;
     if(migrateStores())migrated=true;
     if(migrateLotteryPeriods())migrated=true;
     if(migrateLegacyLotteryUserStatuses())migrated=true;
@@ -6048,5 +6172,5 @@ initializeCardImages()
     initializeAutoSync().catch(console.error);
     loadUserProfile();renderProfileUI();showOnboardingIfNeeded();
   });})();
-</script><script src="./ocr-import-core.js"></script>
+</script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});</script></body></html>
