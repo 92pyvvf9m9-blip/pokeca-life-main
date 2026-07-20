@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { parseDateRange } from "./dates.mjs";
+import { enrichAppDestination } from "./app-destination.mjs";
 
 const PREFECTURES = [
   "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
@@ -168,7 +169,7 @@ export function parseXPost(post, user = {}, knownAccounts = new Set(), accountMe
   const sourceId = `x-${post.id || hash(text)}`;
   const destinationType = noticeOnly ? (storeNotice ? "store" : "x") : (actionUrl ? "direct" : "x");
 
-  return {
+  return enrichAppDestination({
     externalId: sourceId,
     xPostId: post.id || "",
     xAuthor: username,
@@ -205,5 +206,5 @@ export function parseXPost(post, user = {}, knownAccounts = new Set(), accountMe
     purchaseEndTime: purchase.end?.time || "",
     instructions: noticeOnly ? officialInstructions(text, shop) : (actionUrl ? "" : "Xの投稿内容を確認し、記載された応募方法に従ってください。"),
     memo: cleanText(text).slice(0, 300),
-  };
+  }, text);
 }

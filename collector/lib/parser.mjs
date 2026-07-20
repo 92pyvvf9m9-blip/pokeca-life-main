@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { extractLinks, htmlToText, normalizeLines } from "./html.mjs";
 import { parseDateRange } from "./dates.mjs";
+import { enrichAppDestination } from "./app-destination.mjs";
 
 const STOP_LABELS = [
   "応募期間",
@@ -931,15 +932,19 @@ function parseGeneric(source, html, collectedAt) {
 }
 
 export function parseSourceDocument(source, html, collectedAt = new Date().toISOString()) {
-  if (source.parser === "livepocket") return parseLivePocket(source, html, collectedAt);
-  if (source.parser === "google-form") return parseGoogleForm(source, html, collectedAt);
-  if (source.parser === "livepocket-search") return parseLivePocketSearch(source, html, collectedAt);
-  if (source.parser === "amiami") return parseAmiAmi(source, html, collectedAt);
-  if (source.parser === "rakuten-books") return parseRakutenBooks(source, html, collectedAt);
-  if (source.parser === "hobby-search") return parseHobbySearch(source, html, collectedAt);
-  if (source.parser === "listing-intelligence-v1") return parseListingIntelligence(source, html, collectedAt);
-  if (source.parser === "geo-lottery") return parseGeoLottery(source, html, collectedAt);
-  if (source.parser === "hobby-station-news") return parseHobbyStationNews(source, html, collectedAt);
-  if (source.parser === "furuichi-news") return parseFuruichiNews(source, html, collectedAt);
-  return parseGeneric(source, html, collectedAt);
+  let records;
+  if (source.parser === "livepocket") records = parseLivePocket(source, html, collectedAt);
+  else if (source.parser === "google-form") records = parseGoogleForm(source, html, collectedAt);
+  else if (source.parser === "livepocket-search") records = parseLivePocketSearch(source, html, collectedAt);
+  else if (source.parser === "amiami") records = parseAmiAmi(source, html, collectedAt);
+  else if (source.parser === "rakuten-books") records = parseRakutenBooks(source, html, collectedAt);
+  else if (source.parser === "hobby-search") records = parseHobbySearch(source, html, collectedAt);
+  else if (source.parser === "listing-intelligence-v1") records = parseListingIntelligence(source, html, collectedAt);
+  else if (source.parser === "geo-lottery") records = parseGeoLottery(source, html, collectedAt);
+  else if (source.parser === "hobby-station-news") records = parseHobbyStationNews(source, html, collectedAt);
+  else if (source.parser === "furuichi-news") records = parseFuruichiNews(source, html, collectedAt);
+  else records = parseGeneric(source, html, collectedAt);
+
+  const evidence = htmlToText(html);
+  return (records || []).map((record) => enrichAppDestination(record, evidence));
 }
