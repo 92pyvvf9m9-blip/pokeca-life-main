@@ -59,8 +59,12 @@ const blockedDestinationDomains = (privateRegistry.blockedDestinationDomains || 
   .map((value) => String(value || '').toLowerCase().replace(/^www\./, ''))
   .filter(Boolean);
 
-for (const file of ['index.html']) {
-  await fs.copyFile(path.join(root, file), path.join(dist, file));
+for (const file of ['index.html', 'ocr-import-core.js', 'app-destination-core.js', 'lottery-identity-core.js']) {
+  const source = path.join(root, file);
+  try { await fs.copyFile(source, path.join(dist, file)); }
+  catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
 }
 await fs.cp(path.join(root, 'assets'), path.join(dist, 'assets'), { recursive: true });
 
