@@ -1253,7 +1253,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     <div><span>公式確認店舗</span><strong id="databaseVerifiedStoreCount">0</strong></div>
   </div>
 </div>
-<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.17.0</h3><p>管理者スクショ一括登録・OCRリンク自動補正</p></div></div></section>
+<div class="item row"><div><h3>データバックアップ</h3><p>JSONファイルとして書き出します。</p></div><button id="export" class="secondary">書き出す</button></div><div class="item row"><div><h3>データ復元</h3><p>書き出したJSONを読み込みます。</p></div><label class="secondary">読み込む<input id="import" type="file" accept="application/json" hidden></label></div><div class="item row"><div><h3>全データ削除</h3><p>端末内の情報を削除します。</p></div><button id="reset" class="danger">削除</button></div><div class="item version-owner-trigger" id="ownerVersionCard"><h3>Pokeca Life v1.22.1</h3><p>日本語スクショOCR・URL手入力合体・日付自動反映</p></div></div></section>
 </main><button id="fab" class="fab hide">＋</button><nav><button class="sel" data-go="home"><span>⌂</span><small>ホーム</small></button><button data-go="lottery"><span>◎</span><small>抽選</small></button><button data-go="cards"><span>◇</span><small>カード</small></button><button data-go="stores"><span>⌖</span><small>ストア</small></button><button data-go="settings"><span>⚙</span><small>設定</small></button></nav></div>
 
 
@@ -1310,7 +1310,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     </div>
     <div class="batch-import-intro">
       <strong>管理者端末だけで使用</strong>
-      LINEのスクリーンショットを複数選ぶと、画像内の応募URLを端末内で文字認識します。画像そのものは保存・送信せず、抽出したURLだけを既存の読取APIへ送ります。
+      X・LINE・店頭POPのスクリーンショットから、店舗名・商品名・応募締切・当選発表・受取期間を端末内で文字認識します。URLが画像で切れていても、下へ正しいURLを貼れば読取結果と自動で合体します。画像そのものは保存・送信しません。
     </div>
     <label class="batch-dropzone" for="batchImageInput">
       <div><strong>スクショを選択</strong><span>複数枚まとめて選択できます<br>最大8枚・PNG/JPEG推奨</span></div>
@@ -1318,19 +1318,19 @@ nav button{height:52px;min-height:52px;max-height:52px}
     </label>
     <div class="batch-toolbar">
       <button id="batchPasteImageButton" class="secondary" type="button">画像を貼り付け</button>
-      <button id="batchRunOcrButton" class="primary" type="button">画像からURL抽出</button>
+      <button id="batchRunOcrButton" class="primary" type="button">画像の文字と日付を読取</button>
     </div>
     <div id="batchImagePreview" class="batch-preview-grid"></div>
     <div id="batchOcrStatus" class="batch-status">スクショを選択してください。</div>
     <div class="batch-progress"><span id="batchOcrProgress"></span></div>
 
     <div class="batch-url-block">
-      <h3>抽出したURL</h3>
-      <p>1行に1件。OCRの誤認識は読取時に応募ページへ照合し、LivePocketの0・O・9などを自動補正します。手入力で修正もできます。</p>
+      <h3>応募URL（手入力OK）</h3>
+      <p>画像からURLを読めなくても問題ありません。正しいURLを1行に1件貼り、「URLと画像情報を合体」を押してください。店舗・商品・日付は画像OCRの結果を優先して不足分を補います。</p>
       <textarea id="batchUrlText" class="field batch-url-text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://livepocket.jp/e/xxxxx&#10;https://docs.google.com/forms/d/e/xxxxx/viewform"></textarea>
       <div class="batch-toolbar">
         <button id="batchNormalizeUrlsButton" class="secondary" type="button">URLを整理</button>
-        <button id="batchReadUrlsButton" class="primary" type="button">抽選情報を一括読取</button>
+        <button id="batchReadUrlsButton" class="primary" type="button">URLと画像情報を合体</button>
       </div>
       <details>
         <summary>OCR原文を確認</summary>
@@ -1339,7 +1339,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
     </div>
 
     <div class="batch-results-head">
-      <div><h3>読取結果</h3><p>必須項目が揃った新規リンクだけを初期選択します。</p></div>
+      <div><h3>読取結果</h3><p>画像だけでも先に店舗・商品・日付を表示します。URLを合体後、公開項目を確認してください。</p></div>
       <span id="batchResultCount" class="batch-count">0件</span>
     </div>
     <div id="batchResultList" class="batch-result-list"></div>
@@ -1361,6 +1361,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
   </div>
 </div>
 <div id="backdrop" class="backdrop hide"><div class="sheet"><div class="modalhead"><h2 id="modalTitle"></h2><button id="close" class="icon">✕</button></div><form id="form" class="form"></form></div></div><div id="toast" class="toast hide"></div>
+<script src="./ocr-import-core.js"></script>
 <script>
 (()=>{const KEY='beta_v01';const uid=()=>crypto.randomUUID();const defaults={lotteries:[],cards:[],stores:[]};let D;try{D=JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch{D=structuredClone(defaults)}let lf='all',cf='all',active='home',lotterySort='deadline',areaFilter='home',typeFilter='all',lotteryView='list',todayDeadlineKind='all';
 let openProductYears=new Set();
@@ -4730,7 +4731,7 @@ const BATCH_OCR_SCRIPT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist
 const BATCH_MAX_IMAGES=8;
 let batchOcrScriptPromise=null;
 let batchOcrWorker=null;
-let batchImportState={files:[],previewUrls:[],rawText:'',results:[],busy:false};
+let batchImportState={files:[],previewUrls:[],rawText:'',ocrRecords:[],results:[],busy:false};
 
 function setBatchStatus(message='',state='',progress=null){
  const node=$('#batchOcrStatus'),bar=$('#batchOcrProgress');
@@ -4749,7 +4750,7 @@ function renderBatchImagePreview(){
 }
 function resetBatchImport(){
  releaseBatchPreviewUrls();
- batchImportState={files:[],previewUrls:[],rawText:'',results:[],busy:false};
+ batchImportState={files:[],previewUrls:[],rawText:'',ocrRecords:[],results:[],busy:false};
  const input=$('#batchImageInput');if(input)input.value='';
  const urls=$('#batchUrlText');if(urls)urls.value='';
  const raw=$('#batchRawOcrText');if(raw)raw.value='';
@@ -4783,12 +4784,16 @@ async function imageFileToOcrCanvas(file){
   const image=await new Promise((resolve,reject)=>{
    const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error(`${file.name||'画像'}を開けませんでした`));img.src=objectUrl;
   });
-  const maxWidth=1800,maxHeight=3200;
-  const scale=Math.min(1,maxWidth/image.naturalWidth,maxHeight/image.naturalHeight);
+  const maxWidth=2200,maxHeight=4200,maxScale=2.4;
+  const scale=Math.min(maxScale,maxWidth/image.naturalWidth,maxHeight/image.naturalHeight);
   const canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
   const context=canvas.getContext('2d',{alpha:false});
-  context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
+  context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+  context.filter='grayscale(1) contrast(1.35)';
+  context.drawImage(image,0,0,canvas.width,canvas.height);
+  context.filter='none';
   return canvas;
  }finally{URL.revokeObjectURL(objectUrl)}
 }
@@ -4828,11 +4833,56 @@ function extractBatchUrlsFromText(text=''){
  }
  return found.map(item=>item.url);
 }
+function batchOcrCatalogProducts(){
+ return (productCatalogState?.products||[]).map(product=>({name:product.name,aliases:product.aliases||[]}));
+}
+function batchOcrTextQuality(text=''){
+ const source=String(text||'');
+ let score=Math.min(40,source.trim().length/5);
+ if(/[ぁ-んァ-ヶ一-龠]/.test(source))score+=25;
+ if(/応募|締切|当選|結果|受取|購入/.test(source))score+=20;
+ if(/\d{1,2}\s*(?:月|[\/.-])\s*\d{1,2}/.test(source))score+=15;
+ return score;
+}
+function parseBatchOcrRecord(text='',index=0){
+ const core=window.PokecaOcrCore;
+ const extracted=core?.extractLotteryInfo
+  ?core.extractLotteryInfo(text,{baseYear:new Date().getFullYear(),products:batchOcrCatalogProducts()})
+  :{item:parseLotteryImport(text,'',''),confidence:0,fieldCount:0,evidence:{}};
+ const item={...(extracted.item||{}),memo:appendImportMemo(extracted.item?.memo||'',`スクショ${index+1}から自動読取`)};
+ return{index,text:String(text||''),item,confidence:Number(extracted.confidence||0),fieldCount:Number(extracted.fieldCount||0),evidence:extracted.evidence||{}};
+}
+function batchOcrRecordForIndex(index,total){
+ const records=batchImportState.ocrRecords||[];
+ if(!records.length)return null;
+ if(records.length===1)return records[0];
+ if(records.length===total)return records[index]||null;
+ return records[index]||records[0]||null;
+}
+function mergeBatchParsed(primary={},fallback={},url=''){
+ const core=window.PokecaOcrCore;
+ if(core?.mergeLotteryInfo)return core.mergeLotteryInfo(primary,fallback,url);
+ const merged={...fallback,...primary,url:url||primary.url||fallback.url||''};
+ for(const key of ['shop','product','applyStartDate','applyStartTime','applyEndDate','applyEndTime','resultStartDate','resultStartTime','resultEndDate','resultEndTime','resultNote','purchaseStartDate','purchaseStartTime','purchaseEndDate','purchaseEndTime','area']){
+  if(!primary?.[key]&&fallback?.[key])merged[key]=fallback[key];
+ }
+ if(fallback?.shop&&(!primary?.shop||primary?.type==='通販')){merged.shop=fallback.shop;merged.type=fallback.type||'店舗';merged.area=fallback.area||merged.area||'全国'}
+ return merged;
+}
+function createOcrPreviewResults(){
+ batchImportState.results=(batchImportState.ocrRecords||[]).filter(record=>record.fieldCount>0).map(record=>{
+  const built=buildBatchItemFromParsed(record.item,'',{ocrRecord:record,warning:'応募URL未設定'});
+  return{inputUrl:'',url:'',state:'ocr',selected:false,item:built.item,missing:built.missing,corrected:false,error:'',ocrRecord:record,needsUrl:true};
+ });
+ renderBatchResults();
+}
 function normalizeBatchUrlEditor(){
  const node=$('#batchUrlText');if(!node)return[];
  const urls=extractBatchUrlsFromText(node.value);
  node.value=urls.join('\n');
- setBatchStatus(urls.length?`${urls.length}件のURLを整理しました。続けて一括読取してください。`:'URLを見つけられませんでした。OCR原文またはURLを確認してください。',urls.length?'success':'error',urls.length?100:0);
+ if(urls.length)setBatchStatus(`${urls.length}件のURLを整理しました。画像から読んだ店舗・商品・日付と合体できます。`,'success',100);
+ else if((batchImportState.ocrRecords||[]).length)setBatchStatus('画像の店舗・商品・日付は読取済みです。正しい応募URLをこの欄へ貼ってください。','loading',100);
+ else setBatchStatus('URLを見つけられませんでした。正しい応募URLを貼ってください。','error',0);
  return urls;
 }
 function ambiguousSlugAlternatives(char){
@@ -4873,44 +4923,71 @@ async function runBatchOcr(){
  if(batchImportState.busy)return;
  if(!batchImportState.files.length)return setBatchStatus('先にスクショを選択してください。','error',0);
  batchImportState.busy=true;
- const runButton=$('#batchRunOcrButton');if(runButton){runButton.disabled=true;runButton.textContent='文字認識中…'}
+ const runButton=$('#batchRunOcrButton');if(runButton){runButton.disabled=true;runButton.textContent='日本語を読取中…'}
  try{
   const Tesseract=await loadBatchOcrLibrary();
-  setBatchStatus('OCRエンジンを準備しています。初回だけ少し時間がかかります。','loading',3);
-  batchOcrWorker=await Tesseract.createWorker('eng',1,{logger:message=>{
+  if(!window.PokecaOcrCore)throw new Error('画像解析モジュールを読み込めませんでした');
+  setBatchStatus('日本語OCRエンジンを準備しています。初回は言語データの読込に少し時間がかかります。','loading',3);
+  batchOcrWorker=await Tesseract.createWorker('jpn+eng',1,{logger:message=>{
    const base=Math.max(0,Math.min(1,Number(message.progress)||0));
-   if(message.status==='recognizing text')setBatchStatus('スクショ内のURLを読み取っています…','loading',Math.round(10+base*80));
+   if(message.status==='recognizing text')setBatchStatus('店舗名・商品名・日付を読み取っています…','loading',Math.round(10+base*78));
   }});
   await batchOcrWorker.setParameters({
    tessedit_pageseg_mode:String(Tesseract.PSM?.SPARSE_TEXT||11),
    preserve_interword_spaces:'1',
-   tessedit_char_whitelist:'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/._-?=&%'
+   user_defined_dpi:'300'
   });
-  const texts=[];
+  const texts=[],records=[];
   for(let index=0;index<batchImportState.files.length;index++){
-   setBatchStatus(`画像 ${index+1}/${batchImportState.files.length} を読み取っています…`,'loading',Math.round((index/batchImportState.files.length)*90));
+   setBatchStatus(`画像 ${index+1}/${batchImportState.files.length} の日本語と日付を読み取っています…`,'loading',Math.round((index/batchImportState.files.length)*88));
    const canvas=await imageFileToOcrCanvas(batchImportState.files[index]);
-   const result=await batchOcrWorker.recognize(canvas);
-   texts.push(String(result?.data?.text||''));
+   let result=await batchOcrWorker.recognize(canvas);
+   let text=String(result?.data?.text||'');
+   if(batchOcrTextQuality(text)<45){
+    await batchOcrWorker.setParameters({tessedit_pageseg_mode:String(Tesseract.PSM?.AUTO||3),preserve_interword_spaces:'1',user_defined_dpi:'300'});
+    const retry=await batchOcrWorker.recognize(canvas);
+    const retryText=String(retry?.data?.text||'');
+    if(batchOcrTextQuality(retryText)>batchOcrTextQuality(text))text=retryText;
+    await batchOcrWorker.setParameters({tessedit_pageseg_mode:String(Tesseract.PSM?.SPARSE_TEXT||11),preserve_interword_spaces:'1',user_defined_dpi:'300'});
+   }
+   texts.push(text);
+   records.push(parseBatchOcrRecord(text,index));
    canvas.width=1;canvas.height=1;
   }
   batchImportState.rawText=texts.join('\n\n--- IMAGE ---\n\n');
+  batchImportState.ocrRecords=records;
   const rawNode=$('#batchRawOcrText');if(rawNode)rawNode.value=batchImportState.rawText;
   const urls=extractBatchUrlsFromText(batchImportState.rawText);
-  const urlNode=$('#batchUrlText');if(urlNode)urlNode.value=urls.join('\n');
-  setBatchStatus(urls.length?`${batchImportState.files.length}枚から${urls.length}件のURLを抽出しました。次に「抽選情報を一括読取」を押してください。`:'URLを抽出できませんでした。OCR原文を確認するか、スクショ内の文字をLive Textでコピーして貼り付けてください。',urls.length?'success':'error',100);
+  const urlNode=$('#batchUrlText');if(urlNode&&!urlNode.value.trim())urlNode.value=urls.join('\n');
+  createOcrPreviewResults();
+  const useful=records.filter(record=>record.fieldCount>0);
+  const complete=records.filter(record=>record.item.shop&&record.item.product&&record.item.applyEndDate&&record.item.resultStartDate);
+  if(useful.length){
+   const fields=useful.map(record=>[
+    record.item.shop&&'店舗',
+    record.item.product&&'商品',
+    record.item.applyEndDate&&'締切',
+    record.item.resultStartDate&&'結果',
+    (record.item.purchaseStartDate||record.item.purchaseEndDate)&&'受取'
+   ].filter(Boolean).join('・')).filter(Boolean);
+   const urlMessage=urls.length?`URLも${urls.length}件見つけました。`:'URLは画像で切れていても大丈夫です。正しいURLだけ下へ貼ってください。';
+   setBatchStatus(`${batchImportState.files.length}枚から抽選情報${useful.length}件を読取りました（${fields.join('／')}）。${urlMessage} 続けて「URLと画像情報を合体」を押してください。`,complete.length===useful.length?'success':'loading',100);
+  }else{
+   setBatchStatus('画像の文字は読み取りましたが、店舗・商品・日付を抽選情報として特定できませんでした。OCR原文を確認するか、より大きく写したスクショを選んでください。','error',100);
+  }
  }catch(error){
-  console.error(error);setBatchStatus(`画像の文字認識に失敗しました：${error.message||'OCRエラー'}。通信環境を確認するか、URLを直接貼り付けてください。`,'error',0);
+  console.error(error);setBatchStatus(`画像の文字認識に失敗しました：${error.message||'OCRエラー'}。画像は保存されていません。通信環境を確認してもう一度実行してください。`,'error',0);
  }finally{
   await terminateBatchOcrWorker();batchImportState.busy=false;
-  if(runButton){runButton.disabled=false;runButton.textContent='画像からURL抽出'}
+  if(runButton){runButton.disabled=false;runButton.textContent='画像の文字と日付を読取'}
+  renderBatchResults();
  }
 }
 async function setBatchImages(files){
  const images=[...files].filter(file=>String(file.type||'').startsWith('image/')).slice(0,BATCH_MAX_IMAGES);
  if(!images.length)return setBatchStatus('画像ファイルを選択してください。','error',0);
  batchImportState.files=images;batchImportState.results=[];renderBatchImagePreview();renderBatchResults();
- setBatchStatus(`${images.length}枚を選択しました。URL抽出を開始します。`,'loading',1);
+ setBatchStatus(`${images.length}枚を選択しました。店舗名・商品名・日付の読取を開始します。`,'loading',1);
  await runBatchOcr();
 }
 async function pasteBatchImages(){
@@ -4951,12 +5028,15 @@ async function resolveBatchLottery(inputUrl=''){
  }
  throw new Error(lastError?.message||'ページを読み取れませんでした');
 }
-function buildBatchLotteryItem(resolved,inputUrl=''){
- const url=canonicalLotteryStateUrl(resolved.candidate||inputUrl),existing=batchExistingLottery(url),now=new Date().toISOString();
- const parsed=resolved.parsed||{},missing=batchRequiredMissing(parsed),warnings=[...(resolved.page?.warnings||[])];
+function buildBatchItemFromParsed(parsed={},inputUrl='',options={}){
+ const url=canonicalLotteryStateUrl(inputUrl||parsed.url||''),existing=url?batchExistingLottery(url):null,now=new Date().toISOString();
+ const missing=batchRequiredMissing(parsed),warnings=[...(options.warnings||[])];
+ if(options.warning)warnings.push(options.warning);
  if(missing.length)warnings.push(`未取得：${missing.join('・')}`);
+ if(!url)warnings.push('応募URL未設定');
  let memo=parsed.memo||'';
- if(resolved.corrected)memo=appendImportMemo(memo,`スクショOCR URL補正：${inputUrl} → ${url}`);
+ if(options.corrected&&options.originalUrl)memo=appendImportMemo(memo,`スクショOCR URL補正：${options.originalUrl} → ${url}`);
+ if(options.ocrRecord)memo=appendImportMemo(memo,`画像OCR信頼度：${Math.round(Number(options.ocrRecord.confidence||0)*100)}%`);
  const item={...existing,...parsed,
   id:existing?.id||uid(),status:existing?.status||'open',url,
   deadline:parsed.applyEndDate||'',resultDate:parsed.resultStartDate||'',purchaseDeadline:parsed.purchaseEndDate||'',
@@ -4964,27 +5044,39 @@ function buildBatchLotteryItem(resolved,inputUrl=''){
   externalId:url,remoteId:url,sourceKey:url?`url:${url}`:'',
   sourceEventSlug:(()=>{try{return new URL(url).pathname.match(/^\/e\/([^/]+)/)?.[1]||''}catch{return''}})(),
   sourceFormId:(()=>{try{return new URL(url).pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)/)?.[1]||''}catch{return''}})(),
-  sourceTitle:String(resolved.page?.title||'').slice(0,500),
-  parseConfidence:Number(resolved.page?.confidence||0)||null,
-  reviewRequired:Boolean(missing.length||((resolved.page?.confidence||0)>0&&(resolved.page?.confidence||0)<.75)),
-  parseWarning:warnings.join('／').slice(0,500),memo,
+  sourceTitle:String(options.sourceTitle||'').slice(0,500),
+  parseConfidence:Number(options.parseConfidence??options.ocrRecord?.confidence??0)||null,
+  reviewRequired:Boolean(!url||missing.length||((Number(options.parseConfidence||0)>0)&&Number(options.parseConfidence||0)<.75)),
+  parseWarning:[...new Set(warnings.filter(Boolean))].join('／').slice(0,500),memo,
   collectedAt:existing?.collectedAt||existing?.createdAt||now,createdAt:existing?.createdAt||now,updatedAt:now
  };
  return{item,existing,missing,warnings};
 }
+function buildBatchLotteryItem(resolved,inputUrl='',ocrRecord=null){
+ const url=canonicalLotteryStateUrl(resolved.candidate||inputUrl);
+ const parsed=mergeBatchParsed(resolved.parsed||{},ocrRecord?.item||{},url);
+ return buildBatchItemFromParsed(parsed,url,{
+  warnings:[...(resolved.page?.warnings||[])],
+  corrected:resolved.corrected,
+  originalUrl:inputUrl,
+  sourceTitle:resolved.page?.title||'',
+  parseConfidence:Math.max(Number(resolved.page?.confidence||0),Number(ocrRecord?.confidence||0)),
+  ocrRecord
+ });
+}
 function batchResultBadge(result){
- const labels={queued:['待機',''],reading:['読取中','info'],ready:['公開可能','ok'],review:['要確認','warn'],duplicate:['登録済み','info'],error:['失敗','bad'],publishing:['公開中','info'],published:['公開済み','ok']};
+ const labels={queued:['待機',''],reading:['読取中','info'],ocr:['画像読取済み','warn'],ready:['公開可能','ok'],review:['要確認','warn'],duplicate:['登録済み','info'],error:['失敗','bad'],publishing:['公開中','info'],published:['公開済み','ok']};
  return labels[result.state]||['確認',''];
 }
 function renderBatchResults(){
  const list=$('#batchResultList'),count=$('#batchResultCount'),publish=$('#batchPublishButton');if(!list)return;
  const results=batchImportState.results||[];if(count)count.textContent=`${results.length}件`;
- if(!results.length){list.innerHTML='<div class="empty">一括読取を実行すると、ここに店舗名・商品名・日付が並びます。</div>';if(publish)publish.disabled=true;return}
+ if(!results.length){list.innerHTML='<div class="empty">画像を選ぶと、URLが読めなくても店舗名・商品名・日付を先に表示します。</div>';if(publish)publish.disabled=true;return}
  list.innerHTML=results.map((result,index)=>{
   const [label,badgeClass]=batchResultBadge(result),item=result.item||{};
-  const selectable=['ready','review','duplicate'].includes(result.state);
+  const selectable=Boolean(item.url)&&['ready','review','duplicate'].includes(result.state);
   const checked=Boolean(result.selected&&selectable);
-  const note=result.missing?.length?`未取得：${(result.missing||[]).join('・')}`:'';
+  const note=[result.needsUrl?'応募URLを下へ貼って「URLと画像情報を合体」を押してください。':'',result.missing?.length?`未取得：${(result.missing||[]).join('・')}`:''].filter(Boolean).join('／');
   const correction=result.corrected?`OCR補正：${result.inputUrl} → ${result.url}`:'';
   return`<div class="batch-result-card ${esc(result.state)}">
    <div class="batch-result-top">
@@ -4993,11 +5085,11 @@ function renderBatchResults(){
     <span class="batch-result-badge ${badgeClass}">${label}</span>
    </div>
    ${item.product?`<div class="batch-result-product">${esc(item.product)}</div>`:''}
-   ${item.shop?`<div class="batch-result-dates"><div><span>応募締切</span><b>${esc(item.applyEndDate||'未取得')}</b></div><div><span>結果発表</span><b>${esc(item.resultStartDate||'未取得')}</b></div><div><span>購入期限</span><b>${esc(item.purchaseEndDate||'未設定')}</b></div></div>`:''}
+   ${(item.shop||item.product||item.applyEndDate||item.resultStartDate||item.purchaseStartDate||item.purchaseEndDate)?`<div class="batch-result-dates"><div><span>応募締切</span><b>${esc(item.applyEndDate||'未取得')}</b></div><div><span>結果発表</span><b>${esc(item.resultStartDate||'未取得')}</b></div><div><span>受取期間</span><b>${esc(item.purchaseStartDate?(item.purchaseEndDate&&item.purchaseEndDate!==item.purchaseStartDate?`${item.purchaseStartDate}〜${item.purchaseEndDate}`:item.purchaseStartDate):(item.purchaseEndDate||'未設定'))}</b></div></div>`:''}
    ${correction?`<div class="batch-result-note correction">${esc(correction)}</div>`:''}
    ${note?`<div class="batch-result-note">${esc(note)}</div>`:''}
    ${result.error?`<div class="batch-result-note">${esc(result.error)}</div>`:''}
-   ${item.url?`<div class="batch-result-actions"><button class="secondary" type="button" data-batch-review="${index}">個別確認</button><a class="secondary" href="${esc(item.url)}" target="_blank" rel="noopener">ページを開く</a></div>`:''}
+   ${item&&Object.keys(item).length?`<div class="batch-result-actions"><button class="secondary" type="button" data-batch-review="${index}">個別確認</button>${item.url?`<a class="secondary" href="${esc(item.url)}" target="_blank" rel="noopener">ページを開く</a>`:''}</div>`:''}
   </div>`;
  }).join('');
  list.querySelectorAll('[data-batch-select]').forEach(node=>node.onchange=()=>{const result=results[Number(node.dataset.batchSelect)];if(result)result.selected=node.checked;renderBatchResults()});
@@ -5007,24 +5099,37 @@ function renderBatchResults(){
 }
 async function readBatchUrls(){
  if(batchImportState.busy)return;
- const urls=normalizeBatchUrlEditor();if(!urls.length)return;
+ const urls=normalizeBatchUrlEditor();
+ if(!urls.length){
+  if((batchImportState.ocrRecords||[]).length)return setBatchStatus('画像の店舗・商品・日付は読取済みです。応募URLだけ上の欄へ貼り、「URLと画像情報を合体」を押してください。','loading',100);
+  return;
+ }
  batchImportState.busy=true;
- batchImportState.results=urls.map(url=>({inputUrl:url,url,state:'queued',selected:false,item:null,missing:[],corrected:false,error:''}));renderBatchResults();
- const button=$('#batchReadUrlsButton');if(button){button.disabled=true;button.textContent='一括読取中…'}
- setBatchStatus(`${urls.length}件をURLごとに照合しています。0・O・9などのOCR誤認識も自動補正します。`,'loading',0);
+ batchImportState.results=urls.map((url,index)=>({inputUrl:url,url,state:'queued',selected:false,item:null,missing:[],corrected:false,error:'',ocrRecord:batchOcrRecordForIndex(index,urls.length),needsUrl:false,imageFallback:false}));renderBatchResults();
+ const button=$('#batchReadUrlsButton');if(button){button.disabled=true;button.textContent='画像情報と合体中…'}
+ setBatchStatus(`${urls.length}件のURLを確認し、画像から読んだ店舗名・商品名・日付と合体しています。`,'loading',0);
  let cursor=0,completed=0;
  const runner=async()=>{
   while(true){
    const index=cursor++;if(index>=batchImportState.results.length)return;
    const result=batchImportState.results[index];result.state='reading';renderBatchResults();
    try{
-    const resolved=await resolveBatchLottery(result.inputUrl),built=buildBatchLotteryItem(resolved,result.inputUrl);
+    const resolved=await resolveBatchLottery(result.inputUrl),built=buildBatchLotteryItem(resolved,result.inputUrl,result.ocrRecord);
     result.url=canonicalLotteryStateUrl(resolved.candidate);result.item=built.item;result.missing=built.missing;result.corrected=resolved.corrected;
     if(built.existing){result.state='duplicate';result.selected=false}
     else if(built.missing.length||built.item.reviewRequired){result.state='review';result.selected=false}
     else{result.state='ready';result.selected=true}
-   }catch(error){result.state='error';result.error=error.message||'読取に失敗しました';result.selected=false}
-   completed++;setBatchStatus(`${completed}/${urls.length}件を確認しました。`,'loading',Math.round((completed/urls.length)*100));renderBatchResults();
+   }catch(error){
+    if(result.ocrRecord?.fieldCount>0){
+     const parsed=mergeBatchParsed({},result.ocrRecord.item,result.inputUrl);
+     const built=buildBatchItemFromParsed(parsed,result.inputUrl,{ocrRecord:result.ocrRecord,warning:`URL先の自動取得失敗：${error.message||'読取不可'}。画像OCRの内容を保持しました`});
+     result.url=canonicalLotteryStateUrl(result.inputUrl);result.item=built.item;result.missing=built.missing;
+     result.state='review';result.error='URL先は読めませんでしたが、画像から取得した店舗・商品・日付は消さずに反映しています。';result.imageFallback=true;result.selected=false;
+    }else{
+     result.state='error';result.error=error.message||'読取に失敗しました';result.selected=false;
+    }
+   }
+   completed++;setBatchStatus(`${completed}/${urls.length}件を合体しました。`,'loading',Math.round((completed/urls.length)*100));renderBatchResults();
   }
  };
  try{
@@ -5033,8 +5138,10 @@ async function readBatchUrls(){
   const review=batchImportState.results.filter(result=>result.state==='review').length;
   const duplicate=batchImportState.results.filter(result=>result.state==='duplicate').length;
   const failed=batchImportState.results.filter(result=>result.state==='error').length;
-  setBatchStatus(`読取完了：新規${ready}件・要確認${review}件・登録済み${duplicate}件・失敗${failed}件。公開する項目を確認してください。`,failed||review?'':'success',100);
- }finally{batchImportState.busy=false;if(button){button.disabled=false;button.textContent='抽選情報を一括読取'}renderBatchResults()}
+  const fallback=batchImportState.results.filter(result=>result.imageFallback).length;
+  const fallbackText=fallback?`・画像情報のみ保持${fallback}件`:'';
+  setBatchStatus(`合体完了：公開可能${ready}件・要確認${review}件・登録済み${duplicate}件・失敗${failed}件${fallbackText}。店舗名・商品名・日付を確認してください。`,failed?'error':(review?'loading':'success'),100);
+ }finally{batchImportState.busy=false;if(button){button.disabled=false;button.textContent='URLと画像情報を合体'}renderBatchResults()}
 }
 function openBatchResultForReview(index){
  const result=batchImportState.results[index];if(!result?.item)return;
@@ -5941,4 +6048,5 @@ initializeCardImages()
     initializeAutoSync().catch(console.error);
     loadUserProfile();renderProfileUI();showOnboardingIfNeeded();
   });})();
-</script><script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});</script></body></html>
+</script><script src="./ocr-import-core.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});</script></body></html>
