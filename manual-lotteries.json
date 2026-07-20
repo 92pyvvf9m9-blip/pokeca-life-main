@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-07-20T18:39:24.712Z",
+  "updatedAt": "2026-07-20T18:40:01.647Z",
   "lotteries": [
     {
       "externalId": "https://docs.google.com/forms/d/e/1FAIpQLSedo-XaS4uaIE3coX6jJFcXOs-ozk4vJMm5AFVFDn-hmsoAMw/viewform",
@@ -10,8 +10,8 @@
       "parseConfidence": 0,
       "reviewRequired": false,
       "parseWarning": "",
-      "shop": "ストームエメラルダ抽選",
-      "product": "⚠️ご応募前にご確認ください⚠️<div><ul><li>応募は1トレーナー様1回のみ、購入は1BOXのみ</li><li>マイジム登録の確認お願いします ※登録＝当選ではありません</li><li>抽選は機械でランダムに行います。",
+      "shop": "ブックオフ　フォレオ広島東",
+      "product": "ストームエメラルダ",
       "type": "店舗",
       "area": "広島県",
       "status": "open",
@@ -40,8 +40,8 @@
       "verified": true,
       "confidence": 0.99,
       "collectedAt": "2026-07-18T18:22:42.117Z",
-      "createdAt": "2026-07-20T18:39:24.272Z",
-      "updatedAt": "2026-07-20T18:39:24.272Z"
+      "createdAt": "2026-07-20T18:40:01.179Z",
+      "updatedAt": "2026-07-20T18:40:01.179Z"
     },
     {
       "externalId": "https://livepocket.jp/e/ce_8r",
