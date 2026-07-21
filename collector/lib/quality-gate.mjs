@@ -1,3 +1,4 @@
+import { isPlausibleProductName } from "./product-catalog-parser.mjs";
 import fs from "node:fs/promises";
 
 function normalize(value = "") {
@@ -47,17 +48,33 @@ export async function loadProductCatalog(path) {
 }
 
 export function matchCatalogProduct(value, products = []) {
+  const raw = String(value || "").normalize("NFKC").replace(/[「」『』【】［］\[\]()（）・･\s　\-‐‑‒–—―_]/g, "");
   const target = normalize(value);
   if (!target || target.length < 3) return null;
+  if (/^(?:スターターセット(?:MEGA|ex)?|スタートデッキ|拡張パック|強化拡張パック|ハイクラスパック)$/iu.test(raw)) {
+    const explicitGroup = products.find((product) =>
+      product?.category === "商品グループ"
+      && [product.name, ...(product.aliases || [])].some((label) => normalize(label) === target)
+    );
+    return explicitGroup || null;
+  }
   let best = null;
   for (const product of products) {
+    if (!isPlausibleProductName(product?.name || "")) continue;
     for (const label of [product.name, ...(product.aliases || [])]) {
       const key = normalize(label);
       if (!key) continue;
       const exact = target === key;
-      const contains = key.length >= 4 && (target.includes(key) || key.includes(target));
-      if (!exact && !contains) continue;
-      const score = exact ? 1000 + key.length : key.length;
+      const targetContainsKey = key.length >= 4 && target.includes(key);
+      const keyContainsTarget = target.length >= 4 && key.includes(target);
+      if (!exact && !targetContainsKey && !keyContainsTarget) continue;
+
+      const lengthGap = Math.abs(target.length - key.length);
+      const score = exact
+        ? 10_000 + key.length
+        : targetContainsKey
+          ? 2_000 + key.length - lengthGap * 2
+          : 1_000 + target.length - lengthGap * 3;
       if (!best || score > best.score) best = { product, score };
     }
   }

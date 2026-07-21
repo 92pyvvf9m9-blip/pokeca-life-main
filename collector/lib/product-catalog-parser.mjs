@@ -98,6 +98,37 @@ function cleanName(value = "") {
     .trim();
 }
 
+function trimProductDescription(value = "") {
+  let text = cleanName(value);
+  const stopPatterns = [
+    /\s+(?:TOP PRODUCT|商品一覧に戻る|INDEX|商品情報|このページをシェア|特性|ワザ|この特性|自分のポケモン|相手のワザ|用意した未開封|この夏|FUR仕様|そのままで参加|そのままで 参加)/iu,
+    /(?:の[、,]?|に)(?:収録カード|カードを使ったデッキレシピ|一部デッキ|収録されている|おける封入内容).*$/u,
+    /(?:カードリスト公開|収録カードのイラスト誤り|体験会開催|をさらに大公開|に関するお詫び|交換対応について).*$/u,
+    /[。！？!](?=\s|$)/u,
+  ];
+  for (const pattern of stopPatterns) {
+    const index = text.search(pattern);
+    if (index > 0) text = text.slice(0, index).trim();
+  }
+  return cleanName(text)
+    .replace(/\s+ポケモンカードゲーム\s+(?=スカーレット|MEGA)/i, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function isPlausibleProductName(name = "") {
+  const raw = cleanName(name);
+  const text = trimProductDescription(raw);
+  if (!text || text.length < 4 || text.length > 90) return false;
+  const noise = /(?:TOP PRODUCT|商品一覧|このページをシェア|カードリスト公開|デッキレシピを公開|収録カードをさらに|イラスト誤り|お詫び|交換対応|体験会開催|特性|ワザ|スタンダードレギュレーション|この特性|用意した未開封)/iu;
+  if (noise.test(raw)) return false;
+  if (raw.length - text.length > 12) return false;
+  if (/^(?:スターターセット(?:MEGA|ex)?|スタートデッキ|拡張パック|強化拡張パック|ハイクラスパック)$/iu.test(text.replace(/\s+/g, ""))) return false;
+  const prefixMatches = text.match(new RegExp(PRODUCT_PREFIX_PATTERN, "gi")) || [];
+  if (prefixMatches.length > 1) return false;
+  return isCardProductName(text);
+}
+
 export function classifyProduct(name = "") {
   const text = String(name);
   if (/強化拡張パック|ハイクラスパック|拡張パック/.test(text)) return "拡張パック";
@@ -117,31 +148,37 @@ export function isCardProductName(name = "") {
 }
 
 function extractNames(text = "") {
-  const normalized = decodeHtml(text).replace(/\s+/g, " ");
+  const normalized = decodeHtml(text)
+    .replace(/\r/g, "")
+    .replace(/[\t 　]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n");
+  const flattened = normalized.replace(/\s+/g, " ");
   const names = new Set();
   PRODUCT_QUOTED_RE.lastIndex = 0;
-  for (const match of normalized.matchAll(PRODUCT_QUOTED_RE)) {
+  for (const match of flattened.matchAll(PRODUCT_QUOTED_RE)) {
     const prefix = cleanName(match[1]);
     const title = cleanName(match[2]);
-    const name = cleanName(`${prefix} ${title}`);
-    if (isCardProductName(name)) names.add(name);
+    const name = trimProductDescription(`${prefix} ${title}`);
+    if (isPlausibleProductName(name)) names.add(name);
   }
 
   const pieces = normalized.split(/\n|\||｜|(?:販売日|発売日|希望小売価格|メーカー希望小売価格)/);
   for (const piece of pieces) {
     const start = piece.search(PRODUCT_PREFIX_RE);
     if (start < 0) continue;
-    let name = cleanName(piece.slice(start));
+    let name = trimProductDescription(piece.slice(start));
     name = name.replace(/(?:\d{4}年)?\s*\d{1,2}月\s*\d{1,2}日.*$/u, "").trim();
-    if (name.length > 120) {
-      const stop = name.search(/(?:税込|内容物|カード\d+枚|入り|発売)/u);
-      if (stop > 0) name = name.slice(0, stop).trim();
-    }
-    if (isCardProductName(name)) names.add(name);
+    if (isPlausibleProductName(name)) names.add(name);
   }
 
-  if (/30th CELEBRATION FUTURISTIC BOX/i.test(normalized)) names.add("30th CELEBRATION FUTURISTIC BOX");
-  if (/30th CELEBRATION カードセット/i.test(normalized)) names.add("30th CELEBRATION カードセット");
+  if (/30th CELEBRATION FUTURISTIC BOX/i.test(flattened)) names.add("30th CELEBRATION FUTURISTIC BOX");
+  if (/30th CELEBRATION カードセット/i.test(flattened)) {
+    for (const line of normalized.split("\n")) {
+      if (!/30th CELEBRATION カードセット/i.test(line)) continue;
+      const name = trimProductDescription(line.slice(line.search(/30th CELEBRATION カードセット/i)));
+      if (isPlausibleProductName(name)) names.add(name);
+    }
+  }
   return [...names];
 }
 
@@ -223,8 +260,8 @@ function candidateConfidence(candidate) {
 }
 
 function buildCandidate({ name, releaseDate, officialUrl, source, image, text, collectedAt }) {
-  const cleaned = cleanName(name);
-  if (!isCardProductName(cleaned)) return null;
+  const cleaned = trimProductDescription(name);
+  if (!isPlausibleProductName(cleaned)) return null;
   const candidate = {
     name: cleaned,
     releaseDate: releaseDate || parseJapaneseDate(text, officialUrl, collectedAt),

@@ -76,6 +76,36 @@ function extractEmbeddedLivePocketLinks(html = "") {
   return matches;
 }
 
+
+function extractContextualHobbyStationLinks(source, html = "") {
+  if (source.parser !== "hobby-station-news") return [];
+  const decoded = decodeHtmlEntities(html);
+  const matches = [];
+  const seen = new Set();
+  const anchorPattern = /<a\b[^>]*href\s*=\s*(["'])([\s\S]*?)\1[^>]*>([\s\S]*?)<\/a>/gi;
+
+  for (const match of decoded.matchAll(anchorPattern)) {
+    let url;
+    try { url = new URL(match[2], source.url); } catch { continue; }
+    const host = normalizeHost(url.hostname);
+    if (!(host === "hbst.net" || host.endsWith(".hbst.net"))) continue;
+    if (!url.searchParams.has("p") && !/\/(?:news|blog)\//i.test(url.pathname)) continue;
+
+    const index = Number(match.index || 0);
+    const context = htmlToText(decoded.slice(Math.max(0, index - 900), index + match[0].length + 500));
+    const anchorText = htmlToText(match[3]);
+    const text = `${anchorText} ${context}`.replace(/\s+/g, " ").trim();
+    if (!/ポケモンカード|ポケカ/i.test(text) || !/抽選|応募|LivePocket|ライブポケット/i.test(text)) continue;
+
+    url.hash = "";
+    const href = url.href;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    matches.push({ url: href, text, contextual: true });
+  }
+  return matches;
+}
+
 function baseDiscoveryStats(source) {
   return {
     enabled: Boolean(source.discovery?.enabled),
@@ -111,7 +141,6 @@ export function discoverCandidateLinksDetailed(source, html) {
     "抽選",
   ];
   const exclude = source.discovery.excludePatterns || [
-    "終了",
     "過去",
     "規約",
     "faq",
@@ -147,6 +176,15 @@ export function discoverCandidateLinksDetailed(source, html) {
         : String(link.text || "").trim(),
       embedded: Boolean(previous.embedded || link.embedded),
     });
+  }
+  const contextualLinks = extractContextualHobbyStationLinks(source, html);
+  for (const link of contextualLinks) {
+    const key = String(link.url || "");
+    if (!key) continue;
+    const previous = mergedLinks.get(key);
+    mergedLinks.set(key, previous
+      ? { ...previous, text: `${previous.text || ""} ${link.text || ""}`.trim(), contextual: true }
+      : link);
   }
   const links = [...mergedLinks.values()];
   stats.totalLinks = links.length;
@@ -185,7 +223,7 @@ export function discoverCandidateLinksDetailed(source, html) {
       stats.rejected.host += 1;
       continue;
     }
-    if (requiredPathPatterns.length && !matchesAny(parsed.pathname, requiredPathPatterns)) {
+    if (requiredPathPatterns.length && !matchesAny(`${parsed.pathname}${parsed.search}`, requiredPathPatterns)) {
       stats.rejected.path += 1;
       continue;
     }

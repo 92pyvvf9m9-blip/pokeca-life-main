@@ -715,38 +715,61 @@ function parseGeoLottery(source, html, collectedAt) {
   });
 }
 
+function hobbyStationPrimaryText(text = "") {
+  return String(text)
+    .split(/\n(?:最近の投稿|前の記事を読む|次の記事を読む|ホビーステーショントップ|トレーディングカード・トレカ販売)/i)[0]
+    .trim();
+}
+
 function hobbyStationProducts(text = "") {
-  const products = quotedProductCandidates(text).map(normalizePokemonProductName);
+  const primaryText = hobbyStationPrimaryText(text);
+  const products = quotedProductCandidates(primaryText).map(normalizePokemonProductName);
   if (products.length) {
     const unique = new Map();
     for (const product of products) {
-      const key = product.normalize("NFKC").toLowerCase().replace(/再販|再販売|[()（）\s]/g, "");
-      if (!unique.has(key) || product.length < unique.get(key).length) unique.set(key, product);
+      const cleaned = product
+        .replace(/^(?:当選者代金前払い必要|応募は終了しました|※応募は終了しました)\s*/i, "")
+        .replace(/\s*(?:を抽選販売いたします|の再販商品を抽選販売いたします).*$/i, "")
+        .trim();
+      if (!cleaned || cleaned.length > 120) continue;
+      const key = cleaned.normalize("NFKC").toLowerCase().replace(/再販|再販売|[()（）\s]/g, "");
+      if (!unique.has(key) || cleaned.length < unique.get(key).length) unique.set(key, cleaned);
     }
-    return [...unique.values()].slice(0, 12);
+    return [...unique.values()].slice(0, 4);
   }
 
-  const lines = normalizeLines(text);
+  const lines = normalizeLines(primaryText);
   return uniqueValues(lines
     .filter((line) => isPokemonCard(line))
     .filter((line) => /拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|MEGA/i.test(line))
-    .filter((line) => !/応募方法|応募期間|抽選受付|当選発表|購入期間|注意事項/.test(line))
+    .filter((line) => !/応募方法|応募期間|抽選受付|当選発表|購入期間|注意事項|最近の投稿/.test(line))
     .map((line) => normalizePokemonProductName(line.replace(/^.*?抽選販売/, "")))
-    .filter((line) => line.length > 4 && line.length < 150))
-    .slice(0, 12);
+    .map((line) => line.replace(/\s*(?:を抽選販売いたします|の再販商品を抽選販売いたします).*$/i, "").trim())
+    .filter((line) => line.length > 4 && line.length < 120))
+    .slice(0, 4);
+}
+
+function hobbyStationIsListingPage(source, text, actionUrls) {
+  if (source.discoveryParentUrl) return false;
+  let path = "";
+  try { path = new URL(source.url).pathname; } catch {}
+  if (/\/(?:category|tag|author)\//i.test(path)) return true;
+  const noticeCount = (String(text).match(/(?:応募期間|抽選受付期間)/g) || []).length;
+  return actionUrls.length > 1 && noticeCount > 1;
 }
 
 function parseHobbyStationNews(source, html, collectedAt) {
-  const text = htmlToText(html);
-  if (!/ポケモンカード|ポケカ/i.test(text) || !/抽選/.test(text)) return [];
+  const fullText = htmlToText(html);
+  if (!/ポケモンカード|ポケカ/i.test(fullText) || !/抽選/.test(fullText)) return [];
 
   const livePocketLinks = extractLinks(html, source.url)
     .filter((link) => /(^|\.)livepocket\.jp$/i.test(new URL(link.url).hostname));
   const textLivePocket = [...String(html).matchAll(/https?:\/\/livepocket\.jp\/e\/[A-Za-z0-9_-]+/gi)]
     .map((match) => match[0]);
   const actionUrls = [...new Set([...livePocketLinks.map((link) => link.url), ...textLivePocket])];
-  if (!actionUrls.length) return [];
+  if (!actionUrls.length || hobbyStationIsListingPage(source, fullText, actionUrls)) return [];
 
+  const text = hobbyStationPrimaryText(fullText);
   const lines = normalizeLines(text);
   const products = hobbyStationProducts(text);
   if (!products.length) return [];
@@ -758,14 +781,27 @@ function parseHobbyStationNews(source, html, collectedAt) {
     ["当選発表", "結果発表", "抽選結果"],
     ["当選者購入期間", "購入期間", "受取期間", "注意事項"]);
   const purchaseText = sectionText(lines,
-    ["当選者購入期間", "購入期間", "受取期間", "引取期間"],
-    ["注意事項", "応募条件", "お問い合わせ"]);
+    ["当選者購入期間", "商品代金お支払い期間", "購入期間", "受取期間", "引取期間"],
+    ["商品お受け取り期間", "注意事項", "応募条件", "お問い合わせ"]);
 
-  const pairCount = Math.max(products.length, actionUrls.length);
+  const pairs = [];
+  if (products.length === 1) {
+    for (const actionUrl of actionUrls) pairs.push({ product: products[0], actionUrl });
+  } else if (actionUrls.length === 1) {
+    for (const product of products) pairs.push({ product, actionUrl: actionUrls[0] });
+  } else {
+    const count = Math.min(products.length, actionUrls.length);
+    for (let index = 0; index < count; index += 1) pairs.push({ product: products[index], actionUrl: actionUrls[index] });
+  }
+
+  const uniquePairs = new Map();
+  for (const pair of pairs) {
+    const key = `${pair.product.normalize("NFKC").toLowerCase()}|${pair.actionUrl}`;
+    if (!uniquePairs.has(key)) uniquePairs.set(key, pair);
+  }
+
   const records = [];
-  for (let index = 0; index < pairCount; index += 1) {
-    const product = products[Math.min(index, products.length - 1)];
-    const actionUrl = actionUrls[Math.min(index, actionUrls.length - 1)];
+  for (const { product, actionUrl } of uniquePairs.values()) {
     const record = buildRecord({
       source,
       product,
