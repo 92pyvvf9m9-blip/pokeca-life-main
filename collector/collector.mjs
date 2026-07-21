@@ -8,9 +8,13 @@ import { discoverCandidateLinksDetailed, pageLooksRelevant } from "./lib/discove
 import { collectXLotteryCandidates } from "./lib/x-collector.mjs";
 import { loadProductCatalog, evaluateCandidate } from "./lib/quality-gate.mjs";
 import { verifyDestination } from "./lib/destination-verifier.mjs";
+import { normalizeSourceRegistry, summarizeSourceRegistry } from "./lib/source-registry.mjs";
+import { DiscoveryStateTracker } from "./lib/discovery-state.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
+const APP_PACKAGE = JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
+const APP_VERSION = String(APP_PACKAGE.version || "0.0.0");
 const SOURCES_PATH = process.env.POKECA_SOURCES_PATH || path.join(ROOT, ".private", "sources.json");
 const FEED_PATH = process.env.POKECA_FEED_PATH || path.join(ROOT, "lottery-feed.json");
 const STATUS_PATH = process.env.POKECA_STATUS_PATH || path.join(ROOT, "collector-status.json");
@@ -20,6 +24,7 @@ const X_SOURCES_PATH = process.env.POKECA_X_SOURCES_PATH || path.join(ROOT, ".pr
 const PRODUCT_CATALOG_PATH = path.join(ROOT, "product-catalog.json");
 const QUALITY_STATUS_PATH = process.env.POKECA_QUALITY_STATUS_PATH || path.join(ROOT, "data-quality-status.json");
 const MANUAL_LOTTERIES_PATH = process.env.POKECA_MANUAL_LOTTERIES_PATH || path.join(ROOT, "manual-lotteries.json");
+const DISCOVERY_STATE_PATH = process.env.POKECA_DISCOVERY_STATE_PATH || path.join(ROOT, "collector", "state", "discovery-state.json");
 
 async function readJson(file, fallback) {
   try {
@@ -72,7 +77,7 @@ async function fetchDocument(source) {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/1.22.0; +https://github.com/)",
+        "User-Agent": `Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/${APP_VERSION}; +https://github.com/)`,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4",
         "Cache-Control": "no-cache",
@@ -231,7 +236,12 @@ function applyCatalogPurchaseStart(candidate, catalogProduct) {
 
 async function run() {
   const startedAt = new Date().toISOString();
-  const registry = await readJson(SOURCES_PATH, { sources: [] });
+  const rawRegistry = await readJson(SOURCES_PATH, { sources: [] });
+  const registry = normalizeSourceRegistry(rawRegistry);
+  const sourceDatabase = summarizeSourceRegistry(registry);
+  if (registry.errors.length) {
+    throw new Error(`Source registry validation failed: ${registry.errors.join(" / ")}`);
+  }
   const enabledSources = registry.sources.filter((source) => source.enabled !== false);
   const blockedDestinationDomains = Array.isArray(registry.blockedDestinationDomains)
     ? registry.blockedDestinationDomains
@@ -239,6 +249,8 @@ async function run() {
   const previousFeed = await readJson(FEED_PATH, { lotteries: [] });
   const productCatalog = await loadProductCatalog(PRODUCT_CATALOG_PATH);
   const trustedPrevious = (previousFeed.lotteries || []).filter((item) => item.qualityVersion >= 2 && item.verified === true);
+  const previousDiscoveryState = await readJson(DISCOVERY_STATE_PATH, { version: 1, sources: {} });
+  const discoveryTracker = new DiscoveryStateTracker(previousDiscoveryState, new Date(startedAt));
   const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
   const manualLotteries = (Array.isArray(manualPayload) ? manualPayload : manualPayload.lotteries || [])
     .filter((item) => item && typeof item === "object")
@@ -269,6 +281,7 @@ async function run() {
     const started = Date.now();
     try {
       const rootDocument = await fetchDocument(source);
+      const rootObservation = discoveryTracker.observeRoot(source, rootDocument.html);
       const documents = [{ source, html: rootDocument.html, kind: "root" }];
       const discoveryResult = discoverCandidateLinksDetailed(source, rootDocument.html);
       let crossSourceDuplicateCount = 0;
@@ -276,6 +289,9 @@ async function run() {
       let candidateFetchFailureCount = 0;
       let relevantPageCount = 0;
       let irrelevantPageCount = 0;
+      let newCandidateCount = 0;
+      let changedCandidateCount = 0;
+      let knownCandidateCount = 0;
       const childErrors = [];
 
       for (const candidate of discoveryResult.candidates) {
@@ -295,6 +311,10 @@ async function run() {
         try {
           const childDocument = await fetchDocument(childSource);
           candidateFetchSuccessCount += 1;
+          const candidateObservation = discoveryTracker.observeCandidate(source, candidate.url, childDocument.html);
+          if (candidateObservation.firstSeen) newCandidateCount += 1;
+          else knownCandidateCount += 1;
+          if (candidateObservation.changed) changedCandidateCount += 1;
           if (pageLooksRelevant(source, childDocument.html)) {
             documents.push({ source: childSource, html: childDocument.html, kind: "discovered" });
             relevantPageCount += 1;
@@ -346,6 +366,11 @@ async function run() {
         relevantPageCount,
         irrelevantPageCount,
         crossSourceDuplicateCount,
+        rootFirstSeen: rootObservation.firstSeen,
+        rootChanged: rootObservation.changed,
+        newCandidateCount,
+        changedCandidateCount,
+        knownCandidateCount,
         discovery: discoveryResult.stats,
         fetch: {
           statusCode: rootDocument.statusCode,
@@ -378,6 +403,11 @@ async function run() {
         relevantPageCount: 0,
         irrelevantPageCount: 0,
         crossSourceDuplicateCount: 0,
+        rootFirstSeen: false,
+        rootChanged: false,
+        newCandidateCount: 0,
+        changedCandidateCount: 0,
+        knownCandidateCount: 0,
         discovery: {
           enabled: Boolean(source.discovery?.enabled),
           totalLinks: 0,
@@ -527,6 +557,11 @@ async function run() {
     relevantPageCount: Number(result.relevantPageCount || 0),
     irrelevantPageCount: Number(result.irrelevantPageCount || 0),
     crossSourceDuplicateCount: Number(result.crossSourceDuplicateCount || 0),
+    rootFirstSeen: Boolean(result.rootFirstSeen),
+    rootChanged: Boolean(result.rootChanged),
+    newCandidateCount: Number(result.newCandidateCount || 0),
+    changedCandidateCount: Number(result.changedCandidateCount || 0),
+    knownCandidateCount: Number(result.knownCandidateCount || 0),
     parseFailureCount: Number(result.parseFailureCount || 0),
     failureClass: result.failureClass || "",
     severity: result.severity || "",
@@ -581,7 +616,9 @@ async function run() {
   );
 
   let livePocketDiscoveryStatus = "not_configured";
-  if (livePocketSearchSourceCount > 0 && livePocketSearchFailedCount === livePocketSearchSourceCount) {
+  if (livePocketSearchSourceCount === 0) {
+    livePocketDiscoveryStatus = "not_configured";
+  } else if (livePocketSearchFailedCount === livePocketSearchSourceCount) {
     livePocketDiscoveryStatus = "search_failed";
   } else if (livePocketCandidateLinkCount === 0) {
     livePocketDiscoveryStatus = "no_candidates";
@@ -635,6 +672,13 @@ async function run() {
 
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
   const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
+  const discoveryStateResult = discoveryTracker.finalize();
+  const discoveryEngine = {
+    version: 1,
+    sourceDatabase,
+    newness: discoveryStateResult.metrics,
+  };
+
   const quality = {
     qualityVersion: 2,
     candidateCount: merged.length,
@@ -648,7 +692,7 @@ async function run() {
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
-    collectorVersion: "1.21.2",
+    collectorVersion: APP_VERSION,
     lastRunAt: startedAt,
     status: runStatus,
     statusReasons,
@@ -673,6 +717,7 @@ async function run() {
     xOfficialAccountCount: Number(xResult.meta?.officialAccountCount || 0),
     xPostCount: Number(xResult.meta?.postCount || 0),
     xItemCount: Number(xResult.meta?.itemCount || 0),
+    discoveryEngine,
     quality,
   };
 
@@ -695,6 +740,7 @@ async function run() {
     updatedAt: startedAt,
     ...quality,
   });
+  await writeJson(DISCOVERY_STATE_PATH, discoveryStateResult.state);
 
   console.log(JSON.stringify({
     ok: runStatus === "ok",
@@ -713,6 +759,7 @@ async function run() {
     failedSourceCount: failedSourceResults.length,
     sourceHealth,
     sourceDiagnostics,
+    discoveryEngine,
     livePocketDiscoveredCount,
     livePocketDiscovery,
     xLivePocketEnrichedCount: xEnrichment.livePocketEnrichedCount,

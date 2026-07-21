@@ -1,4 +1,47 @@
 {
-  "version": 1,
-  "sources": []
+  "version": 2,
+  "blockedDestinationDomains": [
+    "example-aggregator.invalid"
+  ],
+  "sources": [
+    {
+      "id": "official-chain-news",
+      "name": "公式チェーン お知らせ",
+      "url": "https://example.com/news/",
+      "enabled": true,
+      "platform": "website",
+      "officialStatus": "official",
+      "prefecture": "全国",
+      "priority": 90,
+      "crawlIntervalMinutes": 15,
+      "parser": "generic",
+      "keywords": [
+        "ポケモンカード",
+        "抽選"
+      ],
+      "discovery": {
+        "enabled": true,
+        "sameHostOnly": true,
+        "includePatterns": [
+          "ポケモンカード",
+          "ポケカ",
+          "抽選"
+        ],
+        "excludePatterns": [
+          "終了",
+          "過去",
+          "規約"
+        ],
+        "requiredPathPatterns": [
+          "/news/"
+        ],
+        "pageKeywords": [
+          "ポケモンカード",
+          "抽選"
+        ],
+        "childParser": "generic",
+        "maxPages": 12
+      }
+    }
+  ]
 }
