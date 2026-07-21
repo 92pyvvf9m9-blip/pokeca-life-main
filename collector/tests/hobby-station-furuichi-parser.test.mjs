@@ -68,3 +68,58 @@ test("Furuichi store QR LivePocket notice publishes one record per readable prod
     assert.match(item.instructions, /QRコード/);
   }
 });
+
+test("Hobby Station listing page is not parsed as one mixed lottery", () => {
+  const source = {
+    id: "hobby-station-official",
+    name: "ホビーステーション",
+    url: "https://www.hbst.net/category/news/",
+    type: "店舗",
+    area: "全国",
+    parser: "hobby-station-news",
+    officialDomains: ["hbst.net", "livepocket.jp"],
+    discovery: { enabled: true },
+  };
+  const html = `
+  <html><body>
+    <article><h2>ポケモンカードゲーム スタートデッキ100 抽選販売</h2>
+      <a href="https://livepocket.jp/e/w2pts">応募</a>
+      <p>応募期間：2026年7月3日～7月5日</p>
+    </article>
+    <article><h2>ポケモンカードゲーム 拡張パック ストームエメラルダ 抽選販売</h2>
+      <a href="https://livepocket.jp/e/i1xp-">応募</a>
+      <p>応募期間：2026年7月3日～7月5日</p>
+    </article>
+  </body></html>`;
+  assert.deepEqual(parseSourceDocument(source, html, collectedAt), []);
+});
+
+test("Hobby Station article ignores recent-post product titles", () => {
+  const source = {
+    id: "hobby-station-official-child",
+    name: "ホビーステーション",
+    url: "https://www.hbst.net/?p=410275",
+    discoveryParentUrl: "https://www.hbst.net/category/news/",
+    type: "店舗",
+    area: "全国",
+    parser: "hobby-station-news",
+    officialDomains: ["hbst.net", "livepocket.jp"],
+  };
+  const html = `
+  <html><body>
+    <h1>抽選販売「ポケモンカードゲームMEGA 拡張パック ストームエメラルダ」</h1>
+    <p>ポケモンカードゲームMEGA 拡張パック「ストームエメラルダ」</p>
+    <a href="https://livepocket.jp/e/i1xp-">抽選受付ページリンク</a>
+    <p>応募期間：2026年7月3日12:00～7月5日23:59</p>
+    <p>当選発表：2026年7月16日</p>
+    <p>商品代金お支払い期間：2026年7月17日～7月28日</p>
+    <h3>最近の投稿</h3>
+    <a href="/?p=410187">抽選販売「ポケモンカードゲームMEGA 拡張パック アビスアイ（再販）」</a>
+    <a href="/?p=410100">抽選販売「ポケモンカードゲームMEGA スタートデッキ100 バトルコレクション」</a>
+  </body></html>`;
+  const items = parseSourceDocument(source, html, collectedAt);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].product, "ポケモンカードゲームMEGA 拡張パック ストームエメラルダ");
+  assert.equal(items[0].url, "https://livepocket.jp/e/i1xp-");
+  assert.equal(items[0].purchaseEndDate, "2026-07-28");
+});
