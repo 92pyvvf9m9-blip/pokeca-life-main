@@ -1,13 +1,13 @@
 {
-  "collectorVersion": "1.24.2",
-  "lastRunAt": "2026-07-21T05:10:53.190Z",
+  "collectorVersion": "1.24.3",
+  "lastRunAt": "2026-07-21T09:38:56.258Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
     "source_warning:あみあみ:HTTP 403",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 24,
+  "reviewCount": 25,
   "publishedCount": 57,
   "historyDays": 35,
   "manualEntryCount": 13,
@@ -72,7 +72,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 480,
+      "elapsedMs": 346,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -121,7 +121,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 12,
+      "elapsedMs": 14,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -170,7 +170,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 11,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -219,7 +219,7 @@
       "itemCount": 11,
       "rootItemCount": 2,
       "discoveredItemCount": 9,
-      "elapsedMs": 3356,
+      "elapsedMs": 3606,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -268,7 +268,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10273,
+      "elapsedMs": 10372,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -317,7 +317,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 277,
+      "elapsedMs": 674,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -353,7 +353,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 893,
+      "elapsedMs": 1585,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -402,7 +402,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 492,
+      "elapsedMs": 742,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -451,7 +451,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 393,
+      "elapsedMs": 531,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -500,7 +500,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1604,
+      "elapsedMs": 1907,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -546,14 +546,14 @@
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
       "status": "items",
-      "itemCount": 26,
-      "rootItemCount": 26,
+      "itemCount": 27,
+      "rootItemCount": 27,
       "discoveredItemCount": 0,
-      "elapsedMs": 724,
+      "elapsedMs": 1036,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 850795,
+        "responseBytes": 855585,
         "finalHostChanged": false
       },
       "discovery": {
@@ -592,7 +592,7 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 37,
+  "autoCollectedCount": 38,
   "multiProductExpandedCount": 11,
   "livePocketDiscoveredCount": 0,
   "livePocketDiscoveryStatus": "no_candidates",
@@ -659,14 +659,14 @@
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 100,
+    "candidateCount": 104,
     "publishedCount": 57,
-    "postCanonicalDuplicateCount": 19,
-    "reviewCount": 24,
+    "postCanonicalDuplicateCount": 22,
+    "reviewCount": 25,
     "rejectedCount": 0,
-    "directVerifiedCount": 56,
-    "catalogMatchedCount": 100,
-    "autoCollectedCount": 37,
+    "directVerifiedCount": 59,
+    "catalogMatchedCount": 104,
+    "autoCollectedCount": 38,
     "multiProductExpandedCount": 11,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
   }
