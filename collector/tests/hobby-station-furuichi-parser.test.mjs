@@ -123,3 +123,46 @@ test("Hobby Station article ignores recent-post product titles", () => {
   assert.equal(items[0].url, "https://livepocket.jp/e/i1xp-");
   assert.equal(items[0].purchaseEndDate, "2026-07-28");
 });
+
+test("Furuichi OCR notice separates all three starter sets and the expansion pack", () => {
+  const source = {
+    id: "furuichi-official-news",
+    name: "古本市場（ふるいち）",
+    url: "https://www.furu1.net/news/news_information/pk20260713",
+    type: "通販",
+    area: "全国",
+    parser: "furuichi-news",
+    officialDomains: ["furu1.net"],
+  };
+  const html = `
+  <html><body>
+    <h1>7月31日発売トレーディングカード 各種 抽選受付について（ポケモンカード）</h1>
+    <pre data-pokeca-ocr="true">
+2026 年 7 月 31 日発売予定
+「ポケモンカードゲーム MEGA スターターセットex イープイe x」
+「ポケモンカードゲーム MEGA スターターセットex ゾロア&amp;ゾロアークe x」
+「ポケモンカードゲーム MEGA スターターセットex ニャオハ&amp;マスカーニャe x]
+「ポケモンカードゲーム MEGA 拡張パック ストームエメラルダ]
+抽選受付をさせていただきます。
+受付期間 : 2026 年 7 月 19 日 (日) 23:00 まで
+当選発表
+2026 年 7 月 22 日 (水) 23 時頃
+購入期間 : ポケモンカード : 2026 年7月31日 (金) ~8A248 (A)
+    </pre>
+  </body></html>`;
+  const items = parseSourceDocument(source, html, collectedAt);
+  assert.equal(items.length, 4);
+  assert.deepEqual(items.map(item => item.product), [
+    "ポケモンカードゲーム MEGA スターターセットex イーブイex",
+    "ポケモンカードゲーム MEGA スターターセットex ゾロア＆ゾロアークex",
+    "ポケモンカードゲーム MEGA スターターセットex ニャオハ＆マスカーニャex",
+    "ポケモンカードゲーム MEGA 拡張パック ストームエメラルダ",
+  ]);
+  for (const item of items) {
+    assert.equal(item.applyEndDate, "2026-07-19");
+    assert.equal(item.applyEndTime, "23:00");
+    assert.equal(item.resultStartDate, "2026-07-22");
+    assert.equal(item.purchaseStartDate, "2026-07-31");
+    assert.equal(item.purchaseEndDate, "2026-08-02");
+  }
+});

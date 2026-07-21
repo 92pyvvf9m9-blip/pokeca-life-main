@@ -69,3 +69,25 @@ test("ambiguous same-URL fallback records are never auto-merged",()=>{
   ];
   assert.equal(core.findUniqueFallbackMatch(items,{fallback:"same"},item=>item.fallback||""),null);
 });
+
+test("legacy auto-collected records without origin are still pruned",()=>{
+  const items=[
+    {id:"legacy",externalId:"legacy-old",verified:true,qualityVersion:2,collectedAt:"2026-07-01",key:"legacy-old"},
+    {id:"user",externalId:"user-local",manualEntry:true,key:"user-local"},
+  ];
+  const result=core.pruneMissingRemote(items,{
+    identityFn:identity,
+    baseKeys:new Set(),
+    baseAuthoritative:true,
+  });
+  assert.deepEqual(result.removed.map(item=>item.id),["legacy"]);
+  assert.deepEqual(result.items.map(item=>item.id),["user"]);
+});
+
+test("legacy remote fallback can migrate before stale cleanup",()=>{
+  const items=[
+    {id:"legacy",externalId:"old",verified:true,collectedAt:"2026-07-01",fallback:"same"},
+  ];
+  const found=core.findUniqueFallbackMatch(items,{fallback:"same"},item=>item.fallback||"");
+  assert.equal(found?.id,"legacy");
+});
