@@ -1,0 +1,27 @@
+Pokeca Life v1.24.1 Hotfix — upload/replace all 17 files below
+
+1. package.json
+2. collector/collector.mjs
+3. collector/lib/discovery.mjs
+4. collector/lib/parser.mjs
+5. collector/lib/product-catalog-parser.mjs
+6. collector/lib/quality-gate.mjs
+7. collector/sync-product-catalog.mjs
+8. collector/tests/hobby-station-discovery.test.mjs (new)
+9. collector/tests/hobby-station-furuichi-parser.test.mjs
+10. collector/tests/product-catalog-name-quality.test.mjs (new)
+11. product-catalog.json
+12. product-image-audit.json
+13. product-catalog-status.json
+14. index.html
+15. lottery-feed.json
+16. collector-status.json
+17. data-quality-status.json
+
+After uploading all files:
+- Check Deploy Pokeca Life is green.
+- Run Collect Pokemon Card Lotteries manually once.
+- Check that workflow is green.
+- Reload the app with cache refresh.
+
+Do not upload only the JSON files without the collector code: the bad data would return on the next run.

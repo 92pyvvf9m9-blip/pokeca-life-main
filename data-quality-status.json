@@ -1,13 +1,15 @@
 {
-  "updatedAt": "2026-07-21T04:36:51.640Z",
+  "updatedAt": "2026-07-21T00:14:16.651Z",
   "qualityVersion": 2,
-  "candidateCount": 115,
-  "publishedCount": 91,
-  "reviewCount": 24,
+  "candidateCount": 107,
+  "publishedCount": 54,
+  "reviewCount": 19,
   "rejectedCount": 0,
-  "directVerifiedCount": 71,
-  "catalogMatchedCount": 115,
-  "autoCollectedCount": 47,
+  "directVerifiedCount": 68,
+  "catalogMatchedCount": 107,
+  "autoCollectedCount": 39,
   "multiProductExpandedCount": 9,
-  "rule": "catalog+deadline+direct-destination-or-official-store-notice"
+  "rule": "catalog+deadline+direct-destination-or-official-store-notice",
+  "hotfixAppliedAt": "2026-07-21T05:00:00.000Z",
+  "hotfix": "v1.24.1-product-name-and-hobby-station"
 }

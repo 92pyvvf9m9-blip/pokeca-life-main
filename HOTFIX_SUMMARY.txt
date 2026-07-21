@@ -1,0 +1,22 @@
+Pokeca Life v1.24.1
+
+Fixes:
+- Hobby Station category/listing pages are no longer treated as one lottery.
+- Discovery Engine can discover individual Hobby Station notice pages, including image-only cards and recently closed notices.
+- Related/recent post titles are excluded from the current article's product extraction.
+- Product descriptions/news headings can no longer enter the product name field.
+- 25 contaminated auto-generated catalog records were removed.
+- Canonicalization is followed by a second duplicate merge.
+- The three new Starter Set ex products can be represented by the explicit group “スターターセットex 3種”.
+- Existing incorrect Hobby Station public records were removed; the next Collector run will rebuild them from individual official notices.
+
+Verification:
+- 56/56 automated tests passed.
+- JSON: 16 files valid.
+- GitHub Actions YAML: 4 files valid.
+- Project layout: 0 warnings.
+- Public privacy check: passed.
+- Public build: passed.
+- Long/description-like product names in current public feed: 0.
+- Missing catalog references in current public feed: 0.
+- Exact duplicate public lottery records: 0.

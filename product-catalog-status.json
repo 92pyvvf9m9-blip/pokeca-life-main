@@ -1,14 +1,16 @@
 {
   "version": 1,
   "collectorVersion": "1.12.0",
-  "lastRunAt": "2026-07-13T21:37:31.924Z",
+  "lastRunAt": "2026-07-21T05:00:00.000Z",
   "mode": "automatic",
   "schedule": "every-6-hours",
   "discoveredCandidateCount": 48,
   "newProductCount": 0,
   "updatedProductCount": 48,
   "reviewCount": 0,
-  "totalProducts": 90,
-  "verifiedImages": 90,
-  "imageCoveragePercent": 100
+  "totalProducts": 66,
+  "verifiedImages": 66,
+  "imageCoveragePercent": 100,
+  "prunedInvalidProductCount": 25,
+  "hotfix": "v1.24.1-product-name-quality"
 }
