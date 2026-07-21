@@ -729,9 +729,9 @@ async function run() {
     version: 1,
     updatedAt: startedAt,
     meta,
-    lotteries: finalPublished.sort((a, b) =>
-      String(b.collectedAt || "").localeCompare(String(a.collectedAt || ""))
-    ),
+    lotteries: finalPublished
+      .sort((a, b) => String(b.collectedAt || "").localeCompare(String(a.collectedAt || "")))
+      .map(sanitizeForPublic),
   });
 
   await writeJson(STATUS_PATH, meta);
