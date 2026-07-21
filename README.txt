@@ -1,11 +1,20 @@
-Pokeca Life v1.24.0 Discovery Engine基盤
+This hotfix fixes stale collector records remaining on the iPhone after the public feed was corrected.
 
-この更新は複数ファイルで構成されています。
-一部だけ適用するとCollectorが起動しないため、PATCH_FILE_LIST.txtの全ファイルを同じ更新として適用してください。
+Root cause:
+The app merged new remote records into localStorage but never removed remote records that disappeared from lottery-feed.json. Therefore old polluted Hobby Station records remained visible even after collector/feed corrections.
 
-適用後はGitHub Actionsで次を確認します。
-1. Validate source database
-2. Test parsers
-3. Collect and verify lottery information
-4. Verify public feed contains no provenance fields
-5. Commit updated public feed
+Fix:
+- Treat a successful non-empty public feed as authoritative for auto-collected remote records.
+- Remove only stale remote records absent from the latest feed.
+- Preserve local entries and user-created data.
+- Avoid deletion when the feed is empty or failed.
+- Avoid deleting administrator-published data when its API sync fails.
+- Carry user status across a unique same-URL/shop/deadline correction.
+- Never auto-merge ambiguous variants.
+- Show how many old records were cleaned.
+
+Verification:
+- 61/61 automated tests passed.
+- Project layout check passed.
+- Public privacy check passed.
+- Browser inline JavaScript syntax check passed.

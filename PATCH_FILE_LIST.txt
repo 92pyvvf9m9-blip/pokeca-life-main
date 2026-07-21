@@ -1,27 +1,21 @@
-Pokeca Life v1.24.1 Hotfix — upload/replace all 17 files below
+Pokeca Life v1.24.3 — stale remote feed cleanup hotfix
+
+Upload or replace all 4 files:
 
 1. package.json
-2. collector/collector.mjs
-3. collector/lib/discovery.mjs
-4. collector/lib/parser.mjs
-5. collector/lib/product-catalog-parser.mjs
-6. collector/lib/quality-gate.mjs
-7. collector/sync-product-catalog.mjs
-8. collector/tests/hobby-station-discovery.test.mjs (new)
-9. collector/tests/hobby-station-furuichi-parser.test.mjs
-10. collector/tests/product-catalog-name-quality.test.mjs (new)
-11. product-catalog.json
-12. product-image-audit.json
-13. product-catalog-status.json
-14. index.html
-15. lottery-feed.json
-16. collector-status.json
-17. data-quality-status.json
+2. remote-feed-core.js   (new file, repository root)
+3. collector/tests/remote-feed-prune.test.mjs   (new file)
+4. index.html
 
-After uploading all files:
-- Check Deploy Pokeca Life is green.
-- Run Collect Pokemon Card Lotteries manually once.
-- Check that workflow is green.
-- Reload the app with cache refresh.
+After upload:
+1. Wait for Deploy Pokeca Life to become green.
+2. Open the app and reload once.
+3. The next automatic sync removes remote lottery records no longer present in lottery-feed.json.
+4. If needed, run the app's update/sync once. Do not manually delete individual records.
 
-Do not upload only the JSON files without the collector code: the bad data would return on the next run.
+Safety behavior:
+- Local/user-created records are never removed.
+- Manual published records are removed only after the manual API sync succeeds.
+- An empty or failed base feed cannot erase cached records.
+- When one corrected record has the same URL, shop, and deadline, its user status is carried over.
+- Ambiguous same-URL records are never auto-merged.

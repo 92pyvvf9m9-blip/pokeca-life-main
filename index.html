@@ -1379,6 +1379,7 @@ nav button{height:52px;min-height:52px;max-height:52px}
 <script src="./ocr-import-core.js"></script>
 <script src="./app-destination-core.js"></script>
 <script src="./lottery-identity-core.js"></script>
+<script src="./remote-feed-core.js"></script>
 <script>
 (()=>{const KEY='beta_v01';const uid=()=>crypto.randomUUID();const defaults={lotteries:[],cards:[],stores:[]};let D;try{D=JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch{D=structuredClone(defaults)}let lf='all',cf='all',active='home',lotterySort='deadline',areaFilter='home',typeFilter='all',lotteryView='list',todayDeadlineKind='all';
 let openProductYears=new Set();
@@ -2698,9 +2699,19 @@ function normalizeRemoteLottery(item){
   enriched.externalId=enriched.externalId||identity;
   return enriched;
 }
+function remoteFallbackIdentity(item){
+  const url=canonicalLotteryStateUrl(item?.url||item?.appUrl||item?.fallbackUrl||'');
+  if(!url)return '';
+  const shop=normalizeLotteryStateKeyText(item?.shop||'');
+  const deadline=String(item?.applyEndDate||item?.deadline||'').trim();
+  return `${url}|${shop}|${deadline}`;
+}
 function mergeRemoteLottery(remote){
   const key=remoteIdentity(remote);
   let existing=D.lotteries.find(x=>remoteIdentity(x)===key);
+  if(!existing&&window.PokecaRemoteFeedCore){
+    existing=window.PokecaRemoteFeedCore.findUniqueFallbackMatch(D.lotteries,remote,remoteFallbackIdentity);
+  }
 
   if(!existing){
     remote.id=uid();
@@ -2903,24 +2914,38 @@ async function syncRemoteLotteries({silent=false}={}){
     const payload=await fetchJsonWithTimeout(endpoint);
     const baseFeed=Array.isArray(payload)?payload:(Array.isArray(payload.lotteries)?payload.lotteries:[]);
     let manualPayload={lotteries:[],deleted:[]};
+    let manualSyncSucceeded=false;
     try{
       const manualEndpoint=normalizeImportApiEndpoint(importApiSettings.endpoint||DEFAULT_IMPORT_API_ENDPOINT);
-      if(manualEndpoint)manualPayload=await fetchJsonWithTimeout(`${manualEndpoint}/manual`,12000);
+      if(manualEndpoint){
+        manualPayload=await fetchJsonWithTimeout(`${manualEndpoint}/manual`,12000);
+        manualSyncSucceeded=true;
+      }
     }catch(manualError){console.warn('管理者公開データ同期エラー',manualError)}
     const manualFeed=Array.isArray(manualPayload)?manualPayload:(Array.isArray(manualPayload?.lotteries)?manualPayload.lotteries:[]);
-    const feed=[...baseFeed,...manualFeed];
-    const deletedManualKeys=new Set((Array.isArray(manualPayload?.deleted)?manualPayload.deleted:[]).map(entry=>String(entry?.key||entry||''))); 
+    const deletedManualKeys=new Set((Array.isArray(manualPayload?.deleted)?manualPayload.deleted:[]).map(entry=>String(entry?.key||entry||'')));
     if(deletedManualKeys.size){
       D.lotteries=D.lotteries.filter(item=>!(item?.manualEntry&&item?.adminPublished&&deletedManualKeys.has(publishedManualIdentity(item))));
     }
+
+    const normalizeFeedItems=(items,manual=false)=>{
+      const output=[];
+      for(const raw of items){
+        if(manual&&deletedManualKeys.has(publishedManualIdentity(raw)))continue;
+        const normalized=normalizeRemoteLottery(raw);
+        const key=remoteIdentity(normalized);
+        if(key)output.push({raw,normalized,key});
+      }
+      return output;
+    };
+    const normalizedBase=normalizeFeedItems(baseFeed,false);
+    const normalizedManual=normalizeFeedItems(manualFeed,true);
+    const feedEntries=[...normalizedBase,...normalizedManual];
+
     let added=0;
     let updated=0;
 
-    for(const raw of feed){
-      if(deletedManualKeys.has(publishedManualIdentity(raw)))continue;
-      const normalized=normalizeRemoteLottery(raw);
-      const key=remoteIdentity(normalized);
-      if(!key)continue;
+    for(const {normalized,key} of feedEntries){
       const result=mergeRemoteLottery(normalized);
       if(result.isNew){
         added++;
@@ -2929,6 +2954,23 @@ async function syncRemoteLotteries({silent=false}={}){
         }
       }else{
         updated++;
+      }
+    }
+
+    let removed=0;
+    if(window.PokecaRemoteFeedCore){
+      const pruneResult=window.PokecaRemoteFeedCore.pruneMissingRemote(D.lotteries,{
+        identityFn:remoteIdentity,
+        baseKeys:new Set(normalizedBase.map(entry=>entry.key)),
+        manualKeys:new Set(normalizedManual.map(entry=>entry.key)),
+        baseAuthoritative:Array.isArray(payload?.lotteries)&&baseFeed.length>0,
+        manualAuthoritative:manualSyncSucceeded
+      });
+      D.lotteries=pruneResult.items;
+      removed=pruneResult.removed.length;
+      if(removed){
+        const liveRemoteKeys=new Set(D.lotteries.filter(item=>item?.origin==='remote').map(remoteIdentity));
+        syncState.unreadRemoteIds=syncState.unreadRemoteIds.filter(key=>liveRemoteKeys.has(key));
       }
     }
 
@@ -2941,15 +2983,16 @@ async function syncRemoteLotteries({silent=false}={}){
     syncState.seenRemoteIds=[...new Set(syncState.seenRemoteIds)].slice(-1000);
     saveSyncPreferences();
 
-    if(feed.length){
+    if(feedEntries.length||removed){
       await save();
     }else{
       renderAllSafely();
     }
 
-    setSyncStatus(added?`新規${added}件`:'最新です','success');
+    const syncMessage=added?`新規${added}件`:removed?`古い情報を${removed}件整理`:'最新です';
+    setSyncStatus(syncMessage,'success');
     renderFeedConnectionState();
-    if(!silent)toast(added?`新規抽選を${added}件追加しました`:'新しい抽選はありません');
+    if(!silent)toast(added?`新規抽選を${added}件追加しました`:removed?`古い抽選情報を${removed}件整理しました`:'新しい抽選はありません');
   }catch(err){
     console.error('抽選同期エラー',err);
     setSyncStatus('更新できませんでした','error');
