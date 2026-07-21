@@ -10,6 +10,8 @@ import { loadProductCatalog, evaluateCandidate } from "./lib/quality-gate.mjs";
 import { verifyDestination } from "./lib/destination-verifier.mjs";
 import { normalizeSourceRegistry, summarizeSourceRegistry } from "./lib/source-registry.mjs";
 import { DiscoveryStateTracker } from "./lib/discovery-state.mjs";
+import { enrichHtmlWithImageOcr } from "./lib/image-ocr.mjs";
+import { expandCatalogGroupCandidates } from "./lib/product-group-expander.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -234,6 +236,25 @@ function applyCatalogPurchaseStart(candidate, catalogProduct) {
   return candidate;
 }
 
+function canonicalScopeUrl(value = "") {
+  try {
+    const url = new URL(String(value || ""));
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^(?:utm_|fbclid|gclid|yclid|_ga|ref$)/i.test(key)) url.searchParams.delete(key);
+    }
+    return url.href.replace(/\/$/, "");
+  } catch { return String(value || "").trim(); }
+}
+
+function replacementScopeKey(item = {}) {
+  if (!item.shop || !item.url) return "";
+  const shop = String(item.shop).normalize("NFKC").toLowerCase().replace(/\s+/g, "").trim();
+  const url = canonicalScopeUrl(item.url);
+  return shop && url ? `${shop}|${url}` : "";
+}
+
+
 async function run() {
   const startedAt = new Date().toISOString();
   const rawRegistry = await readJson(SOURCES_PATH, { sources: [] });
@@ -281,8 +302,10 @@ async function run() {
     const started = Date.now();
     try {
       const rootDocument = await fetchDocument(source);
+      const rootOcr = await enrichHtmlWithImageOcr(source, rootDocument.html);
+      rootDocument.html = rootOcr.html;
       const rootObservation = discoveryTracker.observeRoot(source, rootDocument.html);
-      const documents = [{ source, html: rootDocument.html, kind: "root" }];
+      const documents = [{ source, html: rootDocument.html, kind: "root", ocr: rootOcr }];
       const discoveryResult = discoverCandidateLinksDetailed(source, rootDocument.html);
       let crossSourceDuplicateCount = 0;
       let candidateFetchSuccessCount = 0;
@@ -310,13 +333,15 @@ async function run() {
         };
         try {
           const childDocument = await fetchDocument(childSource);
+          const childOcr = await enrichHtmlWithImageOcr(childSource, childDocument.html);
+          childDocument.html = childOcr.html;
           candidateFetchSuccessCount += 1;
           const candidateObservation = discoveryTracker.observeCandidate(source, candidate.url, childDocument.html);
           if (candidateObservation.firstSeen) newCandidateCount += 1;
           else knownCandidateCount += 1;
           if (candidateObservation.changed) changedCandidateCount += 1;
           if (pageLooksRelevant(source, childDocument.html)) {
-            documents.push({ source: childSource, html: childDocument.html, kind: "discovered" });
+            documents.push({ source: childSource, html: childDocument.html, kind: "discovered", ocr: childOcr });
             relevantPageCount += 1;
             let host = "";
             try { host = new URL(candidate.url).hostname.toLowerCase(); } catch {}
@@ -379,6 +404,9 @@ async function run() {
           finalHostChanged: rootDocument.finalHostChanged,
         },
         parseFailureCount,
+        ocrAppliedCount: documents.filter((document) => document.ocr?.applied).length,
+        ocrImageCount: documents.reduce((sum, document) => sum + Number(document.ocr?.imageCount || 0), 0),
+        ocrErrorCount: documents.reduce((sum, document) => sum + Number(document.ocr?.errors?.length || 0), 0),
         failureClass: parseFailureCount ? "parser_error" : "",
         severity: parseFailureCount ? "error" : "",
         childErrors,
@@ -440,9 +468,22 @@ async function run() {
     : await enrichApplicationCandidates(xResult.items, startedAt);
   collected.push(...xEnrichment.items);
 
+  const expandedCollection = expandCatalogGroupCandidates(collected, productCatalog);
+  const currentCollected = expandedCollection.items;
+  const authoritativeScopes = new Set(
+    currentCollected
+      .filter((item) => item?.sourceKind !== "manual" && item?.manualEntry !== true)
+      .map(replacementScopeKey)
+      .filter(Boolean)
+  );
+  const retainedPrevious = trustedPrevious.filter((item) => {
+    const scope = replacementScopeKey(item);
+    return !scope || !authoritativeScopes.has(scope);
+  });
+  const replacedPreviousCount = trustedPrevious.length - retainedPrevious.length;
   const merged = keepRelevant(dedupeItems([
-    ...trustedPrevious,
-    ...collected,
+    ...retainedPrevious,
+    ...currentCollected,
   ]));
 
   const published = [];
@@ -563,6 +604,9 @@ async function run() {
     changedCandidateCount: Number(result.changedCandidateCount || 0),
     knownCandidateCount: Number(result.knownCandidateCount || 0),
     parseFailureCount: Number(result.parseFailureCount || 0),
+    ocrAppliedCount: Number(result.ocrAppliedCount || 0),
+    ocrImageCount: Number(result.ocrImageCount || 0),
+    ocrErrorCount: Number(result.ocrErrorCount || 0),
     failureClass: result.failureClass || "",
     severity: result.severity || "",
     zeroItemReason: Number(result.itemCount || 0) === 0 ? zeroItemReason(result) : "",
@@ -671,7 +715,10 @@ async function run() {
   const runStatus = hasFatalFailure ? "partial" : warningReasons.length > 0 ? "degraded" : "ok";
 
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
-  const multiProductExpandedCount = collected.filter((item) => item.collectionMode === "official-news-multi-product").length;
+  const multiProductExpandedCount = currentCollected.filter((item) => item.collectionMode === "official-news-multi-product").length;
+  const catalogGroupExpandedCount = expandedCollection.expandedCount;
+  const ocrAppliedCount = sourceResults.reduce((sum, result) => sum + Number(result.ocrAppliedCount || 0), 0);
+  const ocrImageCount = sourceResults.reduce((sum, result) => sum + Number(result.ocrImageCount || 0), 0);
   const discoveryStateResult = discoveryTracker.finalize();
   const discoveryEngine = {
     version: 1,
@@ -693,6 +740,10 @@ async function run() {
     catalogMatchedCount,
     autoCollectedCount,
     multiProductExpandedCount,
+    catalogGroupExpandedCount,
+    replacedPreviousCount,
+    ocrAppliedCount,
+    ocrImageCount,
     rule: "catalog+deadline+direct-destination-or-official-store-notice",
   };
   const meta = {
@@ -712,6 +763,10 @@ async function run() {
     sourceDiagnostics,
     autoCollectedCount,
     multiProductExpandedCount,
+    catalogGroupExpandedCount,
+    replacedPreviousCount,
+    ocrAppliedCount,
+    ocrImageCount,
     livePocketDiscoveredCount,
     livePocketDiscoveryStatus,
     livePocketDiscovery,
@@ -758,6 +813,10 @@ async function run() {
     manualEntryCount: manualLotteries.length,
     autoCollectedCount,
     multiProductExpandedCount,
+    catalogGroupExpandedCount,
+    replacedPreviousCount,
+    ocrAppliedCount,
+    ocrImageCount,
     checkedSourceCount: enabledSources.length,
     successfulSourceCount: webSourceResults.filter((result) => result.ok).length,
     failedSourceCount: failedSourceResults.length,
