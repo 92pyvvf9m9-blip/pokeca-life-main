@@ -679,10 +679,14 @@ async function run() {
     newness: discoveryStateResult.metrics,
   };
 
+  const finalPublished = dedupeItems(published);
+  const postCanonicalDuplicateCount = published.length - finalPublished.length;
+
   const quality = {
     qualityVersion: 2,
     candidateCount: merged.length,
-    publishedCount: published.length,
+    publishedCount: finalPublished.length,
+    postCanonicalDuplicateCount,
     reviewCount: reviewQueue.length,
     rejectedCount: rejected.length,
     directVerifiedCount,
@@ -698,7 +702,7 @@ async function run() {
     statusReasons,
     warningReasons,
     reviewCount: reviewQueue.length,
-    publishedCount: published.length,
+    publishedCount: finalPublished.length,
     historyDays: 35,
     manualEntryCount: manualLotteries.length,
     checkedSourceCount: enabledSources.length,
@@ -725,7 +729,7 @@ async function run() {
     version: 1,
     updatedAt: startedAt,
     meta,
-    lotteries: published.sort((a, b) =>
+    lotteries: finalPublished.sort((a, b) =>
       String(b.collectedAt || "").localeCompare(String(a.collectedAt || ""))
     ),
   });
@@ -748,7 +752,7 @@ async function run() {
     statusReasons,
     warningReasons,
     collected: collected.length,
-    published: published.length,
+    published: finalPublished.length,
     review: reviewQueue.length,
     rejected: rejected.length,
     manualEntryCount: manualLotteries.length,

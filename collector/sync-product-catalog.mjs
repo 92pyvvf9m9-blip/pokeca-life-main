@@ -8,6 +8,7 @@ import {
   normalizeProductName,
   productFingerprint,
   inspectImageBuffer,
+  isPlausibleProductName,
 } from "./lib/product-catalog-parser.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -139,6 +140,7 @@ function recentEnough(releaseDate) {
 function productCompleteness(candidate) {
   const reasons = [];
   if (!candidate.name) reasons.push("商品名なし");
+  else if (!isPlausibleProductName(candidate.name)) reasons.push("商品名に説明文・記事見出しが混入しています");
   if (!candidate.releaseDate) reasons.push("発売日なし");
   if (!candidate.officialUrl || !officialHost(candidate.officialUrl)) reasons.push("公式商品ページなし");
   if (!candidate.imageUrl || !officialHost(candidate.imageUrl)) reasons.push("公式商品画像なし");
@@ -188,6 +190,11 @@ async function run() {
   const startedAt = new Date().toISOString();
   const registry = await readJson(SOURCES_PATH, { sources: [] });
   const catalog = await readJson(CATALOG_PATH, { version: 4, products: [] });
+  const catalogBeforePrune = Array.isArray(catalog.products) ? catalog.products.length : 0;
+  catalog.products = (Array.isArray(catalog.products) ? catalog.products : []).filter(
+    (product) => product.autoManaged !== true || isPlausibleProductName(product.name)
+  );
+  const prunedInvalidProductCount = catalogBeforePrune - catalog.products.length;
   const enabledSources = registry.sources.filter((source) => source.enabled !== false);
   const candidates = [];
   const sourceResults = [];
@@ -344,6 +351,7 @@ async function run() {
     discoveredCandidateCount: merged.length,
     newProductCount: newCount,
     updatedProductCount: updatedCount,
+    prunedInvalidProductCount,
     reviewCount: review.length,
     totalProducts: catalog.products.length,
     verifiedImages: audit.summary.verifiedImages,
@@ -383,6 +391,7 @@ async function run() {
     discoveredCandidateCount: merged.length,
     newProductCount: newCount,
     updatedProductCount: updatedCount,
+    prunedInvalidProductCount,
     reviewCount: review.length,
     totalProducts: publicCatalog.products.length,
     checkedSourceCount: enabledSources.length,
