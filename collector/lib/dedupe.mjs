@@ -83,6 +83,8 @@ export function sanitizeForPublic(item) {
     "officialAccount",
     "productCandidates",
     "purchaseStartPolicy",
+    "expandCatalogGroup",
+    "catalogGroupExpandedFrom",
   ];
   for (const key of privateKeys) delete output[key];
 

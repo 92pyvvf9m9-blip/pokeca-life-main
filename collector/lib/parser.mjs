@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { extractLinks, htmlToText, normalizeLines } from "./html.mjs";
 import { parseDateRange } from "./dates.mjs";
 import { enrichAppDestination } from "./app-destination.mjs";
+import { normalizeOcrText } from "./image-ocr.mjs";
 
 const STOP_LABELS = [
   "応募期間",
@@ -825,19 +826,36 @@ function parseHobbyStationNews(source, html, collectedAt) {
   return records;
 }
 
+function normalizeFuruichiProductLine(value = "") {
+  return normalizePokemonProductName(normalizeOcrText(value))
+    .replace(/[\]】」』]+$/g, "")
+    .replace(/&/g, "＆")
+    .replace(/\s+(?:について|抽選受付|抽選販売|お知らせ).*$/i, "")
+    .trim();
+}
+
 function furuichiSectionProducts(section = "", html = "") {
+  const normalizedSection = normalizeOcrText(section);
+  const lineCandidates = normalizeLines(normalizedSection)
+    .filter((line) => isPokemonCard(line))
+    .filter((line) => /拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|MEGA/i.test(line))
+    .filter((line) => !/応募方法|応募条件|会員登録|ポイントアプリ|購入期間|注意事項|本人確認|抽選結果/.test(line))
+    .map((line) => line.replace(/^[「『【\[]+|[」』】\]]+$/g, ""))
+    .map(normalizeFuruichiProductLine)
+    .filter((line) => line.length >= 8 && line.length <= 110);
+  const quotedCandidates = lineCandidates.length
+    ? []
+    : quotedProductCandidates(normalizedSection).map(normalizeFuruichiProductLine);
   const candidates = [
-    ...quotedProductCandidates(section),
+    ...lineCandidates,
+    ...quotedCandidates,
     ...imageAltTexts(html)
       .filter((value) => isPokemonCard(value))
-      .map(normalizePokemonProductName),
-    ...normalizeLines(section)
-      .filter((line) => isPokemonCard(line))
-      .filter((line) => /拡張パック|強化拡張パック|ハイクラスパック|スタートデッキ|スターターセット|スペシャルセット|BOX|ボックス|MEGA/i.test(line))
-      .map(normalizePokemonProductName),
+      .map(normalizeFuruichiProductLine),
   ];
   return uniqueValues(candidates)
     .filter((value) => !/抽選受付|抽選販売|お知らせ|スケジュール/.test(value))
+    .filter((value) => !/登録会員番号|アプリ会員|ふるいちアプリ|本人確認/.test(value))
     .slice(0, 16);
 }
 
@@ -864,7 +882,7 @@ function furuichiShopName(text = "", fallback = "ふるいち") {
 
 function parseFuruichiNews(source, html, collectedAt) {
   const text = htmlToText(html);
-  const combinedText = `${text}\n${imageAltTexts(html).join("\n")}`;
+  const combinedText = normalizeOcrText(`${text}\n${imageAltTexts(html).join("\n")}`);
   if (!/ポケモンカード|ポケカ/i.test(combinedText) || !/抽選/.test(combinedText)) return [];
 
   const directLivePocket = extractLinks(html, source.url)
@@ -912,6 +930,9 @@ function parseFuruichiNews(source, html, collectedAt) {
         ? "ふるいち公式告知を確認。応募用QRコードは店頭でのみ公開されます。"
         : "ふるいち公式告知からLivePocket応募先を自動取得しました。";
       record.collectionMode = storeQr ? "official-store-qr-notice" : "official-news-livepocket";
+      if (/スターターセット\s*ex\s*(?:3種)?$/i.test(record.product.replace(/ポケモンカードゲーム\s*(?:MEGA)?/i, "").trim())) {
+        record.expandCatalogGroup = true;
+      }
       records.push(record);
     }
   }
@@ -945,6 +966,9 @@ function parseFuruichiNews(source, html, collectedAt) {
         });
         record.memo = "ふるいち公式ページでアプリ抽選を確認しました。";
         record.collectionMode = "official-app-notice";
+        if (/スターターセット\s*ex\s*(?:3種)?$/i.test(record.product.replace(/ポケモンカードゲーム\s*(?:MEGA)?/i, "").trim())) {
+          record.expandCatalogGroup = true;
+        }
         return record;
       });
     }

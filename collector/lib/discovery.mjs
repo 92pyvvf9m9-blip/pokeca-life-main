@@ -106,6 +106,36 @@ function extractContextualHobbyStationLinks(source, html = "") {
   return matches;
 }
 
+function extractContextualFuruichiLinks(source, html = "") {
+  if (source.parser !== "furuichi-news") return [];
+  const decoded = decodeHtmlEntities(html);
+  const matches = [];
+  const seen = new Set();
+  const anchorPattern = /<a\b[^>]*href\s*=\s*(["'])([\s\S]*?)\1[^>]*>([\s\S]*?)<\/a>/gi;
+
+  for (const match of decoded.matchAll(anchorPattern)) {
+    let url;
+    try { url = new URL(match[2], source.url); } catch { continue; }
+    const host = normalizeHost(url.hostname);
+    if (!(host === "furu1.net" || host.endsWith(".furu1.net"))) continue;
+    if (!/\/news\/(?:news_information|news_campaign)\//i.test(url.pathname)) continue;
+
+    const index = Number(match.index || 0);
+    const context = htmlToText(decoded.slice(Math.max(0, index - 600), index + match[0].length + 600));
+    const anchorText = htmlToText(match[3]);
+    const text = `${anchorText} ${context}`.replace(/\s+/g, " ").trim();
+    if (!/ポケモンカード|ポケカ/i.test(text) || !/抽選|受付/i.test(text)) continue;
+
+    url.hash = "";
+    const href = url.href;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    matches.push({ url: href, text, contextualFuruichi: true });
+  }
+  return matches;
+}
+
+
 function baseDiscoveryStats(source) {
   return {
     enabled: Boolean(source.discovery?.enabled),
@@ -177,13 +207,21 @@ export function discoverCandidateLinksDetailed(source, html) {
       embedded: Boolean(previous.embedded || link.embedded),
     });
   }
-  const contextualLinks = extractContextualHobbyStationLinks(source, html);
+  const contextualLinks = [
+    ...extractContextualHobbyStationLinks(source, html),
+    ...extractContextualFuruichiLinks(source, html),
+  ];
   for (const link of contextualLinks) {
     const key = String(link.url || "");
     if (!key) continue;
     const previous = mergedLinks.get(key);
     mergedLinks.set(key, previous
-      ? { ...previous, text: `${previous.text || ""} ${link.text || ""}`.trim(), contextual: true }
+      ? {
+          ...previous,
+          text: `${previous.text || ""} ${link.text || ""}`.trim(),
+          contextual: Boolean(previous.contextual || link.contextual),
+          contextualFuruichi: Boolean(previous.contextualFuruichi || link.contextualFuruichi),
+        }
       : link);
   }
   const links = [...mergedLinks.values()];
@@ -205,11 +243,12 @@ export function discoverCandidateLinksDetailed(source, html) {
     }
 
     const haystack = `${link.text} ${link.url}`;
-    if (!matchesAny(haystack, include)) {
+    const trustedContextualFuruichi = Boolean(link.contextualFuruichi);
+    if (!trustedContextualFuruichi && !matchesAny(haystack, include)) {
       stats.rejected.includePattern += 1;
       continue;
     }
-    if (matchesAny(haystack, exclude)) {
+    if (!trustedContextualFuruichi && matchesAny(haystack, exclude)) {
       stats.rejected.excludePattern += 1;
       continue;
     }
@@ -223,7 +262,7 @@ export function discoverCandidateLinksDetailed(source, html) {
       stats.rejected.host += 1;
       continue;
     }
-    if (requiredPathPatterns.length && !matchesAny(`${parsed.pathname}${parsed.search}`, requiredPathPatterns)) {
+    if (!trustedContextualFuruichi && requiredPathPatterns.length && !matchesAny(`${parsed.pathname}${parsed.search}`, requiredPathPatterns)) {
       stats.rejected.path += 1;
       continue;
     }
