@@ -7,6 +7,7 @@ const files = [
   'product-image-audit.json',
   'product-catalog-status.json',
   'index.html',
+  'collector/state/discovery-state.json',
 ];
 const forbiddenKeys = [
   'sourceUrl', 'sourceType', 'sourceKind', 'sourceKinds', 'intelligenceSource',
@@ -35,6 +36,12 @@ for (const file of files) {
   for (const key of forbiddenKeys) {
     if (text.includes(`"${key}"`)) failures.push(`${file}: private field ${key}`);
   }
+}
+
+let discoveryStateText = '';
+try { discoveryStateText = await fs.readFile('collector/state/discovery-state.json', 'utf8'); } catch {}
+if (/https?:\/\//i.test(discoveryStateText)) {
+  failures.push('collector/state/discovery-state.json: raw URL detected');
 }
 
 const feed = await readJson('lottery-feed.json', { lotteries: [] });
