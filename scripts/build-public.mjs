@@ -59,12 +59,16 @@ const blockedDestinationDomains = (privateRegistry.blockedDestinationDomains || 
   .map((value) => String(value || '').toLowerCase().replace(/^www\./, ''))
   .filter(Boolean);
 
-for (const file of ['index.html', 'ocr-import-core.js', 'app-destination-core.js', 'lottery-identity-core.js']) {
+const publicFiles = [
+  'index.html',
+  'ocr-import-core.js',
+  'app-destination-core.js',
+  'lottery-identity-core.js',
+  'remote-feed-core.js',
+];
+for (const file of publicFiles) {
   const source = path.join(root, file);
-  try { await fs.copyFile(source, path.join(dist, file)); }
-  catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
-  }
+  await fs.copyFile(source, path.join(dist, file));
 }
 await fs.cp(path.join(root, 'assets'), path.join(dist, 'assets'), { recursive: true });
 
@@ -100,4 +104,13 @@ await writeJson('product-catalog.json', {
 const catalogStatus = await readJson('product-catalog-status.json', {});
 await writeJson('product-catalog-status.json', omit(catalogStatus, ['sourceResults', 'sourceCount', 'successCount', 'failedCount']));
 
-console.log('Public deployment built without private provenance fields.');
+const publicIndex = await fs.readFile(path.join(dist, 'index.html'), 'utf8');
+const localScriptPaths = [...publicIndex.matchAll(/<script\b[^>]*\bsrc=["']\.\/([^"']+)["']/gi)]
+  .map((match) => match[1].split(/[?#]/, 1)[0])
+  .filter(Boolean);
+for (const scriptPath of [...new Set(localScriptPaths)]) {
+  try { await fs.access(path.join(dist, scriptPath)); }
+  catch { throw new Error(`Public build is missing referenced script: ${scriptPath}`); }
+}
+
+console.log(`Public deployment built without private provenance fields (${localScriptPaths.length} local scripts verified).`);
