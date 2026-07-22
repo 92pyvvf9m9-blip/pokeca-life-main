@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-22T02:46:27.198Z",
+  "updatedAt": "2026-07-22T08:00:55.945Z",
   "qualityVersion": 2,
   "candidateCount": 111,
   "publishedCount": 65,
@@ -10,8 +10,8 @@
   "catalogMatchedCount": 111,
   "autoCollectedCount": 33,
   "multiProductExpandedCount": 11,
-  "catalogGroupExpandedCount": 42,
-  "replacedPreviousCount": 7,
+  "catalogGroupExpandedCount": 30,
+  "replacedPreviousCount": 13,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
   "rule": "catalog+deadline+direct-destination-or-official-store-notice"
