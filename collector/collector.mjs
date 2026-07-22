@@ -12,6 +12,8 @@ import { normalizeSourceRegistry, summarizeSourceRegistry } from "./lib/source-r
 import { DiscoveryStateTracker } from "./lib/discovery-state.mjs";
 import { enrichHtmlWithImageOcr } from "./lib/image-ocr.mjs";
 import { expandCatalogGroupCandidates } from "./lib/product-group-expander.mjs";
+import { buildOfficialRevisitCandidates } from "./lib/official-revisit.mjs";
+import { validatePublishedLotteries } from "./lib/published-feed-validator.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -247,9 +249,16 @@ function canonicalScopeUrl(value = "") {
   } catch { return String(value || "").trim(); }
 }
 
+function canonicalScopeShop(value = "") {
+  const shop = String(value || "").normalize("NFKC").toLowerCase().replace(/\s+/g, "").trim();
+  if (/古本市場|ふるいち|トレカパーク/.test(shop)) return "furuichi";
+  if (/ホビーステーション|ホビステ/.test(shop)) return "hobby-station";
+  return shop;
+}
+
 function replacementScopeKey(item = {}) {
   if (!item.shop || !item.url) return "";
-  const shop = String(item.shop).normalize("NFKC").toLowerCase().replace(/\s+/g, "").trim();
+  const shop = canonicalScopeShop(item.shop);
   const url = canonicalScopeUrl(item.url);
   return shop && url ? `${shop}|${url}` : "";
 }
@@ -307,6 +316,22 @@ async function run() {
       const rootObservation = discoveryTracker.observeRoot(source, rootDocument.html);
       const documents = [{ source, html: rootDocument.html, kind: "root", ocr: rootOcr }];
       const discoveryResult = discoverCandidateLinksDetailed(source, rootDocument.html);
+      const revisitCandidates = buildOfficialRevisitCandidates(
+        source,
+        trustedPrevious,
+        discoveryResult.candidates,
+        { maxPages: 6 },
+      );
+      const candidateMap = new Map();
+      for (const candidate of [...discoveryResult.candidates, ...revisitCandidates]) {
+        const key = canonicalScopeUrl(candidate.url || "");
+        if (!key) continue;
+        const previous = candidateMap.get(key);
+        candidateMap.set(key, previous
+          ? { ...previous, ...candidate, text: `${previous.text || ""} ${candidate.text || ""}`.trim() }
+          : candidate);
+      }
+      const candidateList = [...candidateMap.values()];
       let crossSourceDuplicateCount = 0;
       let candidateFetchSuccessCount = 0;
       let candidateFetchFailureCount = 0;
@@ -316,8 +341,10 @@ async function run() {
       let changedCandidateCount = 0;
       let knownCandidateCount = 0;
       const childErrors = [];
+      let officialRevisitFetchCount = 0;
+      let officialRevisitItemCount = 0;
 
-      for (const candidate of discoveryResult.candidates) {
+      for (const candidate of candidateList) {
         if (seenDocumentUrls.has(candidate.url)) {
           crossSourceDuplicateCount += 1;
           continue;
@@ -340,9 +367,16 @@ async function run() {
           if (candidateObservation.firstSeen) newCandidateCount += 1;
           else knownCandidateCount += 1;
           if (candidateObservation.changed) changedCandidateCount += 1;
-          if (pageLooksRelevant(source, childDocument.html)) {
-            documents.push({ source: childSource, html: childDocument.html, kind: "discovered", ocr: childOcr });
+          const relevant = candidate.officialRevisit === true || pageLooksRelevant(source, childDocument.html);
+          if (relevant) {
+            documents.push({
+              source: childSource,
+              html: childDocument.html,
+              kind: candidate.officialRevisit ? "revisited" : "discovered",
+              ocr: childOcr,
+            });
             relevantPageCount += 1;
+            if (candidate.officialRevisit) officialRevisitFetchCount += 1;
             let host = "";
             try { host = new URL(candidate.url).hostname.toLowerCase(); } catch {}
             if (host === "livepocket.jp" || host.endsWith(".livepocket.jp")) livePocketDiscoveredCount += 1;
@@ -373,6 +407,9 @@ async function run() {
       const discoveredItemCount = parsedDocuments
         .filter((document) => document.kind === "discovered")
         .reduce((sum, document) => sum + document.items.length, 0);
+      officialRevisitItemCount = parsedDocuments
+        .filter((document) => document.kind === "revisited")
+        .reduce((sum, document) => sum + document.items.length, 0);
       collected.push(...items);
 
       const parseFailureCount = parseErrors.length;
@@ -391,6 +428,9 @@ async function run() {
         relevantPageCount,
         irrelevantPageCount,
         crossSourceDuplicateCount,
+        officialRevisitCandidateCount: revisitCandidates.length,
+        officialRevisitFetchCount,
+        officialRevisitItemCount,
         rootFirstSeen: rootObservation.firstSeen,
         rootChanged: rootObservation.changed,
         newCandidateCount,
@@ -431,6 +471,9 @@ async function run() {
         relevantPageCount: 0,
         irrelevantPageCount: 0,
         crossSourceDuplicateCount: 0,
+        officialRevisitCandidateCount: 0,
+        officialRevisitFetchCount: 0,
+        officialRevisitItemCount: 0,
         rootFirstSeen: false,
         rootChanged: false,
         newCandidateCount: 0,
@@ -481,8 +524,9 @@ async function run() {
     return !scope || !authoritativeScopes.has(scope);
   });
   const replacedPreviousCount = trustedPrevious.length - retainedPrevious.length;
+  const expandedPrevious = expandCatalogGroupCandidates(retainedPrevious, productCatalog);
   const merged = keepRelevant(dedupeItems([
-    ...retainedPrevious,
+    ...expandedPrevious.items,
     ...currentCollected,
   ]));
 
@@ -598,6 +642,9 @@ async function run() {
     relevantPageCount: Number(result.relevantPageCount || 0),
     irrelevantPageCount: Number(result.irrelevantPageCount || 0),
     crossSourceDuplicateCount: Number(result.crossSourceDuplicateCount || 0),
+    officialRevisitCandidateCount: Number(result.officialRevisitCandidateCount || 0),
+    officialRevisitFetchCount: Number(result.officialRevisitFetchCount || 0),
+    officialRevisitItemCount: Number(result.officialRevisitItemCount || 0),
     rootFirstSeen: Boolean(result.rootFirstSeen),
     rootChanged: Boolean(result.rootChanged),
     newCandidateCount: Number(result.newCandidateCount || 0),
@@ -700,8 +747,16 @@ async function run() {
   const fatalSourceResults = failedSourceResults.filter((result) => result.severity !== "warning");
   const warningSourceResults = failedSourceResults.filter((result) => result.severity === "warning");
   const allWebSourcesFailed = webSourceResults.length > 0 && webSourceResults.every((result) => !result.ok);
+  const brokenOfficialDiscovery = webSourceResults.filter((result) =>
+    ["hobby-station-news", "furuichi-news"].includes(result.parser)
+    && result.ok
+    && Number(result.itemCount || 0) === 0
+    && Number(result.discovery?.totalLinks || 0) > 0
+    && Number(result.discovery?.returnedCount || 0) === 0
+  );
   const statusReasons = [
     ...fatalSourceResults.map((result) => `source_failed:${result.name}:${result.error || "unknown"}`),
+    ...brokenOfficialDiscovery.map((result) => `official_discovery_broken:${result.name}`),
     ...(criticalLivePocketFailure ? [`livepocket:${livePocketDiscoveryStatus}`] : []),
     ...(allWebSourcesFailed ? ["all_web_sources_failed"] : []),
   ];
@@ -711,12 +766,12 @@ async function run() {
       ? [`livepocket_warning:${livePocketDiscoveryStatus}`]
       : []),
   ];
-  const hasFatalFailure = fatalSourceResults.length > 0 || criticalLivePocketFailure || allWebSourcesFailed;
+  const hasFatalFailure = fatalSourceResults.length > 0 || criticalLivePocketFailure || allWebSourcesFailed || brokenOfficialDiscovery.length > 0;
   const runStatus = hasFatalFailure ? "partial" : warningReasons.length > 0 ? "degraded" : "ok";
 
   const autoCollectedCount = collected.filter((item) => item.sourceKind !== "manual" && item.manualEntry !== true).length;
   const multiProductExpandedCount = currentCollected.filter((item) => item.collectionMode === "official-news-multi-product").length;
-  const catalogGroupExpandedCount = expandedCollection.expandedCount;
+  const catalogGroupExpandedCount = expandedCollection.expandedCount + expandedPrevious.expandedCount;
   const ocrAppliedCount = sourceResults.reduce((sum, result) => sum + Number(result.ocrAppliedCount || 0), 0);
   const ocrImageCount = sourceResults.reduce((sum, result) => sum + Number(result.ocrImageCount || 0), 0);
   const discoveryStateResult = discoveryTracker.finalize();
@@ -728,6 +783,10 @@ async function run() {
 
   const finalPublished = dedupeItems(published);
   const postCanonicalDuplicateCount = published.length - finalPublished.length;
+  const publishedValidation = validatePublishedLotteries(finalPublished, productCatalog);
+  if (!publishedValidation.ok) {
+    throw new Error(`Public feed quality validation failed: ${publishedValidation.errors.slice(0, 5).join(" / ")}`);
+  }
 
   const quality = {
     qualityVersion: 2,
@@ -828,6 +887,9 @@ async function run() {
     xLivePocketEnrichedCount: xEnrichment.livePocketEnrichedCount,
     xGoogleFormEnrichedCount: xEnrichment.googleFormEnrichedCount,
   }, null, 2));
+  if (runStatus === "partial") {
+    throw new Error(`Collector finished with fatal status: ${statusReasons.join(" / ") || "unknown"}`);
+  }
 }
 
 run().catch((error) => {
