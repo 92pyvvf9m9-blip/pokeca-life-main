@@ -156,6 +156,9 @@ function baseDiscoveryStats(source) {
     duplicateRejected: 0,
     truncatedCount: 0,
     embeddedEventLinks: 0,
+    contextualLinkCount: 0,
+    contextualFuruichiLinkCount: 0,
+    contextualHobbyStationLinkCount: 0,
     rejected: {
       invalidUrl: 0,
       protocol: 0,
@@ -218,10 +221,12 @@ export function discoverCandidateLinksDetailed(source, html) {
       embedded: Boolean(previous.embedded || link.embedded),
     });
   }
-  const contextualLinks = [
-    ...extractContextualHobbyStationLinks(source, html),
-    ...extractContextualFuruichiLinks(source, html),
-  ];
+  const contextualHobbyStationLinks = extractContextualHobbyStationLinks(source, html);
+  const contextualFuruichiLinks = extractContextualFuruichiLinks(source, html);
+  const contextualLinks = [...contextualHobbyStationLinks, ...contextualFuruichiLinks];
+  stats.contextualHobbyStationLinkCount = contextualHobbyStationLinks.length;
+  stats.contextualFuruichiLinkCount = contextualFuruichiLinks.length;
+  stats.contextualLinkCount = contextualLinks.length;
   for (const link of contextualLinks) {
     const key = String(link.url || "");
     if (!key) continue;
