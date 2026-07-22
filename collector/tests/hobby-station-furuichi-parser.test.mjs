@@ -166,3 +166,30 @@ test("Furuichi OCR notice separates all three starter sets and the expansion pac
     assert.equal(item.purchaseEndDate, "2026-08-02");
   }
 });
+
+test("real Furuichi OCR output splits the three starter sets and Storm Emerald", async () => {
+  const fs = await import("node:fs/promises");
+  const ocr = await fs.readFile(new URL("../fixtures/furuichi-20260714-ocr.txt", import.meta.url), "utf8");
+  const source = {
+    id: "furuichi-official-news-real-ocr",
+    name: "古本市場（ふるいち）",
+    url: "https://www.furu1.net/news/news_information/pk20260713",
+    type: "通販",
+    area: "全国",
+    parser: "furuichi-news",
+    officialDomains: ["furu1.net"],
+  };
+  const items = parseSourceDocument(source, `<html><body><pre data-pokeca-ocr="true">${ocr}</pre></body></html>`, collectedAt);
+  assert.deepEqual(items.map(item => item.product), [
+    "ポケモンカードゲーム MEGA スターターセットex イーブイex",
+    "ポケモンカードゲーム MEGA スターターセットex ゾロア＆ゾロアークex",
+    "ポケモンカードゲーム MEGA スターターセットex ニャオハ＆マスカーニャex",
+    "ポケモンカードゲーム MEGA 拡張パック ストームエメラルダ",
+  ]);
+  for (const item of items) {
+    assert.equal(item.applyEndDate, "2026-07-19");
+    assert.equal(item.resultStartDate, "2026-07-22");
+    assert.equal(item.purchaseStartDate, "2026-07-31");
+    assert.equal(item.purchaseEndDate, "2026-08-02");
+  }
+});

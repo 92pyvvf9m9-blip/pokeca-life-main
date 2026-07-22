@@ -24,3 +24,19 @@ test("explicit three-product catalog groups expand into three independent lotter
     "スターターセットex ニャオハ＆マスカーニャex",
   ]);
 });
+
+test("catalog group records from an older public feed expand even without the private flag", () => {
+  const result = expandCatalogGroupCandidates([{
+    shop: "古本市場（ふるいち）",
+    product: "スターターセットex 3種",
+    applyEndDate: "2026-07-19",
+    verified: true,
+    qualityVersion: 2,
+  }], catalog);
+  assert.equal(result.expandedCount, 3);
+  assert.deepEqual(result.items.map(item => item.product), [
+    "スターターセットex イーブイex",
+    "スターターセットex ゾロア＆ゾロアークex",
+    "スターターセットex ニャオハ＆マスカーニャex",
+  ]);
+});

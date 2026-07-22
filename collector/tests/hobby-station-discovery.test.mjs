@@ -50,3 +50,31 @@ test("Furuichi official news links are discovered even when generic path rules a
   assert.equal(result.candidates.length, 1);
   assert.equal(result.candidates[0].url, "https://www.furu1.net/news/news_information/pk20260713");
 });
+
+test("Hobby Station bypasses stale secret patterns for official articles and contextual LivePocket links", () => {
+  const source = {
+    id: "hobby-station",
+    name: "ホビーステーション",
+    url: "https://www.hbst.net/category/news/",
+    parser: "hobby-station-news",
+    discovery: {
+      enabled: true,
+      sameHostOnly: true,
+      includePatterns: ["NEVER_MATCH_OLD_SECRET"],
+      excludePatterns: ["抽選"],
+      requiredPathPatterns: ["/obsolete-path/"],
+      childParser: "hobby-station-news",
+      maxPages: 8,
+    },
+  };
+  const html = `
+    <article>
+      <h2>ポケモンカードゲームMEGA 拡張パック ストームエメラルダ 抽選販売</h2>
+      <a href="https://www.hbst.net/?p=410275"><img alt="抽選販売"></a>
+      <a href="https://livepocket.jp/e/i1xp-">抽選受付ページリンク</a>
+    </article>`;
+  const result = discoverCandidateLinksDetailed(source, html);
+  assert.equal(result.candidates.length, 2);
+  assert.ok(result.candidates.some(item => item.url === "https://www.hbst.net/?p=410275" && item.parser === "hobby-station-news"));
+  assert.ok(result.candidates.some(item => item.url === "https://livepocket.jp/e/i1xp-" && item.parser === "livepocket"));
+});

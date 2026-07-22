@@ -91,3 +91,18 @@ test("legacy remote fallback can migrate before stale cleanup",()=>{
   const found=core.findUniqueFallbackMatch(items,{fallback:"same"},item=>item.fallback||"");
   assert.equal(found?.id,"legacy");
 });
+
+test("legacy Hobby Station product descriptions are repaired to the catalog name",()=>{
+  const repaired=core.repairLegacyProductName(
+    "拡張パック ストームエメラルダ 特性 はしゃのほうこうは、手札からベンチに出したとき、山札を上から4枚見て基本エネルギーを1枚つけることができるぞ！",
+    [
+      {id:"storm",name:"拡張パック ストームエメラルダ",category:"拡張パック",aliases:["ストームエメラルダ"]},
+      {id:"abyss",name:"拡張パック アビスアイ",category:"拡張パック",aliases:["アビスアイ"]},
+    ]
+  );
+  assert.equal(repaired,"拡張パック ストームエメラルダ");
+});
+
+test("normal product names are not rewritten",()=>{
+  assert.equal(core.repairLegacyProductName("スタートデッキ100 バトルコレクション",[]),"スタートデッキ100 バトルコレクション");
+});
