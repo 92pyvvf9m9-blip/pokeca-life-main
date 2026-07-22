@@ -1937,9 +1937,16 @@ function formatStatusUpdatedAt(value){
 function repairImportedLotteryData(){
   let changed=false;
   for(const item of D.lotteries){
-    const cleanedProduct=cleanImportedDisplayText(item.product);
+    let cleanedProduct=cleanImportedDisplayText(item.product);
+    const remoteCore=window.PokecaRemoteFeedCore;
+    if(remoteCore?.repairLegacyProductName){
+      const products=productCatalogState?.products||PRODUCT_CATALOG_FALLBACK.products||[];
+      cleanedProduct=remoteCore.repairLegacyProductName(cleanedProduct,products);
+    }
     if(cleanedProduct && cleanedProduct!==item.product){
       item.product=cleanedProduct;
+      const catalogProduct=findCatalogProductForLottery(item);
+      if(catalogProduct?.id)item.productCatalogId=catalogProduct.id;
       changed=true;
     }
 
@@ -2810,7 +2817,8 @@ function renderCollectorMeta(){
   const badge=$('#collectorHealthBadge');
   if(badge){
     if(!syncState.lastSyncAt){badge.className='collector-health idle';badge.textContent='待機中'}
-    else if(meta.status==='partial'){badge.className='collector-health warn';badge.textContent='一部確認中'}
+    else if(meta.status==='partial'){badge.className='collector-health warn';badge.textContent='収集エラー'}
+    else if(meta.status==='degraded'){badge.className='collector-health warn';badge.textContent='要確認'}
     else{badge.className='collector-health ok';badge.textContent='正常'}
   }
   const xStatus=$('#xCollectorStatus');
@@ -6216,4 +6224,22 @@ initializeCardImages()
     loadUserProfile();renderProfileUI();showOnboardingIfNeeded();
   });})();
 </script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});</script></body></html>
+<script>
+(()=>{
+  const cleanupVersion='1.24.5';
+  const key='pokeca-public-cache-cleanup-version';
+  try{
+    if(localStorage.getItem(key)===cleanupVersion)return;
+    const tasks=[];
+    if('serviceWorker'in navigator){
+      tasks.push(navigator.serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.map(registration=>registration.unregister()))));
+    }
+    if('caches'in window){
+      tasks.push(caches.keys().then(keys=>Promise.all(keys.map(cacheKey=>caches.delete(cacheKey)))));
+    }
+    Promise.allSettled(tasks).finally(()=>{
+      try{localStorage.setItem(key,cleanupVersion)}catch{}
+    });
+  }catch{}
+})();
+</script></body></html>

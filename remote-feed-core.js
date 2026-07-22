@@ -13,6 +13,43 @@
     return Boolean(item.externalId&&(item.verified||item.collectedAt||item.qualityVersion>=2));
   }
 
+
+  function normalizedProductText(value=''){
+    return String(value||'')
+      .normalize('NFKC')
+      .toLowerCase()
+      .replace(/[「」『』【】［］\[\]()（）・･\s　\-‐‑‒–—―_]/g,'')
+      .replace(/ポケモンカードゲーム|ポケモンカード|ポケカ/g,'')
+      .replace(/抽選販売|抽選受付|予約販売|応募フォーム|再販/g,'')
+      .trim();
+  }
+
+  function looksDescriptionLikeProductName(value=''){
+    const text=String(value||'').normalize('NFKC').replace(/\s+/g,' ').trim();
+    if(!text)return false;
+    if(text.length>=110)return true;
+    const signals=[/この特性/,/このポケモン/,/手札から/,/山札を/,/基本エネルギー/,/ダメージ/,/相手のポケモン/,/デッキで戦/,/場に出すこと/,/収録されません/,/キャンペーン/,/遊び方の1つ/];
+    return text.length>=42&&signals.some(pattern=>pattern.test(text));
+  }
+
+  function repairLegacyProductName(value='',products=[]){
+    const original=String(value||'').trim();
+    if(!looksDescriptionLikeProductName(original))return original;
+    const target=normalizedProductText(original);
+    let best=null;
+    let bestScore=-1;
+    for(const product of Array.isArray(products)?products:[]){
+      if(!product||product.category==='商品グループ')continue;
+      for(const label of [product.name,...(Array.isArray(product.aliases)?product.aliases:[])]){
+        const key=normalizedProductText(label);
+        if(!key||key.length<4||!target.includes(key))continue;
+        const score=key.length;
+        if(score>bestScore){best=product;bestScore=score;}
+      }
+    }
+    return best?.name||original;
+  }
+
   function buildKeySet(items=[],identityFn){
     const keys=new Set();
     for(const item of Array.isArray(items)?items:[]){
@@ -62,5 +99,5 @@
     return{items:kept,removed};
   }
 
-  return{isManagedRemote,buildKeySet,findUniqueFallbackMatch,pruneMissingRemote};
+  return{isManagedRemote,looksDescriptionLikeProductName,repairLegacyProductName,buildKeySet,findUniqueFallbackMatch,pruneMissingRemote};
 });
