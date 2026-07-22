@@ -1,0 +1,20 @@
+Pokeca Life v1.24.6 - Furuichi Discovery Health Fix
+
+Root cause confirmed from GitHub Actions log bundle logs_80935230404.zip:
+- Furuichi root page fetched successfully (HTTP 200, 65 links).
+- No current Pokemon lottery article existed in the root page.
+- 63 unrelated links were rejected by includePatterns, 1 by excludePatterns, 1 by protocol.
+- A previously verified direct article URL returned HTTP 404 because the old notice was removed.
+- v1.24.5 incorrectly treated any official page with links but zero accepted candidates as a fatal Discovery failure.
+
+Fix:
+- Add contextual official-link counters to Discovery diagnostics.
+- Mark official Discovery as broken only when the dedicated Furuichi/Hobby Station extractor found an eligible lottery link but none reached the candidate list.
+- A normal official index with no current Pokemon lottery notice is now a warning, not a fatal failure.
+- Existing product-group expansion remains active, so the old Furuichi "スターターセットex 3種" feed can be replaced by three individual products when the collector completes and commits.
+
+Validation:
+- 83/83 automated tests passed.
+- Public build dependency check passed.
+- Project layout check passed.
+- Public privacy check passed.
