@@ -747,12 +747,26 @@ async function run() {
   const fatalSourceResults = failedSourceResults.filter((result) => result.severity !== "warning");
   const warningSourceResults = failedSourceResults.filter((result) => result.severity === "warning");
   const allWebSourcesFailed = webSourceResults.length > 0 && webSourceResults.every((result) => !result.ok);
+  // A generic official index page can legitimately contain many unrelated links
+  // and no current Pokemon lottery notice. Treat discovery as broken only when
+  // the dedicated contextual extractor actually found an eligible official
+  // lottery link but none survived to the candidate list. This prevents stale
+  // Secret includePatterns and expired/removed archive articles from turning a
+  // normal no-current-lottery run into a fatal workflow failure.
   const brokenOfficialDiscovery = webSourceResults.filter((result) =>
     ["hobby-station-news", "furuichi-news"].includes(result.parser)
     && result.ok
     && Number(result.itemCount || 0) === 0
-    && Number(result.discovery?.totalLinks || 0) > 0
+    && Number(result.discovery?.contextualLinkCount || 0) > 0
     && Number(result.discovery?.returnedCount || 0) === 0
+  );
+  const inactiveOfficialDiscovery = webSourceResults.filter((result) =>
+    ["hobby-station-news", "furuichi-news"].includes(result.parser)
+    && result.ok
+    && Number(result.itemCount || 0) === 0
+    && Number(result.discovery?.contextualLinkCount || 0) === 0
+    && Number(result.discovery?.returnedCount || 0) === 0
+    && Number(result.discovery?.totalLinks || 0) > 0
   );
   const statusReasons = [
     ...fatalSourceResults.map((result) => `source_failed:${result.name}:${result.error || "unknown"}`),
@@ -762,6 +776,7 @@ async function run() {
   ];
   const warningReasons = [
     ...warningSourceResults.map((result) => `source_warning:${result.name}:${result.error || "unknown"}`),
+    ...inactiveOfficialDiscovery.map((result) => `official_discovery_no_current_candidates:${result.name}`),
     ...(["no_candidates", "no_relevant_pages", "partial"].includes(livePocketDiscoveryStatus)
       ? [`livepocket_warning:${livePocketDiscoveryStatus}`]
       : []),
