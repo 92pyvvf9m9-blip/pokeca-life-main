@@ -37,11 +37,12 @@ export function expandCatalogGroupCandidates(items = [], catalog = []) {
   let expandedCount = 0;
   for (const raw of Array.isArray(items) ? items : []) {
     const item = { ...raw };
-    if (!item.expandCatalogGroup) {
+    const group = matchCatalogProduct(item.product, catalog);
+    const shouldExpand = item.expandCatalogGroup === true || group?.category === "商品グループ";
+    if (!shouldExpand) {
       output.push(item);
       continue;
     }
-    const group = matchCatalogProduct(item.product, catalog);
     const members = catalogGroupMembers(group, catalog);
     if (!members.length) {
       output.push(item);

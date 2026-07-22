@@ -87,21 +87,32 @@ function extractContextualHobbyStationLinks(source, html = "") {
   for (const match of decoded.matchAll(anchorPattern)) {
     let url;
     try { url = new URL(match[2], source.url); } catch { continue; }
-    const host = normalizeHost(url.hostname);
-    if (!(host === "hbst.net" || host.endsWith(".hbst.net"))) continue;
-    if (!url.searchParams.has("p") && !/\/(?:news|blog)\//i.test(url.pathname)) continue;
+    const targetHost = normalizeHost(url.hostname);
+    const isHobbyArticle = (targetHost === "hbst.net" || targetHost.endsWith(".hbst.net"))
+      && (url.searchParams.has("p") || /\/(?:news|blog)\//i.test(url.pathname));
+    const isLivePocket = targetHost === "livepocket.jp" || targetHost.endsWith(".livepocket.jp");
+    if (!isHobbyArticle && !isLivePocket) continue;
 
     const index = Number(match.index || 0);
-    const context = htmlToText(decoded.slice(Math.max(0, index - 900), index + match[0].length + 500));
+    const context = htmlToText(decoded.slice(Math.max(0, index - 1200), index + match[0].length + 800));
     const anchorText = htmlToText(match[3]);
     const text = `${anchorText} ${context}`.replace(/\s+/g, " ").trim();
-    if (!/ポケモンカード|ポケカ/i.test(text) || !/抽選|応募|LivePocket|ライブポケット/i.test(text)) continue;
+
+    // Direct LivePocket links must have nearby Pokemon/lottery context. Same-host
+    // article permalinks are cheap to fetch and are filtered after fetch by
+    // pageLooksRelevant, so they remain discoverable even when cards are image-only.
+    if (isLivePocket && (!/ポケモンカード|ポケカ/i.test(text) || !/抽選|応募|LivePocket|ライブポケット/i.test(text))) continue;
 
     url.hash = "";
     const href = url.href;
     if (seen.has(href)) continue;
     seen.add(href);
-    matches.push({ url: href, text, contextual: true });
+    matches.push({
+      url: href,
+      text,
+      parser: isLivePocket ? "livepocket" : "hobby-station-news",
+      contextualHobbyStation: true,
+    });
   }
   return matches;
 }
@@ -220,7 +231,9 @@ export function discoverCandidateLinksDetailed(source, html) {
           ...previous,
           text: `${previous.text || ""} ${link.text || ""}`.trim(),
           contextual: Boolean(previous.contextual || link.contextual),
+          contextualHobbyStation: Boolean(previous.contextualHobbyStation || link.contextualHobbyStation),
           contextualFuruichi: Boolean(previous.contextualFuruichi || link.contextualFuruichi),
+          parser: link.parser || previous.parser || "",
         }
       : link);
   }
@@ -244,25 +257,29 @@ export function discoverCandidateLinksDetailed(source, html) {
 
     const haystack = `${link.text} ${link.url}`;
     const trustedContextualFuruichi = Boolean(link.contextualFuruichi);
-    if (!trustedContextualFuruichi && !matchesAny(haystack, include)) {
+    const trustedContextualHobbyStation = Boolean(link.contextualHobbyStation);
+    const trustedContextual = trustedContextualFuruichi || trustedContextualHobbyStation;
+    if (!trustedContextual && !matchesAny(haystack, include)) {
       stats.rejected.includePattern += 1;
       continue;
     }
-    if (!trustedContextualFuruichi && matchesAny(haystack, exclude)) {
+    if (!trustedContextual && matchesAny(haystack, exclude)) {
       stats.rejected.excludePattern += 1;
       continue;
     }
 
     const host = normalizeHost(parsed.hostname);
-    if (sameHostOnly && host !== sourceHost) {
+    const trustedHobbyHost = trustedContextualHobbyStation
+      && (host === sourceHost || host === "livepocket.jp" || host.endsWith(".livepocket.jp"));
+    if (sameHostOnly && host !== sourceHost && !trustedHobbyHost) {
       stats.rejected.host += 1;
       continue;
     }
-    if (!sameHostOnly && allowedHosts.length && !hostAllowed(host, allowedHosts)) {
+    if (!sameHostOnly && allowedHosts.length && !hostAllowed(host, allowedHosts) && !trustedHobbyHost) {
       stats.rejected.host += 1;
       continue;
     }
-    if (!trustedContextualFuruichi && requiredPathPatterns.length && !matchesAny(`${parsed.pathname}${parsed.search}`, requiredPathPatterns)) {
+    if (!trustedContextual && requiredPathPatterns.length && !matchesAny(`${parsed.pathname}${parsed.search}`, requiredPathPatterns)) {
       stats.rejected.path += 1;
       continue;
     }
@@ -271,7 +288,7 @@ export function discoverCandidateLinksDetailed(source, html) {
     accepted.push({
       ...link,
       url: canonicalUrl,
-      parser: source.discovery.childParser || source.childParser || "",
+      parser: link.parser || source.discovery.childParser || source.childParser || "",
       score:
         (matchesAny(link.text, ["抽選", "応募", "エントリー", "受付中", "販売中"]) ? 4 : 0) +
         (matchesAny(link.text, ["ポケモンカード", "ポケカ"]) ? 4 : 0) +
