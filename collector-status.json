@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.6",
-  "lastRunAt": "2026-07-24T00:10:31.541Z",
+  "lastRunAt": "2026-07-24T09:12:45.313Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -8,8 +8,8 @@
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 31,
-  "publishedCount": 66,
+  "reviewCount": 30,
+  "publishedCount": 67,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
@@ -21,7 +21,7 @@
     "failedCount": 1,
     "withItemsCount": 2,
     "zeroItemsCount": 8,
-    "discoveredPageCount": 3,
+    "discoveredPageCount": 5,
     "failedSources": [
       {
         "name": "あみあみ",
@@ -73,7 +73,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 383,
+      "elapsedMs": 381,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -131,7 +131,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 32,
+      "elapsedMs": 10,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -189,7 +189,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 34,
+      "elapsedMs": 9,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -247,18 +247,18 @@
       "itemCount": 11,
       "rootItemCount": 2,
       "discoveredItemCount": 9,
-      "elapsedMs": 3658,
+      "elapsedMs": 5216,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 40104,
+        "responseBytes": 40741,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 124,
-        "acceptedBeforeDedupe": 3,
-        "returnedCount": 3,
+        "totalLinks": 126,
+        "acceptedBeforeDedupe": 5,
+        "returnedCount": 5,
         "duplicateRejected": 0,
         "truncatedCount": 0,
         "embeddedEventLinks": 0,
@@ -274,9 +274,9 @@
           "path": 0
         }
       },
-      "candidateFetchSuccessCount": 3,
+      "candidateFetchSuccessCount": 5,
       "candidateFetchFailureCount": 0,
-      "relevantPageCount": 3,
+      "relevantPageCount": 5,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
@@ -284,7 +284,7 @@
       "officialRevisitItemCount": 0,
       "rootFirstSeen": true,
       "rootChanged": false,
-      "newCandidateCount": 3,
+      "newCandidateCount": 5,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
@@ -305,7 +305,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 11271,
+      "elapsedMs": 10401,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -405,11 +405,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4562,
+      "elapsedMs": 4230,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 55519,
+        "responseBytes": 55443,
         "finalHostChanged": false
       },
       "discovery": {
@@ -463,16 +463,16 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1642,
+      "elapsedMs": 1437,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 81135,
+        "responseBytes": 82703,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 65,
+        "totalLinks": 66,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
@@ -484,7 +484,7 @@
         "rejected": {
           "invalidUrl": 0,
           "protocol": 1,
-          "includePattern": 63,
+          "includePattern": 64,
           "excludePattern": 1,
           "host": 0,
           "path": 0
@@ -523,7 +523,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 524,
+      "elapsedMs": 4754,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -581,7 +581,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1784,
+      "elapsedMs": 1868,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -636,14 +636,14 @@
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
       "status": "items",
-      "itemCount": 18,
-      "rootItemCount": 18,
+      "itemCount": 19,
+      "rootItemCount": 19,
       "discoveredItemCount": 0,
-      "elapsedMs": 1032,
+      "elapsedMs": 795,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 836885,
+        "responseBytes": 843328,
         "finalHostChanged": false
       },
       "discovery": {
@@ -691,9 +691,9 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 29,
+  "autoCollectedCount": 30,
   "multiProductExpandedCount": 11,
-  "catalogGroupExpandedCount": 27,
+  "catalogGroupExpandedCount": 24,
   "replacedPreviousCount": 10,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
@@ -753,25 +753,25 @@
       "observedSourceCount": 10,
       "rootFirstSeenCount": 10,
       "rootChangedCount": 0,
-      "newCandidateCount": 8,
+      "newCandidateCount": 10,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "trackedSourceCount": 10,
-      "trackedCandidateCount": 8
+      "trackedCandidateCount": 10
     }
   },
   "quality": {
     "qualityVersion": 2,
     "candidateCount": 109,
-    "publishedCount": 66,
+    "publishedCount": 67,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 31,
+    "reviewCount": 30,
     "rejectedCount": 0,
-    "directVerifiedCount": 58,
+    "directVerifiedCount": 59,
     "catalogMatchedCount": 109,
-    "autoCollectedCount": 29,
+    "autoCollectedCount": 30,
     "multiProductExpandedCount": 11,
-    "catalogGroupExpandedCount": 27,
+    "catalogGroupExpandedCount": 24,
     "replacedPreviousCount": 10,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
