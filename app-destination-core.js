@@ -98,12 +98,38 @@
     if(explicit)return explicit;
     return profileByText([item.appName,item.shop,item.instructions,item.memo,item.url].filter(Boolean).join('\n'));
   }
+
+  function profileIdentity(item={}){
+    return profileByText([item.shop,item.url,item.sourceUrl].filter(Boolean).join('\n'));
+  }
+  function clearStaleAppFields(item={}){
+    const output={...item,destinationType:item.destinationType==='app'?'direct':(item.destinationType||'direct')};
+    for(const key of ['appId','appName','appUrl','iosAppStoreUrl','androidAppStoreUrl','appOfficialUrl'])output[key]='';
+    if(/アプリ内の抽選案内|ゲオアプリ内/.test(String(output.instructions||'')))output.instructions='';
+    if(/geo-online\.co\.jp|apps\.apple\.com\/jp\/app\/id590190880/.test(String(output.fallbackUrl||'')))output.fallbackUrl=output.url||output.sourceUrl||'';
+    return output;
+  }
+  function normalizeAppFields(item={}){
+    let output={...item};
+    const identity=profileIdentity(output);
+    const declared=profileById(output.appId||output.applicationAppId||'')||profileByText(output.appName||'');
+    const explicit=output.destinationType==='app'||Boolean(output.appName||output.appUrl);
+    if(explicit&&declared&&identity&&declared.id!==identity.id)return clearStaleAppFields(output);
+    if(explicit&&declared&&!identity){
+      const shopText=clean(output.shop||'');
+      const shopMatchesDeclared=declared.patterns.some(pattern=>pattern.test(shopText));
+      const trusted=Boolean(output.appUrl)||shopMatchesDeclared;
+      if(!trusted)return clearStaleAppFields(output);
+    }
+    return output;
+  }
+
   function lineMiniAppUrl(item={}){
     const candidates=[item.appUrl,item.url,item.fallbackUrl,item.sourceUrl];
     return candidates.map(normalizeLaunchUrl).find(url=>/^https:\/\/(?:liff|miniapp)\.line\.me\//i.test(url))||'';
   }
   function resolve(item={},platform=''){
-    const original={...item};
+    const original=normalizeAppFields(item);
     const appIntent=hasAppIntent(original);
     const profile=inferProfile(original);
     if(!appIntent)return {
@@ -139,6 +165,7 @@
     };
   }
   function enrich(item={},platform=''){
+    item=normalizeAppFields(item);
     const resolved=resolve(item,platform);
     if(!resolved.isApp)return {...item};
     return {
@@ -168,6 +195,6 @@
 
   return {
     APP_PROFILES,APP_INTENT_PATTERNS,clean,isHttpUrl,isCustomScheme,isAppStoreUrl,normalizeLaunchUrl,
-    profileById,profileByText,hasAppIntent,inferProfile,resolve,enrich,detectPlatform,preferredFallback
+    profileById,profileByText,profileIdentity,normalizeAppFields,hasAppIntent,inferProfile,resolve,enrich,detectPlatform,preferredFallback
   };
 });
