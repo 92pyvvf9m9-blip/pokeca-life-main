@@ -23,18 +23,45 @@ const APP_INTENT_PATTERNS = [
   /[（(]\s*アプリ\s*[）)]/i,
 ];
 
-function textOf(item = {}, evidence = "") {
-  return [item.shop, item.appName, item.product, item.instructions, item.memo, item.url, item.sourceUrl, evidence]
-    .filter(Boolean).join("\n").normalize("NFKC");
+const APP_KEYS = ["appId", "appName", "appUrl", "iosAppStoreUrl", "androidAppStoreUrl", "appOfficialUrl"];
+
+function normalize(value = "") { return String(value || "").normalize("NFKC"); }
+function profileFor(text = "") { return APP_PROFILES.find((p) => p.patterns.some((re) => re.test(normalize(text)))) || null; }
+function identityText(item = {}) { return [item.shop, item.url, item.sourceUrl].filter(Boolean).join("\n"); }
+function explicitText(item = {}) { return [item.appName, item.instructions, item.memo].filter(Boolean).join("\n"); }
+function intentText(item = {}, evidence = "") { return [item.instructions, item.memo, evidence].filter(Boolean).join("\n"); }
+function profileById(id = "") { return APP_PROFILES.find((p) => p.id === id) || null; }
+
+function clearAppFields(item = {}) {
+  const output = { ...item, destinationType: item.destinationType === "app" ? "direct" : (item.destinationType || "direct") };
+  for (const key of APP_KEYS) output[key] = "";
+  if (/アプリ内の抽選案内|ゲオアプリ内/.test(String(output.instructions || ""))) output.instructions = "";
+  if (/geo-online\.co\.jp|apps\.apple\.com\/jp\/app\/id590190880/.test(String(output.fallbackUrl || ""))) output.fallbackUrl = output.url || output.sourceUrl || "";
+  return output;
 }
 
-function profileFor(text = "") {
-  return APP_PROFILES.find((profile) => profile.patterns.some((pattern) => pattern.test(text))) || null;
+export function normalizeAppDestinationFields(item = {}) {
+  let output = { ...item };
+  const identityProfile = profileFor(identityText(output));
+  const declaredProfile = profileById(output.appId) || profileFor(output.appName || "");
+  const explicitApp = output.destinationType === "app" || Boolean(output.appName || output.appUrl);
+
+  // A stored app profile may only survive when it agrees with the record's own
+  // store/URL identity. This removes historical GEO metadata leaked into unrelated records.
+  if (explicitApp && declaredProfile && identityProfile && declaredProfile.id !== identityProfile.id) {
+    output = clearAppFields(output);
+  } else if (explicitApp && declaredProfile && !identityProfile) {
+    const shopText = normalize(output.shop || "");
+    const shopMatchesDeclared = declaredProfile.patterns.some((re) => re.test(shopText));
+    const trustedExplicit = Boolean(output.appUrl) || shopMatchesDeclared;
+    if (!trustedExplicit) output = clearAppFields(output);
+  }
+  return output;
 }
 
-function hasAppIntent(item = {}, text = "") {
+function hasAppIntent(item = {}, evidence = "") {
   if (item.destinationType === "app" || item.appName || item.appUrl) return true;
-  return APP_INTENT_PATTERNS.some((pattern) => pattern.test(text));
+  return APP_INTENT_PATTERNS.some((pattern) => pattern.test(normalize(intentText(item, evidence))));
 }
 
 function lineMiniAppUrl(item = {}) {
@@ -43,21 +70,41 @@ function lineMiniAppUrl(item = {}) {
 }
 
 export function enrichAppDestination(item = {}, evidence = "") {
-  const text = textOf(item, evidence);
-  const profile = profileFor(text);
-  if (!hasAppIntent(item, text)) return item;
+  const normalized = normalizeAppDestinationFields(item);
+  const identityProfile = profileFor(identityText(normalized));
+  const declaredProfile = profileById(normalized.appId) || profileFor(normalized.appName || "");
+  const explicitApp = normalized.destinationType === "app" || Boolean(normalized.appName || normalized.appUrl);
+  const evidenceProfile = profileFor(evidence);
+  const intent = hasAppIntent(normalized, evidence);
 
-  const appName = item.appName || profile?.name || "応募アプリ";
-  const appUrl = item.appUrl || (profile?.lineMiniApp ? lineMiniAppUrl(item) : "");
+  // Page-wide evidence is allowed to prove app intent, but never to choose a chain.
+  // Without a profile tied to this record, generic page text must not convert it to an app.
+  const profile = identityProfile || (explicitApp ? declaredProfile : null);
+  if (!intent) return normalized;
+  if (!profile && evidenceProfile && !explicitApp) return normalized;
+  if (!profile) {
+    return {
+      ...normalized,
+      destinationType: "app",
+      appId: "",
+      appName: normalized.appName || "応募アプリ",
+      appUrl: normalized.appUrl || "",
+      fallbackUrl: normalized.fallbackUrl || normalized.sourceUrl || normalized.url || "",
+      instructions: normalized.instructions || "アプリ内の抽選案内から応募してください。",
+    };
+  }
+
+  const appName = profile.name;
+  const appUrl = normalized.appUrl || (profile.lineMiniApp ? lineMiniAppUrl(normalized) : "");
   return {
-    ...item,
+    ...normalized,
     destinationType: "app",
-    appId: item.appId || profile?.id || "",
+    appId: profile.id,
     appName,
     appUrl,
-    fallbackUrl: item.fallbackUrl || item.sourceUrl || item.url || profile?.appOfficialUrl || profile?.iosAppStoreUrl || "",
-    iosAppStoreUrl: item.iosAppStoreUrl || profile?.iosAppStoreUrl || "",
-    appOfficialUrl: item.appOfficialUrl || profile?.appOfficialUrl || "",
-    instructions: item.instructions || `${appName}内の抽選案内から応募してください。`,
+    fallbackUrl: normalized.fallbackUrl || normalized.sourceUrl || normalized.url || profile.appOfficialUrl || profile.iosAppStoreUrl || "",
+    iosAppStoreUrl: normalized.iosAppStoreUrl || profile.iosAppStoreUrl || "",
+    appOfficialUrl: normalized.appOfficialUrl || profile.appOfficialUrl || "",
+    instructions: normalized.instructions || `${appName}内の抽選案内から応募してください。`,
   };
 }

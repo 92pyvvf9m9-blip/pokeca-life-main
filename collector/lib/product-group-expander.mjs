@@ -49,8 +49,12 @@ export function expandCatalogGroupCandidates(items = [], catalog = []) {
       continue;
     }
     for (const member of members) {
+      const baseExternalId = String(item.externalId || item.remoteId || "");
+      const expandedExternalId = baseExternalId ? `${baseExternalId}::${member.id}` : "";
       const expanded = {
         ...item,
+        externalId: expandedExternalId || item.externalId,
+        remoteId: expandedExternalId || item.remoteId,
         product: member.name,
         productCatalogId: member.id,
         expandCatalogGroup: false,
