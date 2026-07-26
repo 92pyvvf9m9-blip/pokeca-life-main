@@ -14,6 +14,7 @@ import { enrichHtmlWithImageOcr } from "./lib/image-ocr.mjs";
 import { expandCatalogGroupCandidates } from "./lib/product-group-expander.mjs";
 import { buildOfficialRevisitCandidates } from "./lib/official-revisit.mjs";
 import { validatePublishedLotteries } from "./lib/published-feed-validator.mjs";
+import { normalizeAppDestinationFields } from "./lib/app-destination.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -278,7 +279,9 @@ async function run() {
     : [];
   const previousFeed = await readJson(FEED_PATH, { lotteries: [] });
   const productCatalog = await loadProductCatalog(PRODUCT_CATALOG_PATH);
-  const trustedPrevious = (previousFeed.lotteries || []).filter((item) => item.qualityVersion >= 2 && item.verified === true);
+  const trustedPrevious = (previousFeed.lotteries || [])
+    .filter((item) => item.qualityVersion >= 2 && item.verified === true)
+    .map((item) => normalizeAppDestinationFields(item));
   const previousDiscoveryState = await readJson(DISCOVERY_STATE_PATH, { version: 1, sources: {} });
   const discoveryTracker = new DiscoveryStateTracker(previousDiscoveryState, new Date(startedAt));
   const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
