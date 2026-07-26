@@ -1,6 +1,6 @@
 {
-  "collectorVersion": "1.24.6",
-  "lastRunAt": "2026-07-25T23:45:00.775Z",
+  "collectorVersion": "1.24.8",
+  "lastRunAt": "2026-07-26T07:28:30.865Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -8,8 +8,8 @@
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 37,
-  "publishedCount": 73,
+  "reviewCount": 50,
+  "publishedCount": 78,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
@@ -73,7 +73,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 763,
+      "elapsedMs": 752,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -131,7 +131,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 22,
+      "elapsedMs": 14,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -189,7 +189,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 21,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -247,11 +247,11 @@
       "itemCount": 11,
       "rootItemCount": 2,
       "discoveredItemCount": 9,
-      "elapsedMs": 5440,
+      "elapsedMs": 5616,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 40731,
+        "responseBytes": 40741,
         "finalHostChanged": false
       },
       "discovery": {
@@ -305,7 +305,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10430,
+      "elapsedMs": 10390,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -363,7 +363,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 546,
+      "elapsedMs": 204,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -405,7 +405,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4945,
+      "elapsedMs": 4975,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -463,11 +463,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1892,
+      "elapsedMs": 1724,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 82703,
+        "responseBytes": 82507,
         "finalHostChanged": false
       },
       "discovery": {
@@ -523,7 +523,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 524,
+      "elapsedMs": 415,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -581,7 +581,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 2018,
+      "elapsedMs": 1976,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -636,14 +636,14 @@
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
       "status": "items",
-      "itemCount": 30,
-      "rootItemCount": 30,
+      "itemCount": 42,
+      "rootItemCount": 42,
       "discoveredItemCount": 0,
-      "elapsedMs": 1096,
+      "elapsedMs": 1075,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 923496,
+        "responseBytes": 978153,
         "finalHostChanged": false
       },
       "discovery": {
@@ -691,9 +691,9 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 41,
+  "autoCollectedCount": 53,
   "multiProductExpandedCount": 11,
-  "catalogGroupExpandedCount": 18,
+  "catalogGroupExpandedCount": 27,
   "replacedPreviousCount": 11,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
@@ -762,16 +762,16 @@
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 122,
-    "publishedCount": 73,
+    "candidateCount": 140,
+    "publishedCount": 78,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 37,
+    "reviewCount": 50,
     "rejectedCount": 0,
-    "directVerifiedCount": 65,
-    "catalogMatchedCount": 122,
-    "autoCollectedCount": 41,
+    "directVerifiedCount": 70,
+    "catalogMatchedCount": 140,
+    "autoCollectedCount": 53,
     "multiProductExpandedCount": 11,
-    "catalogGroupExpandedCount": 18,
+    "catalogGroupExpandedCount": 27,
     "replacedPreviousCount": 11,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
