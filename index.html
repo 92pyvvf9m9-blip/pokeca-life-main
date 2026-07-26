@@ -5652,6 +5652,7 @@ $('#form').addEventListener('submit',async e=>{
       o.product=cleanImportedDisplayText(o.product||'');
       o.area=(o.area||'').trim();
       o.url=normalizeUrl(o.url);
+      const canonicalInputUrl=canonicalLotteryStateUrl(o.url||'')||o.url||'';
       o.destinationType=String(o.destinationType||'direct');
       o.appId=String(o.appId||'').trim();
       o.appName=String(o.appName||'').trim();
