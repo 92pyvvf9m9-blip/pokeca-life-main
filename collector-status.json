@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-07-27T21:54:43.480Z",
+  "lastRunAt": "2026-07-28T07:47:37.619Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -82,7 +82,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 362,
+      "elapsedMs": 933,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -140,7 +140,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 12,
+      "elapsedMs": 14,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -198,7 +198,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 11,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -256,11 +256,11 @@
       "itemCount": 11,
       "rootItemCount": 2,
       "discoveredItemCount": 9,
-      "elapsedMs": 5777,
+      "elapsedMs": 6680,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 39899,
+        "responseBytes": 39915,
         "finalHostChanged": false
       },
       "discovery": {
@@ -314,7 +314,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10683,
+      "elapsedMs": 10429,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -372,7 +372,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 225,
+      "elapsedMs": 211,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -414,44 +414,44 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4518,
+      "elapsedMs": 6506,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 55443,
+        "responseBytes": 60544,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
         "totalLinks": 22,
-        "acceptedBeforeDedupe": 4,
-        "returnedCount": 4,
+        "acceptedBeforeDedupe": 6,
+        "returnedCount": 6,
         "duplicateRejected": 0,
         "truncatedCount": 0,
         "embeddedEventLinks": 0,
-        "contextualLinkCount": 4,
+        "contextualLinkCount": 6,
         "contextualFuruichiLinkCount": 0,
-        "contextualHobbyStationLinkCount": 4,
+        "contextualHobbyStationLinkCount": 6,
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 18,
+          "includePattern": 16,
           "excludePattern": 0,
           "host": 0,
           "path": 0
         }
       },
-      "candidateFetchSuccessCount": 4,
+      "candidateFetchSuccessCount": 6,
       "candidateFetchFailureCount": 0,
       "relevantPageCount": 0,
-      "irrelevantPageCount": 4,
+      "irrelevantPageCount": 6,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
       "officialRevisitFetchCount": 0,
       "officialRevisitItemCount": 0,
       "rootFirstSeen": true,
       "rootChanged": false,
-      "newCandidateCount": 4,
+      "newCandidateCount": 6,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
@@ -472,7 +472,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 3864,
+      "elapsedMs": 4057,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -532,7 +532,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 497,
+      "elapsedMs": 445,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -730,11 +730,11 @@
       "observedSourceCount": 8,
       "rootFirstSeenCount": 8,
       "rootChangedCount": 0,
-      "newCandidateCount": 10,
+      "newCandidateCount": 12,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "trackedSourceCount": 8,
-      "trackedCandidateCount": 10
+      "trackedCandidateCount": 12
     }
   },
   "quality": {
