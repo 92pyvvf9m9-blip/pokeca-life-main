@@ -1,13 +1,13 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-07-29T23:46:48.988Z",
+  "lastRunAt": "2026-07-30T08:00:05.303Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
     "source_warning:あみあみ:HTTP 403",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 10,
+  "reviewCount": 13,
   "publishedCount": 78,
   "historyDays": 35,
   "manualEntryCount": 13,
@@ -72,7 +72,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 383,
+      "elapsedMs": 367,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -188,7 +188,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 11,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -246,11 +246,11 @@
       "itemCount": 8,
       "rootItemCount": 2,
       "discoveredItemCount": 6,
-      "elapsedMs": 5576,
+      "elapsedMs": 5381,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 40403,
+        "responseBytes": 40412,
         "finalHostChanged": false
       },
       "discovery": {
@@ -304,7 +304,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10562,
+      "elapsedMs": 10546,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -362,7 +362,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 538,
+      "elapsedMs": 467,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -404,16 +404,16 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6573,
+      "elapsedMs": 6291,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 60544,
+        "responseBytes": 60168,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 22,
+        "totalLinks": 21,
         "acceptedBeforeDedupe": 6,
         "returnedCount": 6,
         "duplicateRejected": 0,
@@ -425,7 +425,7 @@
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 16,
+          "includePattern": 15,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -462,16 +462,16 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4049,
+      "elapsedMs": 3797,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 81241,
+        "responseBytes": 84419,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 65,
+        "totalLinks": 67,
         "acceptedBeforeDedupe": 1,
         "returnedCount": 1,
         "duplicateRejected": 0,
@@ -483,7 +483,7 @@
         "rejected": {
           "invalidUrl": 0,
           "protocol": 1,
-          "includePattern": 62,
+          "includePattern": 64,
           "excludePattern": 1,
           "host": 0,
           "path": 0
@@ -522,7 +522,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 499,
+      "elapsedMs": 335,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -580,7 +580,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 961,
+      "elapsedMs": 914,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -635,14 +635,14 @@
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
       "status": "items",
-      "itemCount": 4,
-      "rootItemCount": 4,
+      "itemCount": 7,
+      "rootItemCount": 7,
       "discoveredItemCount": 0,
-      "elapsedMs": 4897,
+      "elapsedMs": 972,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 870230,
+        "responseBytes": 894180,
         "finalHostChanged": false
       },
       "discovery": {
@@ -690,7 +690,7 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 12,
+  "autoCollectedCount": 15,
   "multiProductExpandedCount": 8,
   "catalogGroupExpandedCount": 3,
   "replacedPreviousCount": 2,
@@ -761,14 +761,14 @@
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 100,
+    "candidateCount": 103,
     "publishedCount": 78,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 10,
+    "reviewCount": 13,
     "rejectedCount": 0,
     "directVerifiedCount": 70,
-    "catalogMatchedCount": 100,
-    "autoCollectedCount": 12,
+    "catalogMatchedCount": 103,
+    "autoCollectedCount": 15,
     "multiProductExpandedCount": 8,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 2,
