@@ -1,45 +1,31 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-07-30T18:04:57.110Z",
+  "lastRunAt": "2026-07-30T21:53:32.418Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
     "source_warning:あみあみ:HTTP 403",
-    "source_warning:おたいち（お宝市番館）イオン広店:fetch failed",
-    "source_warning:外部抽選情報解析:fetch failed",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 7,
+  "reviewCount": 10,
   "publishedCount": 78,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
-  "successfulSourceCount": 8,
-  "failedSourceCount": 3,
+  "successfulSourceCount": 10,
+  "failedSourceCount": 1,
   "sourceHealth": {
     "checkedCount": 11,
-    "successfulCount": 8,
-    "failedCount": 3,
-    "withItemsCount": 1,
-    "zeroItemsCount": 7,
+    "successfulCount": 10,
+    "failedCount": 1,
+    "withItemsCount": 2,
+    "zeroItemsCount": 8,
     "discoveredPageCount": 6,
     "failedSources": [
       {
         "name": "あみあみ",
         "error": "HTTP 403",
         "failureClass": "access_blocked",
-        "severity": "warning"
-      },
-      {
-        "name": "おたいち（お宝市番館）イオン広店",
-        "error": "fetch failed",
-        "failureClass": "temporary_fetch_error",
-        "severity": "warning"
-      },
-      {
-        "name": "外部抽選情報解析",
-        "error": "fetch failed",
-        "failureClass": "temporary_fetch_error",
         "severity": "warning"
       }
     ],
@@ -71,6 +57,10 @@
       {
         "name": "ホビーサーチ",
         "reason": "links-found-but-none-matched-discovery-rules"
+      },
+      {
+        "name": "おたいち（お宝市番館）イオン広店",
+        "reason": "candidate-pages-did-not-look-relevant"
       }
     ]
   },
@@ -82,7 +72,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 770,
+      "elapsedMs": 622,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -140,7 +130,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 13,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -198,7 +188,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 13,
+      "elapsedMs": 11,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -256,7 +246,7 @@
       "itemCount": 8,
       "rootItemCount": 2,
       "discoveredItemCount": 6,
-      "elapsedMs": 5676,
+      "elapsedMs": 5605,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -314,7 +304,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10738,
+      "elapsedMs": 10296,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -372,7 +362,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 519,
+      "elapsedMs": 138,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -414,7 +404,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6214,
+      "elapsedMs": 5795,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -472,7 +462,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4008,
+      "elapsedMs": 3249,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -532,7 +522,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 358,
+      "elapsedMs": 366,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -586,54 +576,75 @@
     {
       "name": "おたいち（お宝市番館）イオン広店",
       "parser": "generic",
-      "status": "failed",
+      "status": "no_items",
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10493,
-      "fetch": null,
+      "elapsedMs": 1645,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 72481,
+        "finalHostChanged": false
+      },
       "discovery": {
         "enabled": true,
-        "totalLinks": 0,
-        "acceptedBeforeDedupe": 0,
-        "returnedCount": 0,
+        "totalLinks": 29,
+        "acceptedBeforeDedupe": 1,
+        "returnedCount": 1,
         "duplicateRejected": 0,
         "truncatedCount": 0,
-        "rejected": {}
+        "embeddedEventLinks": 0,
+        "contextualLinkCount": 0,
+        "contextualFuruichiLinkCount": 0,
+        "contextualHobbyStationLinkCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 28,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
       },
-      "candidateFetchSuccessCount": 0,
+      "candidateFetchSuccessCount": 1,
       "candidateFetchFailureCount": 0,
       "relevantPageCount": 0,
-      "irrelevantPageCount": 0,
+      "irrelevantPageCount": 1,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
       "officialRevisitFetchCount": 0,
       "officialRevisitItemCount": 0,
-      "rootFirstSeen": false,
+      "rootFirstSeen": true,
       "rootChanged": false,
-      "newCandidateCount": 0,
+      "newCandidateCount": 1,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "ocrErrorCount": 0,
-      "failureClass": "temporary_fetch_error",
-      "severity": "warning",
-      "zeroItemReason": "source-fetch-failed",
-      "error": "fetch failed",
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "candidate-pages-did-not-look-relevant",
+      "error": "",
       "childErrors": [],
       "parseErrors": []
     },
     {
       "name": "外部抽選情報解析",
       "parser": "listing-intelligence-v1",
-      "status": "failed",
-      "itemCount": 0,
-      "rootItemCount": 0,
+      "status": "items",
+      "itemCount": 4,
+      "rootItemCount": 4,
       "discoveredItemCount": 0,
-      "elapsedMs": 10493,
-      "fetch": null,
+      "elapsedMs": 743,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "responseBytes": 884611,
+        "finalHostChanged": false
+      },
       "discovery": {
         "enabled": false,
         "totalLinks": 0,
@@ -641,7 +652,18 @@
         "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
-        "rejected": {}
+        "embeddedEventLinks": 0,
+        "contextualLinkCount": 0,
+        "contextualFuruichiLinkCount": 0,
+        "contextualHobbyStationLinkCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 0,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
       },
       "candidateFetchSuccessCount": 0,
       "candidateFetchFailureCount": 0,
@@ -651,7 +673,7 @@
       "officialRevisitCandidateCount": 0,
       "officialRevisitFetchCount": 0,
       "officialRevisitItemCount": 0,
-      "rootFirstSeen": false,
+      "rootFirstSeen": true,
       "rootChanged": false,
       "newCandidateCount": 0,
       "changedCandidateCount": 0,
@@ -660,18 +682,18 @@
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "ocrErrorCount": 0,
-      "failureClass": "temporary_fetch_error",
-      "severity": "warning",
-      "zeroItemReason": "source-fetch-failed",
-      "error": "fetch failed",
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "",
+      "error": "",
       "childErrors": [],
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 8,
+  "autoCollectedCount": 12,
   "multiProductExpandedCount": 8,
   "catalogGroupExpandedCount": 3,
-  "replacedPreviousCount": 1,
+  "replacedPreviousCount": 2,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
   "livePocketDiscoveredCount": 0,
@@ -727,29 +749,29 @@
       }
     },
     "newness": {
-      "observedSourceCount": 8,
-      "rootFirstSeenCount": 8,
+      "observedSourceCount": 10,
+      "rootFirstSeenCount": 10,
       "rootChangedCount": 0,
-      "newCandidateCount": 12,
+      "newCandidateCount": 13,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
-      "trackedSourceCount": 8,
-      "trackedCandidateCount": 12
+      "trackedSourceCount": 10,
+      "trackedCandidateCount": 13
     }
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 97,
+    "candidateCount": 100,
     "publishedCount": 78,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 7,
+    "reviewCount": 10,
     "rejectedCount": 0,
     "directVerifiedCount": 70,
-    "catalogMatchedCount": 97,
-    "autoCollectedCount": 8,
+    "catalogMatchedCount": 100,
+    "autoCollectedCount": 12,
     "multiProductExpandedCount": 8,
     "catalogGroupExpandedCount": 3,
-    "replacedPreviousCount": 1,
+    "replacedPreviousCount": 2,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
