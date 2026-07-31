@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-07-31T08:19:15.044Z",
+  "lastRunAt": "2026-07-31T15:52:45.826Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -76,7 +76,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 919,
+      "elapsedMs": 642,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -134,7 +134,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 21,
+      "elapsedMs": 20,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -192,7 +192,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 21,
+      "elapsedMs": 19,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -250,11 +250,11 @@
       "itemCount": 8,
       "rootItemCount": 2,
       "discoveredItemCount": 6,
-      "elapsedMs": 5652,
+      "elapsedMs": 5645,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 40092,
+        "responseBytes": 40082,
         "finalHostChanged": false
       },
       "discovery": {
@@ -308,7 +308,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10435,
+      "elapsedMs": 11620,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -366,7 +366,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 543,
+      "elapsedMs": 537,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -408,7 +408,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6410,
+      "elapsedMs": 6558,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -466,16 +466,16 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 4040,
+      "elapsedMs": 4046,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 84419,
+        "responseBytes": 87611,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 67,
+        "totalLinks": 69,
         "acceptedBeforeDedupe": 1,
         "returnedCount": 1,
         "duplicateRejected": 0,
@@ -487,7 +487,7 @@
         "rejected": {
           "invalidUrl": 0,
           "protocol": 1,
-          "includePattern": 64,
+          "includePattern": 66,
           "excludePattern": 1,
           "host": 0,
           "path": 0
@@ -526,16 +526,16 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 533,
+      "elapsedMs": 517,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
-        "responseBytes": 242304,
+        "responseBytes": 241819,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 445,
+        "totalLinks": 444,
         "acceptedBeforeDedupe": 0,
         "returnedCount": 0,
         "duplicateRejected": 0,
@@ -547,7 +547,7 @@
         "rejected": {
           "invalidUrl": 0,
           "protocol": 0,
-          "includePattern": 445,
+          "includePattern": 444,
           "excludePattern": 0,
           "host": 0,
           "path": 0
@@ -584,7 +584,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1984,
+      "elapsedMs": 2075,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -642,11 +642,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1069,
+      "elapsedMs": 1136,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 900332,
+        "responseBytes": 898387,
         "finalHostChanged": false
       },
       "discovery": {
