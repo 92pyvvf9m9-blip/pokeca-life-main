@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-03T18:58:40.334Z",
+  "lastRunAt": "2026-08-03T22:36:40.085Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -77,7 +77,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 707,
+      "elapsedMs": 593,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -135,7 +135,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 64,
+      "elapsedMs": 28,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -193,7 +193,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 63,
+      "elapsedMs": 24,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -251,7 +251,7 @@
       "itemCount": 1,
       "rootItemCount": 0,
       "discoveredItemCount": 1,
-      "elapsedMs": 3371,
+      "elapsedMs": 3288,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -309,7 +309,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10445,
+      "elapsedMs": 10368,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -367,7 +367,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 544,
+      "elapsedMs": 253,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -409,7 +409,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 5951,
+      "elapsedMs": 5850,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -467,7 +467,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1427,
+      "elapsedMs": 1409,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -527,7 +527,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 594,
+      "elapsedMs": 366,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -585,7 +585,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1718,
+      "elapsedMs": 1585,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -643,7 +643,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 782,
+      "elapsedMs": 693,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
