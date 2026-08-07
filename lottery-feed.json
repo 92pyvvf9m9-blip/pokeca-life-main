@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-07T06:00:52.511Z",
+  "updatedAt": "2026-08-07T09:40:38.799Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-07T06:00:52.511Z",
+    "lastRunAt": "2026-08-07T09:40:38.799Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
@@ -80,7 +80,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 725,
+        "elapsedMs": 650,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -138,7 +138,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 27,
+        "elapsedMs": 26,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -196,7 +196,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 27,
+        "elapsedMs": 26,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -254,7 +254,7 @@
         "itemCount": 1,
         "rootItemCount": 0,
         "discoveredItemCount": 1,
-        "elapsedMs": 4133,
+        "elapsedMs": 3321,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -312,7 +312,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10546,
+        "elapsedMs": 10319,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -370,7 +370,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 332,
+        "elapsedMs": 289,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -412,7 +412,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 6091,
+        "elapsedMs": 6317,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -470,16 +470,16 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1696,
+        "elapsedMs": 1482,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
-          "responseBytes": 98003,
+          "responseBytes": 96459,
           "finalHostChanged": false
         },
         "discovery": {
           "enabled": true,
-          "totalLinks": 75,
+          "totalLinks": 74,
           "acceptedBeforeDedupe": 0,
           "returnedCount": 0,
           "duplicateRejected": 0,
@@ -491,7 +491,7 @@
           "rejected": {
             "invalidUrl": 0,
             "protocol": 1,
-            "includePattern": 73,
+            "includePattern": 72,
             "excludePattern": 1,
             "host": 0,
             "path": 0
@@ -530,7 +530,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 501,
+        "elapsedMs": 342,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -588,7 +588,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1844,
+        "elapsedMs": 1562,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -646,11 +646,11 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 765,
+        "elapsedMs": 576,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
-          "responseBytes": 659222,
+          "responseBytes": 659624,
           "finalHostChanged": false
         },
         "discovery": {
@@ -796,8 +796,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-07T06:00:52.511Z",
-      "updatedAt": "2026-08-07T06:00:52.511Z",
+      "collectedAt": "2026-08-07T09:40:38.799Z",
+      "updatedAt": "2026-08-07T09:40:38.799Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
