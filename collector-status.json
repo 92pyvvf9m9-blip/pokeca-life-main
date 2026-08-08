@@ -1,9 +1,10 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-08T14:56:09.476Z",
+  "lastRunAt": "2026-08-08T15:24:04.142Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
+    "source_warning:ゲオ:HTTP 500",
     "source_warning:あみあみ:HTTP 403",
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
@@ -13,16 +14,22 @@
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
-  "successfulSourceCount": 10,
-  "failedSourceCount": 1,
+  "successfulSourceCount": 9,
+  "failedSourceCount": 2,
   "sourceHealth": {
     "checkedCount": 11,
-    "successfulCount": 10,
-    "failedCount": 1,
-    "withItemsCount": 1,
+    "successfulCount": 9,
+    "failedCount": 2,
+    "withItemsCount": 0,
     "zeroItemsCount": 9,
-    "discoveredPageCount": 3,
+    "discoveredPageCount": 0,
     "failedSources": [
+      {
+        "name": "ゲオ",
+        "error": "HTTP 500",
+        "failureClass": "temporary_fetch_error",
+        "severity": "warning"
+      },
       {
         "name": "あみあみ",
         "error": "HTTP 403",
@@ -77,7 +84,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 404,
+      "elapsedMs": 694,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -135,7 +142,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 43,
+      "elapsedMs": 59,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -193,7 +200,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 43,
+      "elapsedMs": 59,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -247,58 +254,42 @@
     {
       "name": "ゲオ",
       "parser": "geo-lottery",
-      "status": "items",
-      "itemCount": 1,
+      "status": "failed",
+      "itemCount": 0,
       "rootItemCount": 0,
-      "discoveredItemCount": 1,
-      "elapsedMs": 3681,
-      "fetch": {
-        "statusCode": 200,
-        "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 39987,
-        "finalHostChanged": false
-      },
+      "discoveredItemCount": 0,
+      "elapsedMs": 8398,
+      "fetch": null,
       "discovery": {
         "enabled": true,
-        "totalLinks": 123,
-        "acceptedBeforeDedupe": 3,
-        "returnedCount": 3,
+        "totalLinks": 0,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
-        "embeddedEventLinks": 0,
-        "contextualLinkCount": 0,
-        "contextualFuruichiLinkCount": 0,
-        "contextualHobbyStationLinkCount": 0,
-        "rejected": {
-          "invalidUrl": 0,
-          "protocol": 0,
-          "includePattern": 120,
-          "excludePattern": 0,
-          "host": 0,
-          "path": 0
-        }
+        "rejected": {}
       },
-      "candidateFetchSuccessCount": 3,
+      "candidateFetchSuccessCount": 0,
       "candidateFetchFailureCount": 0,
-      "relevantPageCount": 3,
+      "relevantPageCount": 0,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
       "officialRevisitFetchCount": 0,
       "officialRevisitItemCount": 0,
-      "rootFirstSeen": true,
+      "rootFirstSeen": false,
       "rootChanged": false,
-      "newCandidateCount": 3,
+      "newCandidateCount": 0,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "ocrErrorCount": 0,
-      "failureClass": "",
-      "severity": "",
-      "zeroItemReason": "",
-      "error": "",
+      "failureClass": "temporary_fetch_error",
+      "severity": "warning",
+      "zeroItemReason": "source-fetch-failed",
+      "error": "HTTP 500",
       "childErrors": [],
       "parseErrors": []
     },
@@ -309,7 +300,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10508,
+      "elapsedMs": 10403,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -367,7 +358,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 682,
+      "elapsedMs": 338,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -409,7 +400,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6296,
+      "elapsedMs": 6143,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -467,7 +458,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1602,
+      "elapsedMs": 1486,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -527,7 +518,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 787,
+      "elapsedMs": 377,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -585,7 +576,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1828,
+      "elapsedMs": 4840,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -643,11 +634,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1000,
+      "elapsedMs": 707,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 1034157,
+        "responseBytes": 1015630,
         "finalHostChanged": false
       },
       "discovery": {
@@ -695,10 +686,10 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 1,
-  "multiProductExpandedCount": 1,
+  "autoCollectedCount": 0,
+  "multiProductExpandedCount": 0,
   "catalogGroupExpandedCount": 3,
-  "replacedPreviousCount": 1,
+  "replacedPreviousCount": 0,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
   "livePocketDiscoveredCount": 0,
@@ -754,14 +745,14 @@
       }
     },
     "newness": {
-      "observedSourceCount": 10,
-      "rootFirstSeenCount": 10,
+      "observedSourceCount": 9,
+      "rootFirstSeenCount": 9,
       "rootChangedCount": 0,
-      "newCandidateCount": 10,
+      "newCandidateCount": 7,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
-      "trackedSourceCount": 10,
-      "trackedCandidateCount": 10
+      "trackedSourceCount": 9,
+      "trackedCandidateCount": 7
     }
   },
   "quality": {
@@ -773,10 +764,10 @@
     "rejectedCount": 0,
     "directVerifiedCount": 63,
     "catalogMatchedCount": 90,
-    "autoCollectedCount": 1,
-    "multiProductExpandedCount": 1,
+    "autoCollectedCount": 0,
+    "multiProductExpandedCount": 0,
     "catalogGroupExpandedCount": 3,
-    "replacedPreviousCount": 1,
+    "replacedPreviousCount": 0,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
