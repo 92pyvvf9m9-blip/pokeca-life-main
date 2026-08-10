@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-10T08:24:19.622Z",
+  "lastRunAt": "2026-08-10T09:55:12.444Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -8,7 +8,7 @@
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 0,
+  "reviewCount": 1,
   "publishedCount": 78,
   "historyDays": 35,
   "manualEntryCount": 13,
@@ -19,8 +19,8 @@
     "checkedCount": 11,
     "successfulCount": 10,
     "failedCount": 1,
-    "withItemsCount": 1,
-    "zeroItemsCount": 9,
+    "withItemsCount": 2,
+    "zeroItemsCount": 8,
     "discoveredPageCount": 3,
     "failedSources": [
       {
@@ -56,10 +56,6 @@
         "reason": "links-found-but-none-matched-discovery-rules"
       },
       {
-        "name": "ホビーサーチ",
-        "reason": "links-found-but-none-matched-discovery-rules"
-      },
-      {
         "name": "おたいち（お宝市番館）イオン広店",
         "reason": "candidate-pages-did-not-look-relevant"
       },
@@ -77,7 +73,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 615,
+      "elapsedMs": 728,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -135,7 +131,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 24,
+      "elapsedMs": 22,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -193,7 +189,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 25,
+      "elapsedMs": 21,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -251,7 +247,7 @@
       "itemCount": 1,
       "rootItemCount": 0,
       "discoveredItemCount": 1,
-      "elapsedMs": 3320,
+      "elapsedMs": 3414,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -309,7 +305,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10395,
+      "elapsedMs": 10587,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -367,7 +363,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 269,
+      "elapsedMs": 536,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -409,7 +405,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6091,
+      "elapsedMs": 6247,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -467,7 +463,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1371,
+      "elapsedMs": 1850,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -523,22 +519,22 @@
     {
       "name": "ホビーサーチ",
       "parser": "hobby-search",
-      "status": "no_items",
-      "itemCount": 0,
-      "rootItemCount": 0,
+      "status": "items",
+      "itemCount": 1,
+      "rootItemCount": 1,
       "discoveredItemCount": 0,
-      "elapsedMs": 359,
+      "elapsedMs": 1366,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
-        "responseBytes": 242238,
+        "responseBytes": 245046,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 445,
-        "acceptedBeforeDedupe": 0,
-        "returnedCount": 0,
+        "totalLinks": 446,
+        "acceptedBeforeDedupe": 1,
+        "returnedCount": 1,
         "duplicateRejected": 0,
         "truncatedCount": 0,
         "embeddedEventLinks": 0,
@@ -555,7 +551,7 @@
         }
       },
       "candidateFetchSuccessCount": 0,
-      "candidateFetchFailureCount": 0,
+      "candidateFetchFailureCount": 1,
       "relevantPageCount": 0,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
@@ -573,9 +569,11 @@
       "ocrErrorCount": 0,
       "failureClass": "",
       "severity": "",
-      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
+      "zeroItemReason": "",
       "error": "",
-      "childErrors": [],
+      "childErrors": [
+        "HTTP 403"
+      ],
       "parseErrors": []
     },
     {
@@ -585,7 +583,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1604,
+      "elapsedMs": 2002,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -643,11 +641,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 554,
+      "elapsedMs": 997,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 555983,
+        "responseBytes": 555989,
         "finalHostChanged": false
       },
       "discovery": {
@@ -695,7 +693,7 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 1,
+  "autoCollectedCount": 2,
   "multiProductExpandedCount": 1,
   "catalogGroupExpandedCount": 3,
   "replacedPreviousCount": 1,
@@ -766,14 +764,14 @@
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 90,
+    "candidateCount": 91,
     "publishedCount": 78,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 0,
+    "reviewCount": 1,
     "rejectedCount": 0,
-    "directVerifiedCount": 63,
-    "catalogMatchedCount": 90,
-    "autoCollectedCount": 1,
+    "directVerifiedCount": 64,
+    "catalogMatchedCount": 91,
+    "autoCollectedCount": 2,
     "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 1,
