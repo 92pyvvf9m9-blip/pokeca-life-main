@@ -1,13 +1,14 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-16T20:12:49.599Z",
+  "updatedAt": "2026-08-16T20:37:24.837Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-16T20:12:49.599Z",
+    "lastRunAt": "2026-08-16T20:37:24.837Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
       "source_warning:あみあみ:HTTP 403",
+      "source_warning:外部抽選情報解析:HTTP 502",
       "official_discovery_no_current_candidates:ふるいち",
       "livepocket_warning:no_candidates"
     ],
@@ -16,20 +17,26 @@
     "historyDays": 35,
     "manualEntryCount": 13,
     "checkedSourceCount": 11,
-    "successfulSourceCount": 10,
-    "failedSourceCount": 1,
+    "successfulSourceCount": 9,
+    "failedSourceCount": 2,
     "sourceHealth": {
       "checkedCount": 11,
-      "successfulCount": 10,
-      "failedCount": 1,
+      "successfulCount": 9,
+      "failedCount": 2,
       "withItemsCount": 2,
-      "zeroItemsCount": 8,
+      "zeroItemsCount": 7,
       "discoveredPageCount": 3,
       "failedSources": [
         {
           "name": "あみあみ",
           "error": "HTTP 403",
           "failureClass": "access_blocked",
+          "severity": "warning"
+        },
+        {
+          "name": "外部抽選情報解析",
+          "error": "HTTP 502",
+          "failureClass": "temporary_fetch_error",
           "severity": "warning"
         }
       ],
@@ -61,10 +68,6 @@
         {
           "name": "おたいち（お宝市番館）イオン広店",
           "reason": "candidate-pages-did-not-look-relevant"
-        },
-        {
-          "name": "外部抽選情報解析",
-          "reason": "no-current-items"
         }
       ]
     },
@@ -76,7 +79,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 692,
+        "elapsedMs": 283,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -134,7 +137,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 34,
+        "elapsedMs": 11,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -192,7 +195,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 32,
+        "elapsedMs": 10,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -250,7 +253,7 @@
         "itemCount": 1,
         "rootItemCount": 0,
         "discoveredItemCount": 1,
-        "elapsedMs": 3561,
+        "elapsedMs": 3287,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -308,7 +311,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 11152,
+        "elapsedMs": 10826,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -366,7 +369,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 269,
+        "elapsedMs": 297,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -408,7 +411,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 6244,
+        "elapsedMs": 6068,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -466,7 +469,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1557,
+        "elapsedMs": 1563,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -526,7 +529,7 @@
         "itemCount": 1,
         "rootItemCount": 1,
         "discoveredItemCount": 0,
-        "elapsedMs": 1330,
+        "elapsedMs": 1267,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -586,7 +589,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1858,
+        "elapsedMs": 1672,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -640,17 +643,12 @@
       {
         "name": "外部抽選情報解析",
         "parser": "listing-intelligence-v1",
-        "status": "no_items",
+        "status": "failed",
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 841,
-        "fetch": {
-          "statusCode": 200,
-          "contentType": "text/html; charset=UTF-8",
-          "responseBytes": 574511,
-          "finalHostChanged": false
-        },
+        "elapsedMs": 527,
+        "fetch": null,
         "discovery": {
           "enabled": false,
           "totalLinks": 0,
@@ -658,18 +656,7 @@
           "returnedCount": 0,
           "duplicateRejected": 0,
           "truncatedCount": 0,
-          "embeddedEventLinks": 0,
-          "contextualLinkCount": 0,
-          "contextualFuruichiLinkCount": 0,
-          "contextualHobbyStationLinkCount": 0,
-          "rejected": {
-            "invalidUrl": 0,
-            "protocol": 0,
-            "includePattern": 0,
-            "excludePattern": 0,
-            "host": 0,
-            "path": 0
-          }
+          "rejected": {}
         },
         "candidateFetchSuccessCount": 0,
         "candidateFetchFailureCount": 0,
@@ -679,7 +666,7 @@
         "officialRevisitCandidateCount": 0,
         "officialRevisitFetchCount": 0,
         "officialRevisitItemCount": 0,
-        "rootFirstSeen": true,
+        "rootFirstSeen": false,
         "rootChanged": false,
         "newCandidateCount": 0,
         "changedCandidateCount": 0,
@@ -688,10 +675,10 @@
         "ocrAppliedCount": 0,
         "ocrImageCount": 0,
         "ocrErrorCount": 0,
-        "failureClass": "",
-        "severity": "",
-        "zeroItemReason": "no-current-items",
-        "error": "",
+        "failureClass": "temporary_fetch_error",
+        "severity": "warning",
+        "zeroItemReason": "source-fetch-failed",
+        "error": "HTTP 502",
         "childErrors": [],
         "parseErrors": []
       }
@@ -755,13 +742,13 @@
         }
       },
       "newness": {
-        "observedSourceCount": 10,
-        "rootFirstSeenCount": 10,
+        "observedSourceCount": 9,
+        "rootFirstSeenCount": 9,
         "rootChangedCount": 0,
         "newCandidateCount": 10,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
-        "trackedSourceCount": 10,
+        "trackedSourceCount": 9,
         "trackedCandidateCount": 10
       }
     },
@@ -794,8 +781,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-16T20:12:49.599Z",
-      "updatedAt": "2026-08-16T20:12:49.599Z",
+      "collectedAt": "2026-08-16T20:37:24.837Z",
+      "updatedAt": "2026-08-16T20:37:24.837Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
