@@ -1,10 +1,11 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-16T13:59:25.388Z",
+  "lastRunAt": "2026-08-16T14:26:42.912Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
     "source_warning:あみあみ:HTTP 403",
+    "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
   "reviewCount": 1,
@@ -20,7 +21,7 @@
     "failedCount": 1,
     "withItemsCount": 2,
     "zeroItemsCount": 8,
-    "discoveredPageCount": 4,
+    "discoveredPageCount": 3,
     "failedSources": [
       {
         "name": "あみあみ",
@@ -52,7 +53,7 @@
       },
       {
         "name": "ふるいち",
-        "reason": "relevant-pages-were-not-parsed-into-items"
+        "reason": "links-found-but-none-matched-discovery-rules"
       },
       {
         "name": "おたいち（お宝市番館）イオン広店",
@@ -72,7 +73,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 469,
+      "elapsedMs": 377,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -130,7 +131,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -188,7 +189,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10,
+      "elapsedMs": 12,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -246,7 +247,7 @@
       "itemCount": 1,
       "rootItemCount": 0,
       "discoveredItemCount": 1,
-      "elapsedMs": 3224,
+      "elapsedMs": 5543,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -304,7 +305,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10291,
+      "elapsedMs": 10476,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -362,7 +363,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 258,
+      "elapsedMs": 319,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -404,7 +405,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6080,
+      "elapsedMs": 6255,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -462,18 +463,18 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 3341,
+      "elapsedMs": 2533,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 97206,
+        "responseBytes": 95528,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 75,
-        "acceptedBeforeDedupe": 1,
-        "returnedCount": 1,
+        "totalLinks": 74,
+        "acceptedBeforeDedupe": 0,
+        "returnedCount": 0,
         "duplicateRejected": 0,
         "truncatedCount": 0,
         "embeddedEventLinks": 0,
@@ -489,9 +490,9 @@
           "path": 0
         }
       },
-      "candidateFetchSuccessCount": 1,
+      "candidateFetchSuccessCount": 0,
       "candidateFetchFailureCount": 1,
-      "relevantPageCount": 1,
+      "relevantPageCount": 0,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 1,
@@ -499,16 +500,16 @@
       "officialRevisitItemCount": 0,
       "rootFirstSeen": true,
       "rootChanged": false,
-      "newCandidateCount": 1,
+      "newCandidateCount": 0,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
-      "ocrErrorCount": 1,
+      "ocrErrorCount": 0,
       "failureClass": "",
       "severity": "",
-      "zeroItemReason": "relevant-pages-were-not-parsed-into-items",
+      "zeroItemReason": "links-found-but-none-matched-discovery-rules",
       "error": "",
       "childErrors": [
         "HTTP 404"
@@ -522,7 +523,7 @@
       "itemCount": 1,
       "rootItemCount": 1,
       "discoveredItemCount": 0,
-      "elapsedMs": 1118,
+      "elapsedMs": 1183,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -582,7 +583,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1632,
+      "elapsedMs": 1942,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -640,11 +641,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 601,
+      "elapsedMs": 973,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 681260,
+        "responseBytes": 670683,
         "finalHostChanged": false
       },
       "discovery": {
@@ -754,11 +755,11 @@
       "observedSourceCount": 10,
       "rootFirstSeenCount": 10,
       "rootChangedCount": 0,
-      "newCandidateCount": 11,
+      "newCandidateCount": 10,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "trackedSourceCount": 10,
-      "trackedCandidateCount": 11
+      "trackedCandidateCount": 10
     }
   },
   "quality": {
