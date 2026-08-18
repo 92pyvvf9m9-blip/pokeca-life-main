@@ -1,13 +1,12 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-18T15:23:08.554Z",
+  "updatedAt": "2026-08-18T15:54:29.866Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-18T15:23:08.554Z",
+    "lastRunAt": "2026-08-18T15:54:29.866Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
-      "source_warning:ゲオ:This operation was aborted",
       "source_warning:あみあみ:HTTP 403",
       "official_discovery_no_current_candidates:ふるいち",
       "livepocket_warning:no_candidates"
@@ -17,22 +16,16 @@
     "historyDays": 35,
     "manualEntryCount": 13,
     "checkedSourceCount": 11,
-    "successfulSourceCount": 9,
-    "failedSourceCount": 2,
+    "successfulSourceCount": 10,
+    "failedSourceCount": 1,
     "sourceHealth": {
       "checkedCount": 11,
-      "successfulCount": 9,
-      "failedCount": 2,
-      "withItemsCount": 1,
+      "successfulCount": 10,
+      "failedCount": 1,
+      "withItemsCount": 2,
       "zeroItemsCount": 8,
-      "discoveredPageCount": 0,
+      "discoveredPageCount": 3,
       "failedSources": [
-        {
-          "name": "ゲオ",
-          "error": "This operation was aborted",
-          "failureClass": "temporary_fetch_error",
-          "severity": "warning"
-        },
         {
           "name": "あみあみ",
           "error": "HTTP 403",
@@ -83,7 +76,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 476,
+        "elapsedMs": 810,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -141,7 +134,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 9,
+        "elapsedMs": 12,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -199,7 +192,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 11,
+        "elapsedMs": 12,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -253,42 +246,58 @@
       {
         "name": "ゲオ",
         "parser": "geo-lottery",
-        "status": "failed",
-        "itemCount": 0,
+        "status": "items",
+        "itemCount": 1,
         "rootItemCount": 0,
-        "discoveredItemCount": 0,
-        "elapsedMs": 20002,
-        "fetch": null,
+        "discoveredItemCount": 1,
+        "elapsedMs": 3441,
+        "fetch": {
+          "statusCode": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "responseBytes": 38921,
+          "finalHostChanged": false
+        },
         "discovery": {
           "enabled": true,
-          "totalLinks": 0,
-          "acceptedBeforeDedupe": 0,
-          "returnedCount": 0,
+          "totalLinks": 121,
+          "acceptedBeforeDedupe": 3,
+          "returnedCount": 3,
           "duplicateRejected": 0,
           "truncatedCount": 0,
-          "rejected": {}
+          "embeddedEventLinks": 0,
+          "contextualLinkCount": 0,
+          "contextualFuruichiLinkCount": 0,
+          "contextualHobbyStationLinkCount": 0,
+          "rejected": {
+            "invalidUrl": 0,
+            "protocol": 0,
+            "includePattern": 118,
+            "excludePattern": 0,
+            "host": 0,
+            "path": 0
+          }
         },
-        "candidateFetchSuccessCount": 0,
+        "candidateFetchSuccessCount": 3,
         "candidateFetchFailureCount": 0,
-        "relevantPageCount": 0,
+        "relevantPageCount": 3,
         "irrelevantPageCount": 0,
         "crossSourceDuplicateCount": 0,
         "officialRevisitCandidateCount": 0,
         "officialRevisitFetchCount": 0,
         "officialRevisitItemCount": 0,
-        "rootFirstSeen": false,
+        "rootFirstSeen": true,
         "rootChanged": false,
-        "newCandidateCount": 0,
+        "newCandidateCount": 3,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
         "parseFailureCount": 0,
         "ocrAppliedCount": 0,
         "ocrImageCount": 0,
         "ocrErrorCount": 0,
-        "failureClass": "temporary_fetch_error",
-        "severity": "warning",
-        "zeroItemReason": "source-fetch-failed",
-        "error": "This operation was aborted",
+        "failureClass": "",
+        "severity": "",
+        "zeroItemReason": "",
+        "error": "",
         "childErrors": [],
         "parseErrors": []
       },
@@ -299,7 +308,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10527,
+        "elapsedMs": 10562,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -357,7 +366,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 368,
+        "elapsedMs": 235,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -399,7 +408,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 5820,
+        "elapsedMs": 6340,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -457,7 +466,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1558,
+        "elapsedMs": 1905,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -517,7 +526,7 @@
         "itemCount": 2,
         "rootItemCount": 2,
         "discoveredItemCount": 0,
-        "elapsedMs": 1209,
+        "elapsedMs": 1194,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -577,7 +586,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1693,
+        "elapsedMs": 6316,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -635,7 +644,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 742,
+        "elapsedMs": 1051,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -687,10 +696,10 @@
         "parseErrors": []
       }
     ],
-    "autoCollectedCount": 2,
-    "multiProductExpandedCount": 0,
+    "autoCollectedCount": 3,
+    "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 3,
-    "replacedPreviousCount": 0,
+    "replacedPreviousCount": 1,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
     "livePocketDiscoveredCount": 0,
@@ -746,14 +755,14 @@
         }
       },
       "newness": {
-        "observedSourceCount": 9,
-        "rootFirstSeenCount": 9,
+        "observedSourceCount": 10,
+        "rootFirstSeenCount": 10,
         "rootChangedCount": 0,
-        "newCandidateCount": 7,
+        "newCandidateCount": 10,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
-        "trackedSourceCount": 9,
-        "trackedCandidateCount": 7
+        "trackedSourceCount": 10,
+        "trackedCandidateCount": 10
       }
     },
     "quality": {
@@ -765,10 +774,10 @@
       "rejectedCount": 0,
       "directVerifiedCount": 64,
       "catalogMatchedCount": 91,
-      "autoCollectedCount": 2,
-      "multiProductExpandedCount": 0,
+      "autoCollectedCount": 3,
+      "multiProductExpandedCount": 1,
       "catalogGroupExpandedCount": 3,
-      "replacedPreviousCount": 0,
+      "replacedPreviousCount": 1,
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "rule": "catalog+deadline+direct-destination-or-official-store-notice"
@@ -785,8 +794,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-18T14:50:22.025Z",
-      "updatedAt": "2026-08-18T14:50:22.025Z",
+      "collectedAt": "2026-08-18T15:54:29.866Z",
+      "updatedAt": "2026-08-18T15:54:29.866Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
