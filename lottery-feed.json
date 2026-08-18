@@ -1,28 +1,29 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-18T22:49:16.416Z",
+  "updatedAt": "2026-08-18T23:14:39.469Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-18T22:49:16.416Z",
+    "lastRunAt": "2026-08-18T23:14:39.469Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
       "source_warning:あみあみ:HTTP 403",
+      "source_warning:ホビーサーチ:HTTP 522",
       "official_discovery_no_current_candidates:ふるいち",
       "livepocket_warning:no_candidates"
     ],
-    "reviewCount": 2,
+    "reviewCount": 0,
     "publishedCount": 77,
     "historyDays": 35,
     "manualEntryCount": 13,
     "checkedSourceCount": 11,
-    "successfulSourceCount": 10,
-    "failedSourceCount": 1,
+    "successfulSourceCount": 9,
+    "failedSourceCount": 2,
     "sourceHealth": {
       "checkedCount": 11,
-      "successfulCount": 10,
-      "failedCount": 1,
-      "withItemsCount": 2,
+      "successfulCount": 9,
+      "failedCount": 2,
+      "withItemsCount": 1,
       "zeroItemsCount": 8,
       "discoveredPageCount": 3,
       "failedSources": [
@@ -30,6 +31,12 @@
           "name": "あみあみ",
           "error": "HTTP 403",
           "failureClass": "access_blocked",
+          "severity": "warning"
+        },
+        {
+          "name": "ホビーサーチ",
+          "error": "HTTP 522",
+          "failureClass": "temporary_fetch_error",
           "severity": "warning"
         }
       ],
@@ -76,7 +83,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 434,
+        "elapsedMs": 535,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -134,7 +141,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10,
+        "elapsedMs": 20,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -192,7 +199,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 11,
+        "elapsedMs": 23,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -250,7 +257,7 @@
         "itemCount": 1,
         "rootItemCount": 0,
         "discoveredItemCount": 1,
-        "elapsedMs": 3411,
+        "elapsedMs": 17715,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -308,7 +315,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10467,
+        "elapsedMs": 10542,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -366,7 +373,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 264,
+        "elapsedMs": 542,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -408,7 +415,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 5886,
+        "elapsedMs": 6726,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -466,7 +473,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1511,
+        "elapsedMs": 17485,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -522,46 +529,30 @@
       {
         "name": "ホビーサーチ",
         "parser": "hobby-search",
-        "status": "items",
-        "itemCount": 2,
-        "rootItemCount": 2,
+        "status": "failed",
+        "itemCount": 0,
+        "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1331,
-        "fetch": {
-          "statusCode": 200,
-          "contentType": "text/html; charset=utf-8",
-          "responseBytes": 245105,
-          "finalHostChanged": false
-        },
+        "elapsedMs": 19734,
+        "fetch": null,
         "discovery": {
           "enabled": true,
-          "totalLinks": 446,
-          "acceptedBeforeDedupe": 1,
-          "returnedCount": 1,
+          "totalLinks": 0,
+          "acceptedBeforeDedupe": 0,
+          "returnedCount": 0,
           "duplicateRejected": 0,
           "truncatedCount": 0,
-          "embeddedEventLinks": 0,
-          "contextualLinkCount": 0,
-          "contextualFuruichiLinkCount": 0,
-          "contextualHobbyStationLinkCount": 0,
-          "rejected": {
-            "invalidUrl": 0,
-            "protocol": 0,
-            "includePattern": 445,
-            "excludePattern": 0,
-            "host": 0,
-            "path": 0
-          }
+          "rejected": {}
         },
         "candidateFetchSuccessCount": 0,
-        "candidateFetchFailureCount": 1,
+        "candidateFetchFailureCount": 0,
         "relevantPageCount": 0,
         "irrelevantPageCount": 0,
         "crossSourceDuplicateCount": 0,
         "officialRevisitCandidateCount": 0,
         "officialRevisitFetchCount": 0,
         "officialRevisitItemCount": 0,
-        "rootFirstSeen": true,
+        "rootFirstSeen": false,
         "rootChanged": false,
         "newCandidateCount": 0,
         "changedCandidateCount": 0,
@@ -570,13 +561,11 @@
         "ocrAppliedCount": 0,
         "ocrImageCount": 0,
         "ocrErrorCount": 0,
-        "failureClass": "",
-        "severity": "",
-        "zeroItemReason": "",
-        "error": "",
-        "childErrors": [
-          "HTTP 403"
-        ],
+        "failureClass": "temporary_fetch_error",
+        "severity": "warning",
+        "zeroItemReason": "source-fetch-failed",
+        "error": "HTTP 522",
+        "childErrors": [],
         "parseErrors": []
       },
       {
@@ -586,7 +575,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1648,
+        "elapsedMs": 1968,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -644,7 +633,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 739,
+        "elapsedMs": 1045,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -696,7 +685,7 @@
         "parseErrors": []
       }
     ],
-    "autoCollectedCount": 3,
+    "autoCollectedCount": 1,
     "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 1,
@@ -755,26 +744,26 @@
         }
       },
       "newness": {
-        "observedSourceCount": 10,
-        "rootFirstSeenCount": 10,
+        "observedSourceCount": 9,
+        "rootFirstSeenCount": 9,
         "rootChangedCount": 0,
         "newCandidateCount": 10,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
-        "trackedSourceCount": 10,
+        "trackedSourceCount": 9,
         "trackedCandidateCount": 10
       }
     },
     "quality": {
       "qualityVersion": 2,
-      "candidateCount": 91,
+      "candidateCount": 89,
       "publishedCount": 77,
       "postCanonicalDuplicateCount": 12,
-      "reviewCount": 2,
+      "reviewCount": 0,
       "rejectedCount": 0,
-      "directVerifiedCount": 64,
-      "catalogMatchedCount": 91,
-      "autoCollectedCount": 3,
+      "directVerifiedCount": 62,
+      "catalogMatchedCount": 89,
+      "autoCollectedCount": 1,
       "multiProductExpandedCount": 1,
       "catalogGroupExpandedCount": 3,
       "replacedPreviousCount": 1,
@@ -794,8 +783,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-18T22:49:16.416Z",
-      "updatedAt": "2026-08-18T22:49:16.416Z",
+      "collectedAt": "2026-08-18T23:14:39.469Z",
+      "updatedAt": "2026-08-18T23:14:39.469Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
