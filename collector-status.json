@@ -1,26 +1,25 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-18T23:14:39.469Z",
+  "lastRunAt": "2026-08-18T23:38:32.922Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
     "source_warning:あみあみ:HTTP 403",
-    "source_warning:ホビーサーチ:HTTP 522",
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 0,
+  "reviewCount": 2,
   "publishedCount": 77,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
-  "successfulSourceCount": 9,
-  "failedSourceCount": 2,
+  "successfulSourceCount": 10,
+  "failedSourceCount": 1,
   "sourceHealth": {
     "checkedCount": 11,
-    "successfulCount": 9,
-    "failedCount": 2,
-    "withItemsCount": 1,
+    "successfulCount": 10,
+    "failedCount": 1,
+    "withItemsCount": 2,
     "zeroItemsCount": 8,
     "discoveredPageCount": 3,
     "failedSources": [
@@ -28,12 +27,6 @@
         "name": "あみあみ",
         "error": "HTTP 403",
         "failureClass": "access_blocked",
-        "severity": "warning"
-      },
-      {
-        "name": "ホビーサーチ",
-        "error": "HTTP 522",
-        "failureClass": "temporary_fetch_error",
         "severity": "warning"
       }
     ],
@@ -80,7 +73,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 535,
+      "elapsedMs": 858,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -138,7 +131,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 20,
+      "elapsedMs": 27,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -196,7 +189,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 23,
+      "elapsedMs": 26,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -254,7 +247,7 @@
       "itemCount": 1,
       "rootItemCount": 0,
       "discoveredItemCount": 1,
-      "elapsedMs": 17715,
+      "elapsedMs": 3518,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -312,7 +305,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10542,
+      "elapsedMs": 10634,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -370,7 +363,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 542,
+      "elapsedMs": 353,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -412,7 +405,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 6726,
+      "elapsedMs": 6137,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -470,7 +463,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 17485,
+      "elapsedMs": 1499,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -526,30 +519,46 @@
     {
       "name": "ホビーサーチ",
       "parser": "hobby-search",
-      "status": "failed",
-      "itemCount": 0,
-      "rootItemCount": 0,
+      "status": "items",
+      "itemCount": 2,
+      "rootItemCount": 2,
       "discoveredItemCount": 0,
-      "elapsedMs": 19734,
-      "fetch": null,
+      "elapsedMs": 1233,
+      "fetch": {
+        "statusCode": 200,
+        "contentType": "text/html; charset=utf-8",
+        "responseBytes": 245121,
+        "finalHostChanged": false
+      },
       "discovery": {
         "enabled": true,
-        "totalLinks": 0,
-        "acceptedBeforeDedupe": 0,
-        "returnedCount": 0,
+        "totalLinks": 446,
+        "acceptedBeforeDedupe": 1,
+        "returnedCount": 1,
         "duplicateRejected": 0,
         "truncatedCount": 0,
-        "rejected": {}
+        "embeddedEventLinks": 0,
+        "contextualLinkCount": 0,
+        "contextualFuruichiLinkCount": 0,
+        "contextualHobbyStationLinkCount": 0,
+        "rejected": {
+          "invalidUrl": 0,
+          "protocol": 0,
+          "includePattern": 445,
+          "excludePattern": 0,
+          "host": 0,
+          "path": 0
+        }
       },
       "candidateFetchSuccessCount": 0,
-      "candidateFetchFailureCount": 0,
+      "candidateFetchFailureCount": 1,
       "relevantPageCount": 0,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
       "officialRevisitFetchCount": 0,
       "officialRevisitItemCount": 0,
-      "rootFirstSeen": false,
+      "rootFirstSeen": true,
       "rootChanged": false,
       "newCandidateCount": 0,
       "changedCandidateCount": 0,
@@ -558,11 +567,13 @@
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "ocrErrorCount": 0,
-      "failureClass": "temporary_fetch_error",
-      "severity": "warning",
-      "zeroItemReason": "source-fetch-failed",
-      "error": "HTTP 522",
-      "childErrors": [],
+      "failureClass": "",
+      "severity": "",
+      "zeroItemReason": "",
+      "error": "",
+      "childErrors": [
+        "HTTP 403"
+      ],
       "parseErrors": []
     },
     {
@@ -572,7 +583,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1968,
+      "elapsedMs": 1584,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -630,7 +641,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1045,
+      "elapsedMs": 664,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -682,7 +693,7 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 1,
+  "autoCollectedCount": 3,
   "multiProductExpandedCount": 1,
   "catalogGroupExpandedCount": 3,
   "replacedPreviousCount": 1,
@@ -741,26 +752,26 @@
       }
     },
     "newness": {
-      "observedSourceCount": 9,
-      "rootFirstSeenCount": 9,
+      "observedSourceCount": 10,
+      "rootFirstSeenCount": 10,
       "rootChangedCount": 0,
       "newCandidateCount": 10,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
-      "trackedSourceCount": 9,
+      "trackedSourceCount": 10,
       "trackedCandidateCount": 10
     }
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 89,
+    "candidateCount": 91,
     "publishedCount": 77,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 0,
+    "reviewCount": 2,
     "rejectedCount": 0,
-    "directVerifiedCount": 62,
-    "catalogMatchedCount": 89,
-    "autoCollectedCount": 1,
+    "directVerifiedCount": 64,
+    "catalogMatchedCount": 91,
+    "autoCollectedCount": 3,
     "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 1,
