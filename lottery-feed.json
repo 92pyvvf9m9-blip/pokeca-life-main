@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-19T08:00:15.479Z",
+  "updatedAt": "2026-08-19T08:52:22.677Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-19T08:00:15.479Z",
+    "lastRunAt": "2026-08-19T08:52:22.677Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
@@ -22,9 +22,9 @@
       "checkedCount": 11,
       "successfulCount": 10,
       "failedCount": 1,
-      "withItemsCount": 2,
-      "zeroItemsCount": 8,
-      "discoveredPageCount": 3,
+      "withItemsCount": 1,
+      "zeroItemsCount": 9,
+      "discoveredPageCount": 2,
       "failedSources": [
         {
           "name": "あみあみ",
@@ -45,6 +45,10 @@
         {
           "name": "LivePocket公開抽選（カードゲーム）",
           "reason": "page-contained-no-links-or-was-client-rendered"
+        },
+        {
+          "name": "ゲオ",
+          "reason": "relevant-pages-were-not-parsed-into-items"
         },
         {
           "name": "楽天ブックス",
@@ -76,7 +80,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 221,
+        "elapsedMs": 772,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -134,7 +138,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 11,
+        "elapsedMs": 35,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -192,7 +196,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10,
+        "elapsedMs": 33,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -246,11 +250,11 @@
       {
         "name": "ゲオ",
         "parser": "geo-lottery",
-        "status": "items",
-        "itemCount": 1,
+        "status": "no_items",
+        "itemCount": 0,
         "rootItemCount": 0,
-        "discoveredItemCount": 1,
-        "elapsedMs": 3437,
+        "discoveredItemCount": 0,
+        "elapsedMs": 32293,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -277,9 +281,9 @@
             "path": 0
           }
         },
-        "candidateFetchSuccessCount": 3,
-        "candidateFetchFailureCount": 0,
-        "relevantPageCount": 3,
+        "candidateFetchSuccessCount": 2,
+        "candidateFetchFailureCount": 1,
+        "relevantPageCount": 2,
         "irrelevantPageCount": 0,
         "crossSourceDuplicateCount": 0,
         "officialRevisitCandidateCount": 0,
@@ -287,7 +291,7 @@
         "officialRevisitItemCount": 0,
         "rootFirstSeen": true,
         "rootChanged": false,
-        "newCandidateCount": 3,
+        "newCandidateCount": 2,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
         "parseFailureCount": 0,
@@ -296,9 +300,11 @@
         "ocrErrorCount": 0,
         "failureClass": "",
         "severity": "",
-        "zeroItemReason": "",
+        "zeroItemReason": "relevant-pages-were-not-parsed-into-items",
         "error": "",
-        "childErrors": [],
+        "childErrors": [
+          "This operation was aborted"
+        ],
         "parseErrors": []
       },
       {
@@ -308,7 +314,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10322,
+        "elapsedMs": 10740,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -366,7 +372,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 250,
+        "elapsedMs": 607,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -408,7 +414,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 5761,
+        "elapsedMs": 6127,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -466,7 +472,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1456,
+        "elapsedMs": 2285,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -526,7 +532,7 @@
         "itemCount": 2,
         "rootItemCount": 2,
         "discoveredItemCount": 0,
-        "elapsedMs": 1274,
+        "elapsedMs": 1359,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -586,7 +592,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1606,
+        "elapsedMs": 1814,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -644,7 +650,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 710,
+        "elapsedMs": 4333,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -696,10 +702,10 @@
         "parseErrors": []
       }
     ],
-    "autoCollectedCount": 3,
-    "multiProductExpandedCount": 1,
+    "autoCollectedCount": 2,
+    "multiProductExpandedCount": 0,
     "catalogGroupExpandedCount": 3,
-    "replacedPreviousCount": 1,
+    "replacedPreviousCount": 0,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
     "livePocketDiscoveredCount": 0,
@@ -758,11 +764,11 @@
         "observedSourceCount": 10,
         "rootFirstSeenCount": 10,
         "rootChangedCount": 0,
-        "newCandidateCount": 10,
+        "newCandidateCount": 9,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
         "trackedSourceCount": 10,
-        "trackedCandidateCount": 10
+        "trackedCandidateCount": 9
       }
     },
     "quality": {
@@ -774,10 +780,10 @@
       "rejectedCount": 0,
       "directVerifiedCount": 64,
       "catalogMatchedCount": 91,
-      "autoCollectedCount": 3,
-      "multiProductExpandedCount": 1,
+      "autoCollectedCount": 2,
+      "multiProductExpandedCount": 0,
       "catalogGroupExpandedCount": 3,
-      "replacedPreviousCount": 1,
+      "replacedPreviousCount": 0,
       "ocrAppliedCount": 0,
       "ocrImageCount": 0,
       "rule": "catalog+deadline+direct-destination-or-official-store-notice"
