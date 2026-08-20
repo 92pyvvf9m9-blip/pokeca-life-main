@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-20T21:20:11.918Z",
+  "updatedAt": "2026-08-20T21:50:55.118Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-20T21:20:11.918Z",
+    "lastRunAt": "2026-08-20T21:50:55.118Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
@@ -80,7 +80,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 592,
+        "elapsedMs": 319,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -138,7 +138,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 21,
+        "elapsedMs": 13,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -196,7 +196,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 22,
+        "elapsedMs": 13,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -254,7 +254,7 @@
         "itemCount": 1,
         "rootItemCount": 0,
         "discoveredItemCount": 1,
-        "elapsedMs": 3436,
+        "elapsedMs": 3328,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -312,7 +312,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10845,
+        "elapsedMs": 10548,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -370,7 +370,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 247,
+        "elapsedMs": 374,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -412,7 +412,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 6557,
+        "elapsedMs": 6222,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -470,7 +470,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1845,
+        "elapsedMs": 1853,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -530,7 +530,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 427,
+        "elapsedMs": 385,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -588,7 +588,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1972,
+        "elapsedMs": 1948,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -646,7 +646,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 4564,
+        "elapsedMs": 1058,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -796,8 +796,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-20T21:20:11.918Z",
-      "updatedAt": "2026-08-20T21:20:11.918Z",
+      "collectedAt": "2026-08-20T21:50:55.118Z",
+      "updatedAt": "2026-08-20T21:50:55.118Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
