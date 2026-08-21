@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.8",
-  "lastRunAt": "2026-08-21T00:50:42.429Z",
+  "lastRunAt": "2026-08-21T02:19:09.285Z",
   "status": "degraded",
   "statusReasons": [],
   "warningReasons": [
@@ -8,8 +8,8 @@
     "official_discovery_no_current_candidates:ふるいち",
     "livepocket_warning:no_candidates"
   ],
-  "reviewCount": 0,
-  "publishedCount": 72,
+  "reviewCount": 1,
+  "publishedCount": 76,
   "historyDays": 35,
   "manualEntryCount": 13,
   "checkedSourceCount": 11,
@@ -21,7 +21,7 @@
     "failedCount": 1,
     "withItemsCount": 1,
     "zeroItemsCount": 9,
-    "discoveredPageCount": 3,
+    "discoveredPageCount": 6,
     "failedSources": [
       {
         "name": "あみあみ",
@@ -77,7 +77,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 546,
+      "elapsedMs": 542,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -135,7 +135,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 13,
+      "elapsedMs": 17,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -193,7 +193,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 11,
+      "elapsedMs": 14,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html",
@@ -248,21 +248,21 @@
       "name": "ゲオ",
       "parser": "geo-lottery",
       "status": "items",
-      "itemCount": 1,
-      "rootItemCount": 0,
-      "discoveredItemCount": 1,
-      "elapsedMs": 3355,
+      "itemCount": 10,
+      "rootItemCount": 1,
+      "discoveredItemCount": 9,
+      "elapsedMs": 6560,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 38811,
+        "responseBytes": 39846,
         "finalHostChanged": false
       },
       "discovery": {
         "enabled": true,
-        "totalLinks": 120,
-        "acceptedBeforeDedupe": 3,
-        "returnedCount": 3,
+        "totalLinks": 123,
+        "acceptedBeforeDedupe": 6,
+        "returnedCount": 6,
         "duplicateRejected": 0,
         "truncatedCount": 0,
         "embeddedEventLinks": 0,
@@ -278,9 +278,9 @@
           "path": 0
         }
       },
-      "candidateFetchSuccessCount": 3,
+      "candidateFetchSuccessCount": 6,
       "candidateFetchFailureCount": 0,
-      "relevantPageCount": 3,
+      "relevantPageCount": 6,
       "irrelevantPageCount": 0,
       "crossSourceDuplicateCount": 0,
       "officialRevisitCandidateCount": 0,
@@ -288,7 +288,7 @@
       "officialRevisitItemCount": 0,
       "rootFirstSeen": true,
       "rootChanged": false,
-      "newCandidateCount": 3,
+      "newCandidateCount": 6,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "parseFailureCount": 0,
@@ -309,7 +309,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 10361,
+      "elapsedMs": 10383,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=euc-jp",
@@ -367,7 +367,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 454,
+      "elapsedMs": 536,
       "fetch": null,
       "discovery": {
         "enabled": true,
@@ -409,7 +409,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 5840,
+      "elapsedMs": 6304,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -467,7 +467,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 2493,
+      "elapsedMs": 1908,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -527,7 +527,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 607,
+      "elapsedMs": 374,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=utf-8",
@@ -585,7 +585,7 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 1643,
+      "elapsedMs": 1983,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
@@ -643,11 +643,11 @@
       "itemCount": 0,
       "rootItemCount": 0,
       "discoveredItemCount": 0,
-      "elapsedMs": 762,
+      "elapsedMs": 1102,
       "fetch": {
         "statusCode": 200,
         "contentType": "text/html; charset=UTF-8",
-        "responseBytes": 817165,
+        "responseBytes": 817771,
         "finalHostChanged": false
       },
       "discovery": {
@@ -695,8 +695,8 @@
       "parseErrors": []
     }
   ],
-  "autoCollectedCount": 1,
-  "multiProductExpandedCount": 1,
+  "autoCollectedCount": 10,
+  "multiProductExpandedCount": 10,
   "catalogGroupExpandedCount": 3,
   "replacedPreviousCount": 1,
   "ocrAppliedCount": 0,
@@ -757,24 +757,24 @@
       "observedSourceCount": 10,
       "rootFirstSeenCount": 10,
       "rootChangedCount": 0,
-      "newCandidateCount": 10,
+      "newCandidateCount": 13,
       "changedCandidateCount": 0,
       "knownCandidateCount": 0,
       "trackedSourceCount": 10,
-      "trackedCandidateCount": 10
+      "trackedCandidateCount": 13
     }
   },
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 84,
-    "publishedCount": 72,
+    "candidateCount": 89,
+    "publishedCount": 76,
     "postCanonicalDuplicateCount": 12,
-    "reviewCount": 0,
+    "reviewCount": 1,
     "rejectedCount": 0,
-    "directVerifiedCount": 57,
-    "catalogMatchedCount": 84,
-    "autoCollectedCount": 1,
-    "multiProductExpandedCount": 1,
+    "directVerifiedCount": 62,
+    "catalogMatchedCount": 89,
+    "autoCollectedCount": 10,
+    "multiProductExpandedCount": 10,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 1,
     "ocrAppliedCount": 0,
