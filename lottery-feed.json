@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T11:57:42.502Z",
+  "updatedAt": "2026-08-22T12:36:02.413Z",
   "meta": {
     "collectorVersion": "1.24.8",
-    "lastRunAt": "2026-08-22T11:57:42.502Z",
+    "lastRunAt": "2026-08-22T12:36:02.413Z",
     "status": "degraded",
     "statusReasons": [],
     "warningReasons": [
@@ -11,7 +11,7 @@
       "official_discovery_no_current_candidates:ふるいち",
       "livepocket_warning:no_candidates"
     ],
-    "reviewCount": 4,
+    "reviewCount": 3,
     "publishedCount": 72,
     "historyDays": 35,
     "manualEntryCount": 13,
@@ -24,7 +24,7 @@
       "failedCount": 1,
       "withItemsCount": 2,
       "zeroItemsCount": 8,
-      "discoveredPageCount": 7,
+      "discoveredPageCount": 6,
       "failedSources": [
         {
           "name": "あみあみ",
@@ -76,7 +76,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 425,
+        "elapsedMs": 409,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -134,7 +134,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 14,
+        "elapsedMs": 27,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -192,7 +192,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 12,
+        "elapsedMs": 25,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html",
@@ -250,7 +250,7 @@
         "itemCount": 10,
         "rootItemCount": 1,
         "discoveredItemCount": 9,
-        "elapsedMs": 6595,
+        "elapsedMs": 6246,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -308,7 +308,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 10506,
+        "elapsedMs": 10446,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=euc-jp",
@@ -366,7 +366,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 517,
+        "elapsedMs": 278,
         "fetch": null,
         "discovery": {
           "enabled": true,
@@ -408,7 +408,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 6134,
+        "elapsedMs": 6135,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -466,7 +466,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1883,
+        "elapsedMs": 1517,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -523,10 +523,10 @@
         "name": "ホビーサーチ",
         "parser": "hobby-search",
         "status": "items",
-        "itemCount": 5,
+        "itemCount": 2,
         "rootItemCount": 2,
-        "discoveredItemCount": 3,
-        "elapsedMs": 2732,
+        "discoveredItemCount": 0,
+        "elapsedMs": 2053,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=utf-8",
@@ -553,9 +553,9 @@
             "path": 0
           }
         },
-        "candidateFetchSuccessCount": 1,
-        "candidateFetchFailureCount": 1,
-        "relevantPageCount": 1,
+        "candidateFetchSuccessCount": 0,
+        "candidateFetchFailureCount": 2,
+        "relevantPageCount": 0,
         "irrelevantPageCount": 0,
         "crossSourceDuplicateCount": 0,
         "officialRevisitCandidateCount": 0,
@@ -563,7 +563,7 @@
         "officialRevisitItemCount": 0,
         "rootFirstSeen": true,
         "rootChanged": false,
-        "newCandidateCount": 1,
+        "newCandidateCount": 0,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
         "parseFailureCount": 0,
@@ -575,6 +575,7 @@
         "zeroItemReason": "",
         "error": "",
         "childErrors": [
+          "HTTP 403",
           "HTTP 403"
         ],
         "parseErrors": []
@@ -586,7 +587,7 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 2081,
+        "elapsedMs": 1573,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
@@ -644,11 +645,11 @@
         "itemCount": 0,
         "rootItemCount": 0,
         "discoveredItemCount": 0,
-        "elapsedMs": 1024,
+        "elapsedMs": 691,
         "fetch": {
           "statusCode": 200,
           "contentType": "text/html; charset=UTF-8",
-          "responseBytes": 849428,
+          "responseBytes": 844701,
           "finalHostChanged": false
         },
         "discovery": {
@@ -696,7 +697,7 @@
         "parseErrors": []
       }
     ],
-    "autoCollectedCount": 15,
+    "autoCollectedCount": 12,
     "multiProductExpandedCount": 10,
     "catalogGroupExpandedCount": 3,
     "replacedPreviousCount": 5,
@@ -758,23 +759,23 @@
         "observedSourceCount": 10,
         "rootFirstSeenCount": 10,
         "rootChangedCount": 0,
-        "newCandidateCount": 14,
+        "newCandidateCount": 13,
         "changedCandidateCount": 0,
         "knownCandidateCount": 0,
         "trackedSourceCount": 10,
-        "trackedCandidateCount": 14
+        "trackedCandidateCount": 13
       }
     },
     "quality": {
       "qualityVersion": 2,
-      "candidateCount": 88,
+      "candidateCount": 87,
       "publishedCount": 72,
       "postCanonicalDuplicateCount": 12,
-      "reviewCount": 4,
+      "reviewCount": 3,
       "rejectedCount": 0,
-      "directVerifiedCount": 61,
-      "catalogMatchedCount": 88,
-      "autoCollectedCount": 15,
+      "directVerifiedCount": 60,
+      "catalogMatchedCount": 87,
+      "autoCollectedCount": 12,
       "multiProductExpandedCount": 10,
       "catalogGroupExpandedCount": 3,
       "replacedPreviousCount": 5,
@@ -794,8 +795,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-08-22T11:57:42.502Z",
-      "updatedAt": "2026-08-22T11:57:42.502Z",
+      "collectedAt": "2026-08-22T12:36:02.413Z",
+      "updatedAt": "2026-08-22T12:36:02.413Z",
       "applyStartDate": "2026-08-31",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-09-03",
@@ -833,8 +834,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-22T11:57:42.502Z",
-      "updatedAt": "2026-08-22T11:57:42.502Z",
+      "collectedAt": "2026-08-22T12:36:02.413Z",
+      "updatedAt": "2026-08-22T12:36:02.413Z",
       "applyStartDate": "2026-08-31",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-09-03",
@@ -872,8 +873,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-22T11:57:42.502Z",
-      "updatedAt": "2026-08-22T11:57:42.502Z",
+      "collectedAt": "2026-08-22T12:36:02.413Z",
+      "updatedAt": "2026-08-22T12:36:02.413Z",
       "applyStartDate": "2026-08-31",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-09-03",
@@ -911,8 +912,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-08-22T11:57:42.502Z",
-      "updatedAt": "2026-08-22T11:57:42.502Z",
+      "collectedAt": "2026-08-22T12:36:02.413Z",
+      "updatedAt": "2026-08-22T12:36:02.413Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
@@ -950,8 +951,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-08-22T11:57:42.502Z",
-      "updatedAt": "2026-08-22T11:57:42.502Z",
+      "collectedAt": "2026-08-22T12:36:02.413Z",
+      "updatedAt": "2026-08-22T12:36:02.413Z",
       "applyStartDate": "2026-08-03",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-08-06",
