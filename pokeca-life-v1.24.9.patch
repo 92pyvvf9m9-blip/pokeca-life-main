@@ -1,0 +1,36 @@
+diff --git a/collector/collector.mjs b/collector/collector.mjs
+--- a/collector/collector.mjs
++++ b/collector/collector.mjs
+@@
+-  const startedAt = new Date().toISOString();
++  const startedAt = process.env.POKECA_NOW || new Date().toISOString();
+@@
+-  const merged = keepRelevant(dedupeItems([
++  const merged = keepRelevant(dedupeItems([
+     ...expandedPrevious.items,
+     ...currentCollected,
+-  ]));
++  ]), new Date(startedAt));
+
+diff --git a/collector/tests/collector-furuichi-revisit-integration.test.mjs b/collector/tests/collector-furuichi-revisit-integration.test.mjs
+--- a/collector/tests/collector-furuichi-revisit-integration.test.mjs
++++ b/collector/tests/collector-furuichi-revisit-integration.test.mjs
+@@
+         POKECA_DISCOVERY_STATE_PATH: files.state,
+         POKECA_X_SOURCES_PATH: files.x,
++        POKECA_NOW: "2026-08-03T00:00:00.000Z",
+       },
+
+diff --git a/.github/workflows/sync-products.yml b/.github/workflows/sync-products.yml
+--- a/.github/workflows/sync-products.yml
++++ b/.github/workflows/sync-products.yml
+@@
+-          git add product-catalog.json product-catalog-status.json product-image-audit.json product-review-queue.json assets/product-images
++          git add product-catalog.json product-catalog-status.json product-image-audit.json assets/product-images
+
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@
+-  "version": "1.24.8",
++  "version": "1.24.9",
