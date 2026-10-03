@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.10",
-  "lastRunAt": "2026-10-03T14:03:54.595Z",
+  "lastRunAt": "2026-10-03T16:14:21.493Z",
   "status": "degraded",
   "reviewCount": 0,
   "publishedCount": 14,
@@ -21,7 +21,7 @@
   "autoCollectedCount": 1,
   "multiProductExpandedCount": 1,
   "catalogGroupExpandedCount": 0,
-  "replacedPreviousCount": 0,
+  "replacedPreviousCount": 1,
   "ocrAppliedCount": 0,
   "ocrImageCount": 0,
   "quality": {
@@ -36,7 +36,7 @@
     "autoCollectedCount": 1,
     "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 0,
-    "replacedPreviousCount": 0,
+    "replacedPreviousCount": 1,
     "ocrAppliedCount": 0,
     "ocrImageCount": 0,
     "rule": "catalog+deadline+direct-destination-or-official-store-notice"
