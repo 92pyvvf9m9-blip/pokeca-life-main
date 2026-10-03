@@ -1,0 +1,74 @@
+diff --git a/.github/workflows/sync-products.yml b/.github/workflows/sync-products.yml
+index b7a802a..6462ace 100644
+--- a/.github/workflows/sync-products.yml
++++ b/.github/workflows/sync-products.yml
+@@ -38,7 +38,7 @@ jobs:
+         run: |
+           git config user.name "pokeca-life-bot"
+           git config user.email "pokeca-life-bot@users.noreply.github.com"
+-          git add product-catalog.json product-catalog-status.json product-image-audit.json product-review-queue.json assets/product-images
++          git add product-catalog.json product-catalog-status.json product-image-audit.json assets/product-images
+           if git diff --cached --quiet; then
+             echo "No product catalog changes"
+           else
+diff --git a/collector/collector.mjs b/collector/collector.mjs
+index f6288bb..32a544e 100644
+--- a/collector/collector.mjs
++++ b/collector/collector.mjs
+@@ -266,7 +266,7 @@ function replacementScopeKey(item = {}) {
+ 
+ 
+ async function run() {
+-  const startedAt = new Date().toISOString();
++  const startedAt = new Date(process.env.POKECA_NOW || Date.now()).toISOString();
+   const rawRegistry = await readJson(SOURCES_PATH, { sources: [] });
+   const registry = normalizeSourceRegistry(rawRegistry);
+   const sourceDatabase = summarizeSourceRegistry(registry);
+@@ -531,7 +531,7 @@ async function run() {
+   const merged = keepRelevant(dedupeItems([
+     ...expandedPrevious.items,
+     ...currentCollected,
+-  ]));
++  ]), new Date(startedAt));
+ 
+   const published = [];
+   const reviewQueue = [];
+diff --git a/collector/tests/collector-furuichi-revisit-integration.test.mjs b/collector/tests/collector-furuichi-revisit-integration.test.mjs
+index 866d3f9..ba6a941 100644
+--- a/collector/tests/collector-furuichi-revisit-integration.test.mjs
++++ b/collector/tests/collector-furuichi-revisit-integration.test.mjs
+@@ -72,11 +72,13 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
+         POKECA_MANUAL_LOTTERIES_PATH: files.manual,
+         POKECA_DISCOVERY_STATE_PATH: files.state,
+         POKECA_X_SOURCES_PATH: files.x,
++        POKECA_NOW: "2026-08-03T00:00:00.000Z",
+       },
+       stdio: ["ignore", "pipe", "pipe"],
+     });
+     assert.equal(result.code, 0, result.stderr || result.stdout);
+     const feed = JSON.parse(await fs.readFile(files.feed, "utf8"));
++    assert.equal(feed.updatedAt, "2026-08-03T00:00:00.000Z");
+     const products = feed.lotteries.map(item => item.product).sort();
+     assert.deepEqual(products, [
+       "スターターセットex イーブイex",
+@@ -86,6 +88,7 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
+     ].sort());
+     assert.ok(feed.lotteries.every(item => item.applyEndDate === "2026-07-19"));
+     const status = JSON.parse(await fs.readFile(files.status, "utf8"));
++    assert.equal(status.lastRunAt, "2026-08-03T00:00:00.000Z");
+     assert.equal(status.sourceDiagnostics[0].officialRevisitItemCount, 4);
+     assert.equal(status.quality.replacedPreviousCount, 2);
+   } finally {
+diff --git a/package.json b/package.json
+index a82be23..bc1c7bd 100644
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "pokeca-life",
+   "private": true,
+-  "version": "1.24.8",
++  "version": "1.24.9",
+   "type": "module",
+   "scripts": {
+     "test": "node --test collector/tests/*.test.mjs",
