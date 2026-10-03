@@ -40,14 +40,20 @@
   }
   function variantKey(item={}){
     const shop=clean(item.shop||'');
-    const product=clean(item.product||'');
+    const product=clean(item.product||'').replace(/全?9種類?/g,'9種').replace(/9種セット|9種/g,'9種');
+    const start=String(item.applyStartDate||'').trim();
     const deadline=String(item.applyEndDate||item.deadline||'').trim();
-    return [shop,product,deadline].join('|');
+    return [shop,product,start,deadline].join('|');
   }
   function identity(item={}){
     const url=applicationUrl(item);
     const variant=variantKey(item);
-    if(url)return `url:${url}|variant:${variant}`;
+    if(url){
+      const product=clean(item.product||'').replace(/全?9種類?/g,'9種').replace(/9種セット|9種/g,'9種');
+      const start=String(item.applyStartDate||'').trim();
+      const end=String(item.applyEndDate||item.deadline||'').trim();
+      return `url:${url}|product:${product}|window:${start}|${end}`;
+    }
     const external=String(item.externalId||item.remoteId||'').trim();
     if(external&&!/^https?:\/\//i.test(external))return `external:${external}|variant:${variant}`;
     return `fallback:${variant}`;

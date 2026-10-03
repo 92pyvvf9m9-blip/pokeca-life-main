@@ -21,10 +21,26 @@ function omit(object, keys) {
   return output;
 }
 
+function publicCollectorMeta(meta = {}) {
+  const output = omit(meta, [
+    'sourceResults', 'sourceDiagnostics', 'discoveryEngine', 'statusReasons', 'warningReasons',
+    'x', 'sourceCount', 'successCount', 'failedCount',
+    'livePocketDiscoveredCount', 'livePocketDiscoveryStatus', 'livePocketDiscovery',
+    'xLivePocketEnrichedCount', 'xGoogleFormEnrichedCount', 'xCollectorStatus',
+    'xOfficialAccountCount', 'xPostCount', 'xItemCount'
+  ]);
+  output.noticeCollectionStatus = meta.xCollectorStatus || 'not_configured';
+  output.noticeCandidateCount = Number(meta.xItemCount || 0);
+  if (output.sourceHealth) {
+    output.sourceHealth = omit(output.sourceHealth, ['failedSources', 'zeroItemSources']);
+  }
+  return output;
+}
+
 function publicLottery(item = {}) {
   return omit(item, [
     'sourceUrl', 'sourceType', 'sourceKind', 'sourceKinds', 'intelligenceSource',
-    'privateSources', 'evidenceCount', 'destinationHost', 'destinationVerified',
+    'privateSources', 'evidenceCount', 'destinationHost', 'destinationVerified', 'officialNotice',
     'destinationVerificationReason', 'verificationChecks', 'rawApplyText',
     'rawResultText', 'xAuthor', 'xPostId'
   ]);
@@ -64,6 +80,7 @@ const publicFiles = [
   'ocr-import-core.js',
   'app-destination-core.js',
   'lottery-identity-core.js',
+  'lottery-lifecycle-core.js',
   'remote-feed-core.js',
 ];
 for (const file of publicFiles) {
@@ -73,7 +90,7 @@ for (const file of publicFiles) {
 await fs.cp(path.join(root, 'assets'), path.join(dist, 'assets'), { recursive: true });
 
 const feed = await readJson('lottery-feed.json', { version: 1, lotteries: [] });
-const feedMeta = omit(feed.meta || {}, ['sourceResults', 'x', 'sourceCount', 'successCount', 'failedCount']);
+const feedMeta = publicCollectorMeta(feed.meta || {});
 await writeJson('lottery-feed.json', {
   version: feed.version || 1,
   updatedAt: feed.updatedAt || new Date().toISOString(),
@@ -82,7 +99,7 @@ await writeJson('lottery-feed.json', {
 });
 
 const status = await readJson('collector-status.json', {});
-await writeJson('collector-status.json', omit(status, ['sourceResults', 'x', 'sourceCount', 'successCount', 'failedCount']));
+await writeJson('collector-status.json', publicCollectorMeta(status));
 await writeJson('data-quality-status.json', await readJson('data-quality-status.json', {}));
 
 const stores = await readJson('store-master.json', { version: 1, stores: [] });

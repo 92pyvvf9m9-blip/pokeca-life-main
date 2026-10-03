@@ -19,7 +19,6 @@ const PRODUCT_PREFIX_PATTERN = [
   "スペシャルジャンボカードセット",
   "スペシャルカードセット",
   "プレミアムデッキセット",
-  "カードイラストフィギュアコレクション",
   "バトルアカデミー",
   "30th CELEBRATION FUTURISTIC BOX",
   "30th CELEBRATION カードセット",
@@ -27,7 +26,7 @@ const PRODUCT_PREFIX_PATTERN = [
 
 const PRODUCT_PREFIX_RE = new RegExp(`(?:${PRODUCT_PREFIX_PATTERN})`, "i");
 const PRODUCT_QUOTED_RE = new RegExp(`(${PRODUCT_PREFIX_PATTERN})\\s*[「『\\\"]([^」』\\\"]{2,100})[」』\\\"]`, "gi");
-const EXCLUDED_RE = /デッキシールド|デッキケース|ラバープレイマット|プレイマット|カードスリーブ|カードボックス|ストレージボックス|コイン|ダメカン|マーカー|フリップデッキケース|キャリングケース|フレーム|ポスター|ぬいぐるみ/i;
+const EXCLUDED_RE = /フィギュア|モンコレ|デッキシールド|デッキケース|ラバープレイマット|プレイマット|カードスリーブ|カードボックス|ストレージボックス|コイン|ダメカン|マーカー|フリップデッキケース|キャリングケース|フレーム|ポスター|ぬいぐるみ/i;
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -79,6 +78,7 @@ export function normalizeProductName(value = "") {
     .normalize("NFKC")
     .toLowerCase()
     .replace(/ポケモンカードゲーム/g, "")
+    .replace(/30th\s*celebration/gi, "")
     .replace(/[「」『』【】［］\[\]()（）・･\s　\-‐‑‒–—―_]/g, "")
     .replace(/抽選販売|抽選受付|予約販売|応募フォーム|再販/g, "")
     .trim();

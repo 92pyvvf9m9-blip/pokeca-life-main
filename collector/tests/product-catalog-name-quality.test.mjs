@@ -40,3 +40,10 @@ test("generic starter-set labels do not guess one of several products", () => {
   assert.equal(matchCatalogProduct("スターターセットex", catalog), null);
   assert.equal(matchCatalogProduct("スターターセットex3種", catalog), null);
 });
+
+test("figure collectibles are excluded from the Pokémon card product catalog", () => {
+  const name = "カードイラストフィギュアコレクション スカーレット＆バイオレット";
+  assert.equal(isPlausibleProductName(name), false);
+  const source = { id: "official-figure", name: "公式商品ページ", url: "https://www.pokemon-card.com/info/005413.html" };
+  assert.deepEqual(parseOfficialProductDocument(source, `<html><body><h1>${name}</h1><p>発売日 2026年3月13日</p></body></html>`, collectedAt), []);
+});

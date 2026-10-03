@@ -1,6 +1,11 @@
 name: Collect Pokemon Card Lotteries
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - manual-lotteries.json
   workflow_dispatch:
   schedule:
     - cron: "*/15 * * * *"
@@ -35,6 +40,7 @@ jobs:
       - name: Collect and verify lottery information
         run: npm run collect
         env:
+          POKECA_PRIVATE_STATUS_PATH: .private/collector-status.json
           OPENAI_VALIDATOR_ENDPOINT: ${{ secrets.OPENAI_VALIDATOR_ENDPOINT }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GEMINI_VALIDATOR_ENDPOINT: ${{ secrets.GEMINI_VALIDATOR_ENDPOINT }}
@@ -51,7 +57,7 @@ jobs:
         run: |
           git config user.name "pokeca-life-bot"
           git config user.email "pokeca-life-bot@users.noreply.github.com"
-          git add lottery-feed.json collector-status.json data-quality-status.json
+          git add lottery-feed.json collector-status.json data-quality-status.json manual-lotteries.json
           if git diff --cached --quiet; then
             echo "No public feed changes"
           else
@@ -61,3 +67,5 @@ jobs:
 
       - name: Report collector health
         run: npm run report:collector
+        env:
+          POKECA_STATUS_PATH: .private/collector-status.json

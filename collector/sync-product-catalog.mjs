@@ -9,6 +9,7 @@ import {
   productFingerprint,
   inspectImageBuffer,
   isPlausibleProductName,
+  isCardProductName,
 } from "./lib/product-catalog-parser.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -81,6 +82,33 @@ function mergeCandidates(candidates) {
       aliases: [...new Set([...(previous.aliases || []), ...(candidate.aliases || [])])],
       confidence: Math.max(previous.confidence || 0, candidate.confidence || 0),
     });
+  }
+  return [...map.values()];
+}
+
+function catalogProductScore(product) {
+  return (product.autoManaged === true ? 0 : 100)
+    + (product.imageVerified === true ? 20 : 0)
+    + (product.imagePath ? 5 : 0)
+    + (product.officialUrl ? 2 : 0);
+}
+
+function dedupeCatalogProducts(products) {
+  const map = new Map();
+  for (const product of products) {
+    const key = normalizeProductName(product?.name || "");
+    if (!key) continue;
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, product);
+      continue;
+    }
+    const primary = catalogProductScore(product) > catalogProductScore(existing) ? product : existing;
+    const secondary = primary === product ? existing : product;
+    const merged = { ...secondary, ...primary };
+    merged.aliases = [...new Set([...(secondary.aliases || []), ...(primary.aliases || [])])];
+    if (primary.autoManaged !== true && secondary.autoManaged === true) delete merged.autoManaged;
+    map.set(key, merged);
   }
   return [...map.values()];
 }
@@ -192,9 +220,12 @@ async function run() {
   const catalog = await readJson(CATALOG_PATH, { version: 4, products: [] });
   const catalogBeforePrune = Array.isArray(catalog.products) ? catalog.products.length : 0;
   catalog.products = (Array.isArray(catalog.products) ? catalog.products : []).filter(
-    (product) => product.autoManaged !== true || isPlausibleProductName(product.name)
+    (product) => isCardProductName(product.name) && (product.autoManaged !== true || isPlausibleProductName(product.name))
   );
   const prunedInvalidProductCount = catalogBeforePrune - catalog.products.length;
+  const catalogBeforeDedupe = catalog.products.length;
+  catalog.products = dedupeCatalogProducts(catalog.products);
+  const duplicateProductPrunedCount = catalogBeforeDedupe - catalog.products.length;
   const enabledSources = registry.sources.filter((source) => source.enabled !== false);
   const candidates = [];
   const sourceResults = [];
@@ -352,6 +383,7 @@ async function run() {
     newProductCount: newCount,
     updatedProductCount: updatedCount,
     prunedInvalidProductCount,
+    duplicateProductPrunedCount,
     reviewCount: review.length,
     totalProducts: catalog.products.length,
     verifiedImages: audit.summary.verifiedImages,

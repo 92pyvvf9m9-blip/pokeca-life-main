@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseSourceDocument } from "./lib/parser.mjs";
-import { dedupeItems, keepRelevant, sanitizeForPublic } from "./lib/dedupe.mjs";
+import { canonicalApplicationUrl, dedupeItems, keepRelevant, sanitizeForPublic } from "./lib/dedupe.mjs";
 import { validateWithAI } from "./lib/ai-router.mjs";
 import { discoverCandidateLinksDetailed, pageLooksRelevant } from "./lib/discovery.mjs";
 import { collectXLotteryCandidates } from "./lib/x-collector.mjs";
@@ -23,6 +23,7 @@ const APP_VERSION = String(APP_PACKAGE.version || "0.0.0");
 const SOURCES_PATH = process.env.POKECA_SOURCES_PATH || path.join(ROOT, ".private", "sources.json");
 const FEED_PATH = process.env.POKECA_FEED_PATH || path.join(ROOT, "lottery-feed.json");
 const STATUS_PATH = process.env.POKECA_STATUS_PATH || path.join(ROOT, "collector-status.json");
+const PRIVATE_STATUS_PATH = process.env.POKECA_PRIVATE_STATUS_PATH || "";
 const REVIEW_PATH = process.env.POKECA_REVIEW_PATH || path.join(ROOT, ".private", "review-queue.json");
 const FIXTURE_PATH = process.env.POKECA_FIXTURE_PATH || "";
 const X_SOURCES_PATH = process.env.POKECA_X_SOURCES_PATH || path.join(ROOT, ".private", "x-sources.json");
@@ -60,6 +61,42 @@ function classifySourceFailure(error) {
     return { failureClass: "temporary_fetch_error", severity: "warning" };
   }
   return { failureClass: "source_error", severity: "error" };
+}
+
+function publicSourceHealth(sourceHealth = {}) {
+  return Object.fromEntries([
+    "checkedCount",
+    "successfulCount",
+    "failedCount",
+    "withItemsCount",
+    "zeroItemsCount",
+    "discoveredPageCount",
+  ].map((key) => [key, Number(sourceHealth[key] || 0)]));
+}
+
+function publicCollectorMeta(meta = {}) {
+  const output = { ...meta, sourceHealth: publicSourceHealth(meta.sourceHealth) };
+  output.noticeCollectionStatus = meta.xCollectorStatus || "not_configured";
+  output.noticeCandidateCount = Number(meta.xItemCount || 0);
+  for (const key of [
+    "statusReasons", "warningReasons", "sourceDiagnostics", "discoveryEngine",
+    "livePocketDiscoveredCount", "livePocketDiscoveryStatus", "livePocketDiscovery",
+    "xLivePocketEnrichedCount", "xGoogleFormEnrichedCount", "xCollectorStatus",
+    "xOfficialAccountCount", "xPostCount", "xItemCount",
+  ]) delete output[key];
+  return output;
+}
+
+function deletedManualIdentityKeys(payload) {
+  const entries = Array.isArray(payload?.deleted) ? payload.deleted : [];
+  return new Set(entries.map((entry) => String(entry?.key || entry || "").trim()).filter(Boolean));
+}
+
+function isDeletedManualFeedItem(item, deletedKeys) {
+  const url = canonicalApplicationUrl(item?.url || "");
+  if (url && deletedKeys.has(`url:${url}`)) return true;
+  const id = String(item?.externalId || item?.id || "").trim();
+  return Boolean(id && deletedKeys.has(`id:${id}`));
 }
 
 async function fetchDocument(source) {
@@ -279,14 +316,30 @@ async function run() {
     : [];
   const previousFeed = await readJson(FEED_PATH, { lotteries: [] });
   const productCatalog = await loadProductCatalog(PRODUCT_CATALOG_PATH);
+  const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
+  const deletedManualKeys = deletedManualIdentityKeys(manualPayload);
   const trustedPrevious = (previousFeed.lotteries || [])
     .filter((item) => item.qualityVersion >= 2 && item.verified === true)
+    .filter((item) => !isDeletedManualFeedItem(item, deletedManualKeys))
     .map((item) => normalizeAppDestinationFields(item));
   const previousDiscoveryState = await readJson(DISCOVERY_STATE_PATH, { version: 1, sources: {} });
   const discoveryTracker = new DiscoveryStateTracker(previousDiscoveryState, new Date(startedAt));
-  const manualPayload = await readJson(MANUAL_LOTTERIES_PATH, { lotteries: [] });
-  const manualLotteries = (Array.isArray(manualPayload) ? manualPayload : manualPayload.lotteries || [])
-    .filter((item) => item && typeof item === "object")
+  const rawManualLotteries = (Array.isArray(manualPayload) ? manualPayload : manualPayload.lotteries || [])
+    .filter((item) => item && typeof item === "object");
+  const relevantManualLotteries = keepRelevant(rawManualLotteries, new Date(startedAt));
+  const expiredManualPrunedCount = rawManualLotteries.length - relevantManualLotteries.length;
+  if (expiredManualPrunedCount > 0) {
+    if (Array.isArray(manualPayload)) {
+      await writeJson(MANUAL_LOTTERIES_PATH, relevantManualLotteries);
+    } else {
+      await writeJson(MANUAL_LOTTERIES_PATH, {
+        ...manualPayload,
+        updatedAt: startedAt,
+        lotteries: relevantManualLotteries,
+      });
+    }
+  }
+  const manualLotteries = relevantManualLotteries
     .map((item) => ({
       ...item,
       sourceKind: "manual",
@@ -549,7 +602,28 @@ async function run() {
         candidate.productCatalogId = gate.catalogProduct.id;
         catalogMatchedCount += 1;
       }
-      const hasMinimum = Boolean(candidate.shop && candidate.product && (candidate.applyEndDate || candidate.deadline) && (candidate.resultStartDate || candidate.resultDate));
+      let officialAnnouncementUrl = "";
+      try {
+        const announcement = new URL(candidate.announcementUrl || "");
+        if (announcement.hostname === "www.pokemoncenter-online.com" && announcement.pathname === "/news/") {
+          officialAnnouncementUrl = announcement.href;
+        }
+      } catch {}
+      const announcedWithoutSchedule = Boolean(
+        candidate.announcedUpcoming === true
+        && candidate.announcementOnly === true
+        && officialAnnouncementUrl
+      );
+      const applicationDestination = Boolean(candidate.url || candidate.appUrl || candidate.fallbackUrl);
+      const hasScheduledApplication = Boolean((candidate.applyEndDate || candidate.deadline) && applicationDestination);
+      const hasHistoricalRecord = Boolean(
+        candidate.historyOnly === true
+        && candidate.applyEndDate
+        && new Date(`${candidate.applyEndDate}T23:59:59+09:00`).getTime() < new Date(startedAt).getTime()
+      );
+      const hasMinimum = Boolean(candidate.shop && candidate.product && (
+        hasScheduledApplication || announcedWithoutSchedule || hasHistoricalRecord
+      ));
       if (hasMinimum) {
         published.push(sanitizeForPublic({
           ...candidate,
@@ -778,6 +852,7 @@ async function run() {
     ...(allWebSourcesFailed ? ["all_web_sources_failed"] : []),
   ];
   const warningReasons = [
+    ...(enabledSources.length === 0 ? ["no_enabled_sources"] : []),
     ...warningSourceResults.map((result) => `source_warning:${result.name}:${result.error || "unknown"}`),
     ...inactiveOfficialDiscovery.map((result) => `official_discovery_no_current_candidates:${result.name}`),
     ...(["no_candidates", "no_relevant_pages", "partial"].includes(livePocketDiscoveryStatus)
@@ -833,6 +908,7 @@ async function run() {
     publishedCount: finalPublished.length,
     historyDays: 35,
     manualEntryCount: manualLotteries.length,
+    expiredManualPrunedCount,
     checkedSourceCount: enabledSources.length,
     successfulSourceCount: webSourceResults.filter((result) => result.ok).length,
     failedSourceCount: failedSourceResults.length,
@@ -857,16 +933,18 @@ async function run() {
     quality,
   };
 
+  const publicMeta = publicCollectorMeta(meta);
   await writeJson(FEED_PATH, {
     version: 1,
     updatedAt: startedAt,
-    meta,
+    meta: publicMeta,
     lotteries: finalPublished
       .sort((a, b) => String(b.collectedAt || "").localeCompare(String(a.collectedAt || "")))
       .map(sanitizeForPublic),
   });
 
-  await writeJson(STATUS_PATH, meta);
+  await writeJson(STATUS_PATH, publicMeta);
+  if (PRIVATE_STATUS_PATH) await writeJson(PRIVATE_STATUS_PATH, meta);
   await writeJson(REVIEW_PATH, {
     updatedAt: startedAt,
     items: reviewQueue,
@@ -881,13 +959,14 @@ async function run() {
   console.log(JSON.stringify({
     ok: runStatus === "ok",
     status: runStatus,
-    statusReasons,
-    warningReasons,
+    statusReasonCount: statusReasons.length,
+    warningReasonCount: warningReasons.length,
     collected: collected.length,
     published: finalPublished.length,
     review: reviewQueue.length,
     rejected: rejected.length,
     manualEntryCount: manualLotteries.length,
+    expiredManualPrunedCount,
     autoCollectedCount,
     multiProductExpandedCount,
     catalogGroupExpandedCount,
@@ -897,9 +976,7 @@ async function run() {
     checkedSourceCount: enabledSources.length,
     successfulSourceCount: webSourceResults.filter((result) => result.ok).length,
     failedSourceCount: failedSourceResults.length,
-    sourceHealth,
-    sourceDiagnostics,
-    discoveryEngine,
+    sourceHealth: publicSourceHealth(sourceHealth),
     livePocketDiscoveredCount,
     livePocketDiscovery,
     xLivePocketEnrichedCount: xEnrichment.livePocketEnrichedCount,

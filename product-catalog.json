@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-10-03T09:00:26.515Z",
+  "updatedAt": "2026-10-03T13:23:54.934Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -321,10 +321,12 @@
       "name": "30th CELEBRATION プレミアムデッキセット エーフィ・ブラッキー",
       "category": "その他の商品",
       "aliases": [
-        "プレミアムデッキセット エーフィ ブラッキー",
-        "エーフィ・ブラッキー"
+        "プレミアムデッキセット エーフィ・ブラッキー",
+        "エーフィ・ブラッキー",
+        "プレミアムデッキセット エーフィ ブラッキー"
       ],
       "officialUrl": "https://www.pokemon-card.com/info/",
+      "priceYen": 6200,
       "imagePath": "./assets/product-images/premium-deck-espeon-umbreon-official.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -345,24 +347,6 @@
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-09-16-7b302805e44e",
-      "year": 2026,
-      "releaseDate": "2026-09-16",
-      "name": "プレミアムデッキセット エーフィ・ブラッキー",
-      "category": "その他の商品",
-      "aliases": [
-        "プレミアムデッキセット エーフィ・ブラッキー",
-        "エーフィ・ブラッキー"
-      ],
-      "officialUrl": "https://www.30th.pokemon-card.com/product/goods-01#goods-shield-07",
-      "priceYen": 6200,
-      "imagePath": "./assets/product-images/auto-2026-09-16-051be9da1856.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T21:32:52.736Z",
       "autoManaged": true
     },
     {
@@ -415,108 +399,6 @@
       "officialUrl": "https://www.30th.pokemon-card.com/product/goods-05",
       "priceYen": 400,
       "imagePath": "./assets/product-images/auto-2026-09-16-b1b4bb12a3a1.webp",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-dbb6b2964371",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-ae8aff7f0641.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-4a42c02f513d",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ウミトリオ イルカマン ヤドラン",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン ウミトリオ イルカマン ヤドラン"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-2baf673a4aa0.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-3728aac73451",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ゼニガメ ニョロモ シェルダー",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン ゼニガメ ニョロモ シェルダー"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-435ba26d03f6.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-631cdcd6a9b9",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン トサキント スターミー ヘイガニ",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン トサキント スターミー ヘイガニ"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-9466d087b5aa.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-21db8bd7e1ca",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ラブカス グソクムシャ ウッウ",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン ラブカス グソクムシャ ウッウ"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-aebbeba6fdaa.jpg",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
-      "autoManaged": true
-    },
-    {
-      "id": "pcg-2026-08-27-980c4667bbf2",
-      "year": 2026,
-      "releaseDate": "2026-08-27",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン一覧",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション みずべのポケモン一覧"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005610.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-08-27-155556472c6f.jpg",
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
@@ -826,38 +708,6 @@
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
     },
     {
-      "id": "pcg-2026-03-13-010",
-      "year": 2026,
-      "releaseDate": "2026-03-13",
-      "name": "カードイラストフィギュアコレクション",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラスト フィギュアコレクション"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/products/index.html?keyword=%E3%82%AB%E3%83%BC%E3%83%89%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E3%83%95%E3%82%A3%E3%82%AE%E3%83%A5%E3%82%A2%E3%82%B3%E3%83%AC%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3",
-      "imagePath": "./assets/product-images/card-illustration-figure-collection.webp",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
-    },
-    {
-      "id": "pcg-2026-03-13-62f5e234a401",
-      "year": 2026,
-      "releaseDate": "2026-03-13",
-      "name": "カードイラストフィギュアコレクション スカーレット&バイオレット",
-      "category": "その他の商品",
-      "aliases": [
-        "カードイラストフィギュアコレクション スカーレット&バイオレット"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/info/005413.html",
-      "priceYen": 1800,
-      "imagePath": "./assets/product-images/auto-2026-03-13-f718ba67248e.png",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T21:32:52.736Z",
-      "autoManaged": true
-    },
-    {
       "id": "pcg-2026-01-23-012",
       "year": 2026,
       "releaseDate": "2026-01-23",
@@ -931,36 +781,6 @@
       ],
       "officialUrl": "https://www.pokemon-card.com/products/index.html?keyword=%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BF%E3%83%BC%E3%82%BB%E3%83%83%E3%83%88MEGA%20%E3%83%A1%E3%82%AC%E3%83%87%E3%82%A3%E3%82%A2%E3%83%B3%E3%82%B7%E3%83%BCex",
       "imagePath": "./assets/product-images/starter-mega-diancie-official.webp",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
-    },
-    {
-      "id": "pcg-2025-08-01-021",
-      "year": 2025,
-      "releaseDate": "2025-08-01",
-      "name": "メガシンフォニア ポケモンセンターセット",
-      "category": "その他の商品",
-      "aliases": [
-        "メガシンフォニア ポケセンセット"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/products/index.html?keyword=%E3%83%A1%E3%82%AC%E3%82%B7%E3%83%B3%E3%83%95%E3%82%A9%E3%83%8B%E3%82%A2%20%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%BB%E3%83%83%E3%83%88",
-      "imagePath": "./assets/product-images/mega-symphonia-pokemon-center-set.webp",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
-    },
-    {
-      "id": "pcg-2025-08-01-020",
-      "year": 2025,
-      "releaseDate": "2025-08-01",
-      "name": "メガブレイブ ポケモンセンターセット",
-      "category": "その他の商品",
-      "aliases": [
-        "メガブレイブ ポケセンセット"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/products/index.html?keyword=%E3%83%A1%E3%82%AC%E3%83%96%E3%83%AC%E3%82%A4%E3%83%96%20%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%BB%E3%83%83%E3%83%88",
-      "imagePath": "./assets/product-images/mega-brave-pokemon-center-set.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
@@ -1516,8 +1336,8 @@
     }
   ],
   "imageCoverage": {
-    "totalProducts": 91,
-    "verifiedImages": 91,
+    "totalProducts": 80,
+    "verifiedImages": 80,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
@@ -1527,6 +1347,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-10-03T09:00:26.515Z"
+    "lastRunAt": "2026-10-03T13:23:54.934Z"
   }
 }

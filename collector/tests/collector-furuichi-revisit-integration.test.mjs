@@ -35,6 +35,7 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
     sources: path.join(temp, "sources.json"),
     feed: path.join(temp, "lottery-feed.json"),
     status: path.join(temp, "collector-status.json"),
+    privateStatus: path.join(temp, "private-collector-status.json"),
     review: path.join(temp, "review.json"),
     quality: path.join(temp, "quality.json"),
     manual: path.join(temp, "manual.json"),
@@ -67,6 +68,7 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
         POKECA_SOURCES_PATH: files.sources,
         POKECA_FEED_PATH: files.feed,
         POKECA_STATUS_PATH: files.status,
+        POKECA_PRIVATE_STATUS_PATH: files.privateStatus,
         POKECA_REVIEW_PATH: files.review,
         POKECA_QUALITY_STATUS_PATH: files.quality,
         POKECA_MANUAL_LOTTERIES_PATH: files.manual,
@@ -87,7 +89,7 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
       "拡張パック ストームエメラルダ",
     ].sort());
     assert.ok(feed.lotteries.every(item => item.applyEndDate === "2026-07-19"));
-    const status = JSON.parse(await fs.readFile(files.status, "utf8"));
+    const status = JSON.parse(await fs.readFile(files.privateStatus, "utf8"));
     assert.equal(status.lastRunAt, "2026-08-03T00:00:00.000Z");
     assert.equal(status.sourceDiagnostics[0].officialRevisitItemCount, 4);
     assert.equal(status.quality.replacedPreviousCount, 2);

@@ -23,10 +23,38 @@ function actionHost(item) {
   }
   return "";
 }
+export function canonicalApplicationUrl(value = "") {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    const livePocketSlug = url.pathname.match(/^\/e\/([A-Za-z0-9_-]+)/)?.[1] || "";
+    if (livePocketSlug && /(^|\.)livepocket\.jp$/.test(host)) return `https://livepocket.jp/e/${livePocketSlug}`;
+    const googleFormId = (host === "docs.google.com" || host === "forms.google.com")
+      ? (url.pathname.match(/^\/forms\/d\/(?:e\/)?([^/]+)\/(?:viewform|formResponse)\/?$/i)?.[1] || "")
+      : "";
+    if (googleFormId) return `https://docs.google.com/forms/d/e/${googleFormId}/viewform`;
+    if (host === "forms.gle") return `https://forms.gle${url.pathname.replace(/\/+$/, "")}`;
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^utm_|^(ref|source|from|fbclid|gclid)$/i.test(key)) url.searchParams.delete(key);
+    }
+    url.hash = "";
+    url.hostname = host;
+    return `${url.origin}${url.pathname}${url.search}`.replace(/\/$/, "");
+  } catch { return ""; }
+}
+function canonicalProduct(value = "") {
+  return clean(value)
+    .replace(/全?9種類?/g, "9種")
+    .replace(/9種セット|9種/g, "9種");
+}
 function keyFor(item) {
   const shop = canonicalShop(item.shop);
-  const product = clean(item.product).slice(0, 90);
-  const date = item.applyEndDate || item.applyStartDate || item.resultStartDate || "";
+  const product = canonicalProduct(item.product).slice(0, 90);
+  const start = item.applyStartDate || "";
+  const end = item.applyEndDate || item.deadline || "";
+  const applicationUrl = canonicalApplicationUrl(item.url || "");
+  if (applicationUrl && product) return [applicationUrl, product, start, end].join("|");
+  const date = end || start || item.resultStartDate || "";
   const host = actionHost(item);
   return [shop, product, date || host].join("|");
 }
@@ -81,6 +109,7 @@ export function sanitizeForPublic(item) {
     "xAuthor",
     "xPostId",
     "officialAccount",
+    "officialNotice",
     "productCandidates",
     "purchaseStartPolicy",
     "expandCatalogGroup",

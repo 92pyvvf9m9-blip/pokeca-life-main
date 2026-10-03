@@ -18,6 +18,12 @@ test('同じURL・店舗・商品・締切はURL表記差があっても同じ�
   assert.equal(identity.identity(a), identity.identity(b));
 });
 
+test('同じ応募先・商品・受付期間なら店舗名や9種表記の違いをまとめる', () => {
+  const a = { shop: 'エディオン', product: '30th CELEBRATION カードセット（9種類セット）', applyStartDate: '2026-10-02', applyEndDate: '2026-10-04', url: 'https://example.com/draw' };
+  const b = { shop: 'トレカ・キャピタル', product: '30th CELEBRATION カードセット 全9種セット', applyStartDate: '2026-10-02', applyEndDate: '2026-10-04', url: 'https://example.com/draw?utm_source=mail' };
+  assert.equal(identity.identity(a), identity.identity(b));
+});
+
 test('同じURLと商品でも締切が違う再抽選は別件になる', () => {
   const base = { shop: 'カードショップA', product: 'ストームエメラルダ', url: 'https://example.com/lottery' };
   assert.notEqual(identity.identity({ ...base, applyEndDate: '2026-07-28' }), identity.identity({ ...base, applyEndDate: '2026-08-05' }));

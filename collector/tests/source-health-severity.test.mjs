@@ -24,7 +24,8 @@ test("HTTP 403だけなら警告表示しつつWorkflowを成功扱いにする"
   assert.equal(report.level, "warning");
   assert.equal(report.exitCode, 0);
   assert.equal(report.annotations[0].level, "warning");
-  assert.match(report.markdown, /収集・公開データ更新は完了/);
+  assert.doesNotMatch(report.markdown, /あみあみ|HTTP 403|LivePocket/);
+  assert.match(report.markdown, /公開一覧を更新しました/);
 });
 
 test("パーサー故障は引き続きWorkflowを失敗扱いにする", () => {

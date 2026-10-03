@@ -99,5 +99,39 @@
     return{items:kept,removed};
   }
 
-  return{isManagedRemote,looksDescriptionLikeProductName,repairLegacyProductName,buildKeySet,findUniqueFallbackMatch,pruneMissingRemote};
+  function isRemotePublishedItem(item={}){
+    if(!item||typeof item!=='object')return false;
+    if(item.origin==='local'||item.origin==='manual-admin')return false;
+    if(item.origin==='remote'||item.remoteId)return true;
+    return Boolean(item.externalId&&(item.verified||item.collectedAt||item.qualityVersion>=2));
+  }
+
+  function pruneExpiredRemote(items=[],options={}){
+    const now=options.now instanceof Date?new Date(options.now):new Date(options.now||Date.now());
+    const days=Number(options.historyDays);
+    const historyDays=Number.isFinite(days)?Math.max(0,days):35;
+    const cutoff=new Date(now);
+    cutoff.setDate(cutoff.getDate()-historyDays);
+    const remoteFn=typeof options.remoteItemFn==='function'?options.remoteItemFn:isRemotePublishedItem;
+    const kept=[];
+    const removed=[];
+
+    for(const item of Array.isArray(items)?items:[]){
+      if(!remoteFn(item)){
+        kept.push(item);
+        continue;
+      }
+      const anchor=String(item?.purchaseEndDate||item?.purchaseDeadline||item?.applyEndDate||item?.deadline||item?.resultStartDate||item?.resultDate||'').slice(0,10);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(anchor)){
+        kept.push(item);
+        continue;
+      }
+      const date=new Date(`${anchor}T23:59:59+09:00`);
+      if(Number.isNaN(date.getTime())||date>=cutoff)kept.push(item);
+      else removed.push(item);
+    }
+    return{items:kept,removed};
+  }
+
+  return{isManagedRemote,looksDescriptionLikeProductName,repairLegacyProductName,buildKeySet,findUniqueFallbackMatch,pruneMissingRemote,isRemotePublishedItem,pruneExpiredRemote};
 });

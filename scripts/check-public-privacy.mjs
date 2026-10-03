@@ -11,7 +11,10 @@ const files = [
 ];
 const forbiddenKeys = [
   'sourceUrl', 'sourceType', 'sourceKind', 'sourceKinds', 'intelligenceSource',
-  'privateSources', 'destinationVerificationReason', 'sourceResults'
+  'privateSources', 'destinationVerificationReason', 'sourceResults', 'sourceDiagnostics',
+  'discoveryEngine', 'statusReasons', 'warningReasons', 'failedSources', 'zeroItemSources',
+  'livePocketDiscovery', 'livePocketDiscoveryStatus', 'xCollectorStatus', 'xOfficialAccountCount',
+  'xPostCount', 'xItemCount', 'xLivePocketEnrichedCount', 'xGoogleFormEnrichedCount'
 ];
 
 async function readJson(file, fallback = {}) {

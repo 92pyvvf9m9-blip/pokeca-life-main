@@ -92,6 +92,28 @@ test("legacy remote fallback can migrate before stale cleanup",()=>{
   assert.equal(found?.id,"legacy");
 });
 
+test("expired remote manual listings are removed after the shared 35-day history window",()=>{
+  const items=[
+    {id:"july",origin:"remote",manualEntry:true,adminPublished:true,purchaseEndDate:"2026-08-02"},
+    {id:"active",origin:"remote",manualEntry:true,adminPublished:true,applyEndDate:"2026-10-04"},
+    {id:"local",origin:"local",manualEntry:true,applyEndDate:"2026-01-01"},
+  ];
+  const result=core.pruneExpiredRemote(items,{now:new Date("2026-10-03T00:00:00Z")});
+  assert.deepEqual(result.removed.map(item=>item.id),["july"]);
+  assert.deepEqual(result.items.map(item=>item.id),["active","local"]);
+});
+
+test("remote expiry keeps a listing until its purchase period has aged out",()=>{
+  const items=[
+    {id:"recent-purchase",origin:"remote",applyEndDate:"2026-08-01",purchaseEndDate:"2026-09-10"},
+    {id:"fallback-to-result",origin:"remote",resultDate:"2026-10-14"},
+    {id:"invalid-date",origin:"remote",applyEndDate:"unknown"},
+  ];
+  const result=core.pruneExpiredRemote(items,{now:new Date("2026-10-03T00:00:00Z")});
+  assert.deepEqual(result.removed,[]);
+  assert.deepEqual(result.items.map(item=>item.id),["recent-purchase","fallback-to-result","invalid-date"]);
+});
+
 test("legacy Hobby Station product descriptions are repaired to the catalog name",()=>{
   const repaired=core.repairLegacyProductName(
     "拡張パック ストームエメラルダ 特性 はしゃのほうこうは、手札からベンチに出したとき、山札を上から4枚見て基本エネルギーを1枚つけることができるぞ！",

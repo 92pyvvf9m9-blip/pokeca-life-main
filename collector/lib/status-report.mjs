@@ -1,10 +1,10 @@
-const CRITICAL_LIVEPOCKET_STATUSES = new Set([
+const CRITICAL_DISCOVERY_STATUSES = new Set([
   "search_failed",
   "candidate_fetch_failed",
   "parser_returned_zero",
 ]);
 
-const WARNING_LIVEPOCKET_STATUSES = new Set([
+const WARNING_DISCOVERY_STATUSES = new Set([
   "no_candidates",
   "no_relevant_pages",
   "partial",
@@ -14,75 +14,48 @@ function number(value) {
   return Number.isFinite(Number(value)) ? Number(value) : 0;
 }
 
-function md(value = "") {
-  return String(value || "")
-    .replace(/\|/g, "\\|")
-    .replace(/[\r\n]+/g, " ")
-    .slice(0, 180);
-}
-
-function statusMark(value) {
-  if (value === "items" || value === "ok") return "✅";
-  if (value === "failed") return "❌";
-  return "⚠️";
-}
-
 export function buildCollectorHealthReport(status = {}) {
   const failedSources = Array.isArray(status.sourceHealth?.failedSources)
     ? status.sourceHealth.failedSources
     : [];
-  const diagnostics = Array.isArray(status.sourceDiagnostics)
-    ? status.sourceDiagnostics
-    : [];
-  const livePocket = status.livePocketDiscovery || {
-    status: status.livePocketDiscoveryStatus || "not_configured",
-  };
-  const livePocketStatus = String(livePocket.status || "not_configured");
-  const fatalFailedSources = failedSources.filter((source) => source.severity !== "warning");
-  const warningFailedSources = failedSources.filter((source) => source.severity === "warning");
-  const allSourcesFailed = number(status.checkedSourceCount) > 0
-    && number(status.successfulSourceCount) === 0;
-  const collectorFatal = fatalFailedSources.length > 0 || allSourcesFailed;
-  const livePocketCritical = CRITICAL_LIVEPOCKET_STATUSES.has(livePocketStatus);
-  const livePocketWarning = WARNING_LIVEPOCKET_STATUSES.has(livePocketStatus);
+  const fatalFailedCount = failedSources.filter((source) => source.severity !== "warning").length;
+  const warningFailedCount = failedSources.length - fatalFailedCount;
+  const failedSourceCount = number(status.failedSourceCount || failedSources.length);
+  const checkedSourceCount = number(status.checkedSourceCount);
+  const successfulSourceCount = number(status.successfulSourceCount);
+  const allSourcesFailed = checkedSourceCount > 0 && successfulSourceCount === 0;
+  const discoveryStatus = String(
+    status.livePocketDiscovery?.status || status.livePocketDiscoveryStatus || "not_configured",
+  );
+  const criticalDiscovery = CRITICAL_DISCOVERY_STATUSES.has(discoveryStatus);
+  const warningDiscovery = WARNING_DISCOVERY_STATUSES.has(discoveryStatus);
+  const collectorFatal = fatalFailedCount > 0 || allSourcesFailed || status.status === "partial";
 
   let level = "ok";
-  if (collectorFatal || livePocketCritical) level = "error";
-  else if (warningFailedSources.length > 0 || livePocketWarning || status.status === "degraded") level = "warning";
+  if (collectorFatal || criticalDiscovery) level = "error";
+  else if (warningFailedCount > 0 || warningDiscovery || status.status === "degraded") level = "warning";
 
   const annotations = [];
-  for (const source of failedSources) {
-    const sourceLevel = source.severity === "warning" ? "warning" : "error";
-    annotations.push({
-      level: sourceLevel,
-      title: sourceLevel === "warning"
-        ? `取得元警告: ${source.name || "不明"}`
-        : `取得元エラー: ${source.name || "不明"}`,
-      message: source.error || "原因不明の取得エラー",
-    });
-  }
-  if (livePocketCritical) {
+  if (collectorFatal) {
     annotations.push({
       level: "error",
-      title: "LivePocket自動発見エラー",
-      message: `状態: ${livePocketStatus}／候補 ${number(livePocket.candidateLinkCount)}件／解析 ${number(livePocket.parsedItemCount)}件`,
+      title: "収集処理で確認が必要です",
+      message: `失敗した取得元 ${failedSourceCount}件。詳細は非公開の診断情報で確認してください。`,
     });
-  } else if (livePocketWarning) {
+  } else if (warningFailedCount > 0 || warningDiscovery || status.status === "degraded") {
     annotations.push({
       level: "warning",
-      title: "LivePocket自動発見の確認が必要",
-      message: `状態: ${livePocketStatus}／検索ページ内リンク ${number(livePocket.searchPageLinkCount)}件／候補 ${number(livePocket.candidateLinkCount)}件`,
+      title: "収集結果を確認してください",
+      message: `取得元の警告 ${warningFailedCount}件。公開一覧の更新は完了しています。`,
     });
   }
-
-  const failedSourceLines = failedSources.length
-    ? [
-        "",
-        "## 失敗した取得元",
-        "",
-        ...failedSources.map((source) => `- ${source.severity === "warning" ? "⚠️" : "❌"} **${md(source.name || "不明")}**: ${md(source.error || "原因不明")}`),
-      ]
-    : [];
+  if (criticalDiscovery) {
+    annotations.push({
+      level: "error",
+      title: "候補ページの確認に失敗しました",
+      message: "自動発見の処理を確認してください。",
+    });
+  }
 
   const lines = [
     "# Pokeca Life 収集結果",
@@ -91,44 +64,17 @@ export function buildCollectorHealthReport(status = {}) {
     `- コレクター: **v${status.collectorVersion || "unknown"}**`,
     `- 公開件数: **${number(status.publishedCount)}件**`,
     `- 確認待ち: **${number(status.reviewCount)}件**`,
-    `- 取得元: **成功 ${number(status.successfulSourceCount)} / 失敗 ${number(status.failedSourceCount)}**`,
-    ...failedSourceLines,
-    "",
-    "## LivePocket自動発見",
-    "",
-    `- 状態: **${livePocketStatus}**`,
-    `- 検索元: ${number(livePocket.successfulSearchSourceCount)}成功 / ${number(livePocket.failedSearchSourceCount)}失敗`,
-    `- 検索ページ内リンク: ${number(livePocket.searchPageLinkCount)}件`,
-    `- 抽選候補リンク: ${number(livePocket.candidateLinkCount)}件`,
-    `- 候補ページ取得: ${number(livePocket.candidateFetchSuccessCount)}成功 / ${number(livePocket.candidateFetchFailureCount)}失敗`,
-    `- 関連ページ: ${number(livePocket.relevantPageCount)}件`,
-    `- 解析できた抽選: ${number(livePocket.parsedItemCount)}件`,
-    "",
-    "## 取得元別診断",
-    "",
-    "| 状態 | 取得元 | 公開候補 | 発見候補 | 関連ページ | 理由・エラー |",
-    "|---|---|---:|---:|---:|---|",
-  ];
-
-  for (const source of diagnostics) {
-    lines.push(
-      `| ${source.status === "failed" && source.severity === "warning" ? "⚠️" : statusMark(source.status)} | ${md(source.name)} | ${number(source.itemCount)} | ${number(source.discovery?.returnedCount)} | ${number(source.relevantPageCount)} | ${md(source.error || source.zeroItemReason)} |`
-    );
-  }
-
-  if (!diagnostics.length) {
-    lines.push("| ⚠️ | 診断情報なし | 0 | 0 | 0 | v1.21.1実行後に表示されます | ");
-  }
-
-  lines.push(
+    `- 取得元: **成功 ${successfulSourceCount} / 失敗 ${failedSourceCount}**`,
+    `- 自動発見候補: **${number(status.livePocketDiscovery?.candidateLinkCount)}件**`,
+    `- 解析済み候補: **${number(status.livePocketDiscovery?.parsedItemCount)}件**`,
     "",
     level === "error"
-      ? "**判定: 収集処理は完走しましたが、失敗があるためWorkflowを失敗扱いにします。診断JSONは保存済みです。**"
+      ? "**判定: 収集処理を確認してください。公開一覧の更新結果は保存されています。**"
       : level === "warning"
-        ? "**判定: 収集・公開データ更新は完了しました。取得元の一部に警告がありますが、Workflowは成功扱いです。**"
-        : "**判定: 取得元・自動発見とも正常です。**",
-    ""
-  );
+        ? "**判定: 公開一覧を更新しました。一部の取得状況を確認してください。**"
+        : "**判定: 収集と公開一覧の更新が完了しました。**",
+    "",
+  ];
 
   return {
     level,

@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-03T09:00:26.515Z",
+  "updatedAt": "2026-10-03T13:23:54.934Z",
   "summary": {
-    "totalProducts": 91,
-    "verifiedImages": 91,
+    "totalProducts": 80,
+    "verifiedImages": 80,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
@@ -18,7 +18,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-052",
@@ -28,7 +28,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-22b4036410c8",
@@ -38,7 +38,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-9e10fea11569",
@@ -48,7 +48,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-e4038b3d7233",
@@ -58,7 +58,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-cdd2b83a66e5",
@@ -68,7 +68,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-c7c7b122cb22",
@@ -78,7 +78,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-ed0ae007ed8e",
@@ -88,7 +88,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-96730e438199",
@@ -98,7 +98,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-b028a10fa4fc",
@@ -108,7 +108,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-10-16-428a6182cbcf",
@@ -118,7 +118,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-20-751ab22b928e",
@@ -128,7 +128,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2025-12-19-013",
@@ -138,7 +138,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-03-08-047",
@@ -148,7 +148,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-20-13149739b789",
@@ -158,7 +158,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-01-23-011",
@@ -168,7 +168,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-16-002",
@@ -178,7 +178,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-16-003",
@@ -198,17 +198,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-09-16-7b302805e44e",
-      "name": "プレミアムデッキセット エーフィ・ブラッキー",
-      "releaseDate": "2026-09-16",
-      "localImage": "./assets/product-images/auto-2026-09-16-051be9da1856.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-16-001",
@@ -218,7 +208,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-16-8d40ada1e4c8",
@@ -228,7 +218,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-09-16-d5d636da4fa8",
@@ -238,67 +228,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-dbb6b2964371",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-ae8aff7f0641.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-4a42c02f513d",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ウミトリオ イルカマン ヤドラン",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-2baf673a4aa0.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-3728aac73451",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ゼニガメ ニョロモ シェルダー",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-435ba26d03f6.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-631cdcd6a9b9",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン トサキント スターミー ヘイガニ",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-9466d087b5aa.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-21db8bd7e1ca",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン ラブカス グソクムシャ ウッウ",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-aebbeba6fdaa.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-08-27-980c4667bbf2",
-      "name": "カードイラストフィギュアコレクション みずべのポケモン一覧",
-      "releaseDate": "2026-08-27",
-      "localImage": "./assets/product-images/auto-2026-08-27-155556472c6f.jpg",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-08-27-1f406cd8052f",
@@ -308,7 +238,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-03-13-c5662a9d8878",
@@ -318,7 +248,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-starter-ex-group",
@@ -328,7 +258,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-005",
@@ -338,7 +268,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-aab3b219b66a",
@@ -348,7 +278,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-d29229162c0c",
@@ -358,7 +288,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-006",
@@ -368,7 +298,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-28bfe2e47f6c",
@@ -378,7 +308,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-a8c1bc06e0b0",
@@ -388,7 +318,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-007",
@@ -398,7 +328,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-a9d0ba28bba0",
@@ -408,7 +338,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-d17f5a1294d2",
@@ -418,7 +348,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-abf0604024de",
@@ -428,7 +358,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-004",
@@ -438,7 +368,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-d7b6bc47815b",
@@ -448,7 +378,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-07-31-218b0e1ceadd",
@@ -458,7 +388,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2026-05-22-008",
@@ -468,26 +398,6 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
-    },
-    {
-      "id": "pcg-2026-03-13-010",
-      "name": "カードイラストフィギュアコレクション",
-      "releaseDate": "2026-03-13",
-      "localImage": "./assets/product-images/card-illustration-figure-collection.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2026-03-13-62f5e234a401",
-      "name": "カードイラストフィギュアコレクション スカーレット&バイオレット",
-      "releaseDate": "2026-03-13",
-      "localImage": "./assets/product-images/auto-2026-03-13-f718ba67248e.png",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
       "lastSeenAt": ""
     },
     {
@@ -535,26 +445,6 @@
       "name": "スターターセットMEGA メガディアンシーex",
       "releaseDate": "2025-09-05",
       "localImage": "./assets/product-images/starter-mega-diancie-official.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2025-08-01-021",
-      "name": "メガシンフォニア ポケモンセンターセット",
-      "releaseDate": "2025-08-01",
-      "localImage": "./assets/product-images/mega-symphonia-pokemon-center-set.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2025-08-01-020",
-      "name": "メガブレイブ ポケモンセンターセット",
-      "releaseDate": "2025-08-01",
-      "localImage": "./assets/product-images/mega-brave-pokemon-center-set.webp",
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
@@ -838,7 +728,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-03-08-7a2ba3dde2eb",
@@ -848,7 +738,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-03-08-b5d1f2ddab37",
@@ -858,7 +748,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-03-08-66604a67203f",
@@ -868,7 +758,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-03-08-20788959e3f2",
@@ -878,7 +768,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+      "lastSeenAt": ""
     },
     {
       "id": "pcg-2024-01-26-050",
