@@ -266,7 +266,7 @@ function replacementScopeKey(item = {}) {
 
 
 async function run() {
-  const startedAt = new Date().toISOString();
+  const startedAt = new Date(process.env.POKECA_NOW || Date.now()).toISOString();
   const rawRegistry = await readJson(SOURCES_PATH, { sources: [] });
   const registry = normalizeSourceRegistry(rawRegistry);
   const sourceDatabase = summarizeSourceRegistry(registry);
@@ -531,7 +531,7 @@ async function run() {
   const merged = keepRelevant(dedupeItems([
     ...expandedPrevious.items,
     ...currentCollected,
-  ]));
+  ]), new Date(startedAt));
 
   const published = [];
   const reviewQueue = [];

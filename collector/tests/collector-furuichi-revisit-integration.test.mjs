@@ -72,11 +72,13 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
         POKECA_MANUAL_LOTTERIES_PATH: files.manual,
         POKECA_DISCOVERY_STATE_PATH: files.state,
         POKECA_X_SOURCES_PATH: files.x,
+        POKECA_NOW: "2026-08-03T00:00:00.000Z",
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
     assert.equal(result.code, 0, result.stderr || result.stdout);
     const feed = JSON.parse(await fs.readFile(files.feed, "utf8"));
+    assert.equal(feed.updatedAt, "2026-08-03T00:00:00.000Z");
     const products = feed.lotteries.map(item => item.product).sort();
     assert.deepEqual(products, [
       "スターターセットex イーブイex",
@@ -86,6 +88,7 @@ test("collector revisits a vanished Furuichi article and replaces the grouped pr
     ].sort());
     assert.ok(feed.lotteries.every(item => item.applyEndDate === "2026-07-19"));
     const status = JSON.parse(await fs.readFile(files.status, "utf8"));
+    assert.equal(status.lastRunAt, "2026-08-03T00:00:00.000Z");
     assert.equal(status.sourceDiagnostics[0].officialRevisitItemCount, 4);
     assert.equal(status.quality.replacedPreviousCount, 2);
   } finally {
