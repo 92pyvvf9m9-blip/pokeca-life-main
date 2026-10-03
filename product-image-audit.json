@@ -1,15 +1,25 @@
 {
   "version": 2,
-  "updatedAt": "2026-07-21T04:52:33.502Z",
+  "updatedAt": "2026-10-03T09:00:26.515Z",
   "summary": {
-    "totalProducts": 66,
-    "verifiedImages": 66,
+    "totalProducts": 91,
+    "verifiedImages": 91,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
     "scope": "現在の商品カタログ登録商品"
   },
   "products": [
+    {
+      "id": "pcg-2026-03-13-009",
+      "name": "拡張パック ニンジャスピナー",
+      "releaseDate": "2027-03-13",
+      "localImage": "./assets/product-images/ninja-spinner.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": false,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
     {
       "id": "pcg-2026-10-16-052",
       "name": "30th CELEBRATION カードセット",
@@ -18,7 +28,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-22b4036410c8",
@@ -28,7 +38,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-9e10fea11569",
@@ -38,7 +48,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-e4038b3d7233",
@@ -48,7 +58,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-cdd2b83a66e5",
@@ -58,7 +68,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-c7c7b122cb22",
@@ -68,7 +78,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-ed0ae007ed8e",
@@ -78,7 +88,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-96730e438199",
@@ -88,7 +98,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-b028a10fa4fc",
@@ -98,7 +108,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-10-16-428a6182cbcf",
@@ -108,7 +118,57 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-09-20-751ab22b928e",
+      "name": "スターターセットexの",
+      "releaseDate": "2026-09-20",
+      "localImage": "./assets/product-images/auto-2026-09-20-683e70e02a00.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2025-12-19-013",
+      "name": "スタートデッキ100 バトルコレクション",
+      "releaseDate": "2026-09-20",
+      "localImage": "./assets/product-images/start-deck-100.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": false,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2024-03-08-047",
+      "name": "バトルアカデミー",
+      "releaseDate": "2026-09-20",
+      "localImage": "./assets/product-images/battle-academy-official.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": false,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-09-20-13149739b789",
+      "name": "拡張パック ストームエメラルダの",
+      "releaseDate": "2026-09-20",
+      "localImage": "./assets/product-images/auto-2026-09-20-7c9be63b5000.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-01-23-011",
+      "name": "拡張パック ムニキスゼロ",
+      "releaseDate": "2026-09-20",
+      "localImage": "./assets/product-images/munikis-zero.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": false,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-09-16-002",
@@ -118,7 +178,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-09-16-003",
@@ -131,6 +191,16 @@
       "lastSeenAt": ""
     },
     {
+      "id": "pcg-2026-09-16-abf859fe1dc4",
+      "name": "プレミアムデッキセット",
+      "releaseDate": "2026-09-16",
+      "localImage": "./assets/product-images/auto-2026-09-16-795df4ca91aa.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
       "id": "pcg-2026-09-16-7b302805e44e",
       "name": "プレミアムデッキセット エーフィ・ブラッキー",
       "releaseDate": "2026-09-16",
@@ -138,7 +208,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-09-16-001",
@@ -148,7 +218,107 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-09-16-8d40ada1e4c8",
+      "name": "拡張パック 30th CELEBRATIONに収録されるFURのミュウ ex やミュウツー ex と同じく、グラフィックアーティストのYOSHIROTTEN氏がイラストを制作",
+      "releaseDate": "2026-09-16",
+      "localImage": "./assets/product-images/auto-2026-09-16-298d3302b4cc.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-09-16-d5d636da4fa8",
+      "name": "拡張パック 30th CELEBRATIONに収録されるピカチュウのカードをデザインに使用したショッピングバッグが登場",
+      "releaseDate": "2026-09-16",
+      "localImage": "./assets/product-images/auto-2026-09-16-b1b4bb12a3a1.webp",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-dbb6b2964371",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-ae8aff7f0641.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-4a42c02f513d",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン ウミトリオ イルカマン ヤドラン",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-2baf673a4aa0.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-3728aac73451",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン ゼニガメ ニョロモ シェルダー",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-435ba26d03f6.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-631cdcd6a9b9",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン トサキント スターミー ヘイガニ",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-9466d087b5aa.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-21db8bd7e1ca",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン ラブカス グソクムシャ ウッウ",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-aebbeba6fdaa.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-980c4667bbf2",
+      "name": "カードイラストフィギュアコレクション みずべのポケモン一覧",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-155556472c6f.jpg",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-08-27-1f406cd8052f",
+      "name": "拡張パック スターバース",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-08-27-f718ba67248e.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-03-13-c5662a9d8878",
+      "name": "強化拡張パック ポケモンカード151",
+      "releaseDate": "2026-08-27",
+      "localImage": "./assets/product-images/auto-2026-03-13-f718ba67248e.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-07-31-starter-ex-group",
@@ -158,7 +328,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-07-31-005",
@@ -168,7 +338,27 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-aab3b219b66a",
+      "name": "スターターセットex イーブイexでポケカを始めよう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-ce43c5201533.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-d29229162c0c",
+      "name": "スターターセットex イーブイexで遊ぼう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-13cc1cc16b69.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-07-31-006",
@@ -178,7 +368,27 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-28bfe2e47f6c",
+      "name": "スターターセットex ゾロア＆ゾロアークexでポケカを始めよう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-148537dc2afe.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-a8c1bc06e0b0",
+      "name": "スターターセットex ゾロア＆ゾロアークexで遊ぼう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-36e8eb13c580.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-07-31-007",
@@ -188,7 +398,37 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-a9d0ba28bba0",
+      "name": "スターターセットex ニャオハ＆マスカーニャexでポケカを始めよう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-ee8feecfddab.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-d17f5a1294d2",
+      "name": "スターターセットex ニャオハ＆マスカーニャexで遊ぼう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-18c5d62566c3.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-abf0604024de",
+      "name": "スターターセットexでバトルを楽しもう",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-f07f3de17d0a.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-07-31-004",
@@ -198,7 +438,27 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-d7b6bc47815b",
+      "name": "拡張パック ストームエメラルダに基本エネルギーのカードは収録されません",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-f4b2192ded3c.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2026-07-31-218b0e1ceadd",
+      "name": "拡張パックを開封して、その場で構築したデッキで対戦する、ポケモンカードゲームの遊び方の1つ",
+      "releaseDate": "2026-07-31",
+      "localImage": "./assets/product-images/auto-2026-07-31-f4b2192ded3c.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-05-22-008",
@@ -208,17 +468,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2026-01-23-011",
-      "name": "拡張パック ムニキスゼロ",
-      "releaseDate": "2026-05-09",
-      "localImage": "./assets/product-images/munikis-zero.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2026-03-13-010",
@@ -241,40 +491,10 @@
       "lastSeenAt": ""
     },
     {
-      "id": "pcg-2026-03-13-009",
-      "name": "拡張パック ニンジャスピナー",
-      "releaseDate": "2026-03-13",
-      "localImage": "./assets/product-images/ninja-spinner.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2026-03-13-c5662a9d8878",
-      "name": "強化拡張パック ポケモンカード151",
-      "releaseDate": "2026-03-13",
-      "localImage": "./assets/product-images/auto-2026-03-13-f718ba67248e.png",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": true,
-      "lastSeenAt": ""
-    },
-    {
       "id": "pcg-2026-01-23-012",
       "name": "スペシャルカードセット メガエルレイドex",
       "releaseDate": "2026-01-23",
       "localImage": "./assets/product-images/mega-gallade-special-set.webp",
-      "verified": true,
-      "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
-    },
-    {
-      "id": "pcg-2025-12-19-013",
-      "name": "スタートデッキ100 バトルコレクション",
-      "releaseDate": "2025-12-19",
-      "localImage": "./assets/product-images/start-deck-100.webp",
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
@@ -611,14 +831,14 @@
       "lastSeenAt": ""
     },
     {
-      "id": "pcg-2024-03-08-047",
-      "name": "バトルアカデミー",
+      "id": "pcg-2024-03-08-35d4dd328725",
+      "name": "バトルアカデミーは開催店舗より貸し出します",
       "releaseDate": "2024-03-08",
-      "localImage": "./assets/product-images/battle-academy-official.webp",
+      "localImage": "./assets/product-images/auto-2024-03-08-f718ba67248e.png",
       "verified": true,
       "status": "official-verified",
-      "autoManaged": false,
-      "lastSeenAt": ""
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2024-03-08-7a2ba3dde2eb",
@@ -628,7 +848,37 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": ""
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2024-03-08-b5d1f2ddab37",
+      "name": "バトルアカデミー体験会オリジナルノート",
+      "releaseDate": "2024-03-08",
+      "localImage": "./assets/product-images/auto-2024-03-08-f718ba67248e.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2024-03-08-66604a67203f",
+      "name": "バトルアカデミー体験会に参加したら1冊プレゼントします",
+      "releaseDate": "2024-03-08",
+      "localImage": "./assets/product-images/auto-2024-03-08-f718ba67248e.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
+    },
+    {
+      "id": "pcg-2024-03-08-20788959e3f2",
+      "name": "バトルアカデミー体験会は定員になり次第、受付終了予定時間の前であっても受付終了となります",
+      "releaseDate": "2024-03-08",
+      "localImage": "./assets/product-images/auto-2024-03-08-f718ba67248e.png",
+      "verified": true,
+      "status": "official-verified",
+      "autoManaged": true,
+      "lastSeenAt": "2026-10-03T09:00:26.515Z"
     },
     {
       "id": "pcg-2024-01-26-050",
