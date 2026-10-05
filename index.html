@@ -940,6 +940,113 @@ main{padding:14px 14px calc(108px + env(safe-area-inset-bottom))}
   .section{margin-top:17px}
   .new-lottery-card>button.secondary{min-width:108px}
 }
+
+/* Lottery feed and notification visual refresh */
+:root{--bg:#0a0e13;--card:#121820;--line:#29333e;--text:#f4f6f8;--muted:#aeb8c3;--p:#8662e8;--p2:#bd9bff;--ok:#4ade80;--warn:#fbbf24}
+.app{background:radial-gradient(ellipse at 100% 0,rgba(134,98,232,.11),transparent 34%),var(--bg)}
+header{background:rgba(10,14,19,.94);border-bottom-color:#ffffff10}
+nav{background:rgba(13,18,24,.96);border-top-color:#ffffff14}
+nav button.sel{background:#8662e829;color:#e9ddff}
+.sync-section{margin-top:22px}
+.sync-section>.head{align-items:flex-start}
+.sync-section>.head h2{font-size:19px;letter-spacing:-.02em}
+.sync-subtitle{margin-top:4px;font-size:12px;line-height:1.4}
+.sync-status-row{margin:12px 0 8px}
+.sync-status{padding:6px 9px;font-size:11px}
+.sync-time{font-size:10px}
+.feed-diagnostics{margin:8px 0 12px;border:1px solid #ffffff12;border-radius:14px;background:#ffffff04;overflow:hidden}
+.feed-diagnostics>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;color:#dbe1e7;font-size:12px;font-weight:800;list-style:none;cursor:pointer}
+.feed-diagnostics>summary::-webkit-details-marker,.feed-review-group>summary::-webkit-details-marker{display:none}
+.feed-diagnostics>summary::after{content:'＋';color:var(--muted);font-size:14px}
+.feed-diagnostics[open]>summary::after{content:'−'}
+.feed-diagnostics>summary small{margin-left:auto;color:var(--muted);font-size:10px;font-weight:500}
+.feed-diagnostics-content{padding:0 10px 10px}
+.feed-diagnostics .collector-summary{margin:0 0 8px}
+.feed-diagnostics .feed-connection-notice{margin:0!important}
+.feed-count-row{display:flex;gap:8px;margin:12px 0 10px;overflow:auto}
+.feed-count-row>span{flex:0 0 auto;padding:7px 10px;border:1px solid #ffffff12;border-radius:999px;background:#ffffff05;color:var(--muted);font-size:11px;white-space:nowrap}
+.feed-count-row b{color:#f4f6f8;font-size:12px}
+#newLotteryList.stack{gap:11px}
+.feed-group{display:grid;gap:8px}
+.feed-group-head{display:flex;justify-content:space-between;align-items:center;padding:1px 2px}
+.feed-group-head h3{margin:0;color:#d9dfe6;font-size:12px;letter-spacing:.015em}
+.feed-group-head>span{color:var(--muted);font-size:10px}
+.feed-group-list{display:grid;gap:8px}
+.new-lottery-card.feed-card{position:relative;display:grid;gap:10px;padding:12px!important;border:1px solid #ffffff12!important;border-radius:17px!important;background:linear-gradient(145deg,#151c25,#11171e)!important;box-shadow:0 6px 20px #0002!important}
+.feed-card-main{display:grid;grid-template-columns:52px minmax(0,1fr);gap:11px;align-items:center;min-width:0}
+.new-lottery-card .lottery-product-thumb.home{flex-basis:52px;width:52px;height:68px;border-color:#ffffff16;background:linear-gradient(145deg,#202936,#131922)}
+.feed-card-copy{min-width:0}
+.feed-card-topline{display:flex;align-items:center;gap:7px;min-width:0}
+.feed-shop{min-width:0;overflow:hidden;color:#c3cbd4;font-size:11px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.new-lottery-card .new-badge{position:static;flex:0 0 auto;padding:3px 6px;border:1px solid #9c7bf34d;border-radius:999px;background:#8662e81a;color:#d8c7ff;font-size:8px;letter-spacing:.02em}
+.new-lottery-card h3{display:-webkit-box;margin:4px 0 0!important;overflow:hidden;color:#f4f6f8;font-size:14px!important;font-weight:800;line-height:1.36!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.feed-card-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.feed-card-meta span{padding:3px 6px;border-radius:6px;background:#ffffff08;color:#aeb9c5;font-size:9px;line-height:1.2}
+.feed-card-application{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;align-items:center;padding:9px 10px;border:1px solid #ffffff0c;border-radius:12px;background:#0b1117}
+.feed-state{display:inline-flex;align-items:center;gap:6px;min-width:0;color:#c5cdd5;font-size:10px;font-weight:800}
+.feed-state i{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#94a3b8}
+.feed-state.ready i{background:#4ade80;box-shadow:0 0 0 3px #4ade8019}
+.feed-state.upcoming i{background:#60a5fa;box-shadow:0 0 0 3px #60a5fa19}
+.feed-state.review i{background:#fbbf24;box-shadow:0 0 0 3px #fbbf2419}
+.feed-period{grid-column:1/-1;display:grid;gap:2px;min-width:0}
+.feed-period small{color:#8995a1;font-size:9px}
+.feed-period strong{overflow-wrap:anywhere;color:#f2f4f6;font-size:12px;font-weight:700;line-height:1.4}
+.feed-remaining{grid-column:2;grid-row:1;justify-self:end;color:#b8a0ff;font-size:9px;font-weight:800;white-space:nowrap}
+.feed-card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.feed-confirmed,.feed-source-note{min-width:0;color:#a6b1bd;font-size:9px;line-height:1.3}
+.feed-confirmed{color:#76dca0}
+.feed-detail-button{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:34px;padding:7px 10px;border:1px solid #8b6be64d;border-radius:10px;background:#8662e81a;color:#d7c7ff;font-size:10px;font-weight:800}
+.feed-detail-button span{font-size:16px;line-height:10px}
+.feed-review-group{border:1px solid #ffffff14;border-radius:15px;background:#11171e;overflow:hidden}
+.feed-review-group>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;color:#e5e9ed;list-style:none;cursor:pointer}
+.feed-review-group>summary>span{display:grid;gap:3px}
+.feed-review-group>summary strong{font-size:12px}
+.feed-review-group>summary small{color:var(--muted);font-size:10px}
+.feed-review-group>summary>b{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:#fbbf2417;color:#f4d27c;font-size:10px}
+.feed-review-group[open]>summary{border-bottom:1px solid #ffffff10}
+.feed-review-group>.feed-group-list{padding:9px}
+.feed-card-review{border-color:#f4c86127!important}
+.feed-empty-ready{display:grid;gap:4px;padding:16px 14px;border:1px solid #ffffff12;border-radius:15px;background:#11171e}
+.feed-empty-ready strong{color:#e8edf2;font-size:12px}
+.feed-empty-ready span{color:var(--muted);font-size:10px;line-height:1.45}
+.sync-read-all{min-height:38px;margin-top:8px;padding:8px 12px!important;border:1px solid #ffffff16!important;border-radius:11px!important;background:#ffffff06!important;color:#c5ccd4!important;font-size:10px!important}
+.history-panel{margin-top:10px}
+
+.notification-sheet{max-height:90dvh;padding:18px 15px calc(18px + env(safe-area-inset-bottom));border-color:#ffffff1a;background:#10161d}
+.notification-sheet .modalhead{position:sticky;top:-18px;z-index:2;margin:-18px -15px 12px;padding:16px 15px 11px;border-bottom:1px solid #ffffff10;background:rgba(16,22,29,.96);backdrop-filter:blur(16px)}
+.notification-sheet .modalhead h2{margin:3px 0 0;font-size:23px}
+.notification-section{margin:14px 0 18px}
+.notification-section h3{display:flex;align-items:center;gap:7px;margin:0 0 8px;color:#eff2f5;font-size:14px}
+.notification-section h3 span{display:inline-grid;min-width:20px;height:20px;padding:0 5px;place-items:center;border:1px solid #ffffff14;border-radius:999px;background:#ffffff08;color:#aeb8c3;font-size:9px}
+.notification-section>p{margin:-3px 0 9px;color:var(--muted);font-size:10px;line-height:1.4}
+.notification-list{gap:7px}
+.notification-item{width:100%;min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border:1px solid #ffffff12;border-radius:13px;background:#171e27;color:var(--text);text-align:left;-webkit-appearance:none;appearance:none}
+.notification-copy{display:grid;gap:3px;min-width:0;flex:1}
+.notification-item strong{margin:0;color:#f3f5f7;font-size:12px;line-height:1.3}
+.notification-item small{color:#aeb8c3;font-size:10px;line-height:1.35}
+.notification-item .notification-product{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.notification-category{color:#a78cf5;font-size:8px;font-weight:900;letter-spacing:.04em}
+.notification-date,.notification-note{color:#8996a3!important;font-size:9px!important}
+.notification-days{min-width:43px;width:auto;height:31px;flex:0 0 auto;padding:0 8px;border:1px solid #ffffff12;border-radius:9px;background:#ffffff08;color:#d9dee4;font-size:10px}
+.notification-item.urgent{border-color:#f8717133;background:#281a1d}
+.notification-item.urgent .notification-category,.notification-item.urgent .notification-days{color:#ffb2a8}
+.notification-item.urgent .notification-days{border-color:#f8717133;background:#f8717110}
+.notification-item.soon{border-color:#fbbf2430;background:#211f19}
+.notification-item.soon .notification-category,.notification-item.soon .notification-days{color:#f2d27e}
+.notification-item.review{border-color:#fbbf2424;background:#191a19}
+.notification-item.review .notification-category{color:#f2d27e}
+.notification-item.review .notification-days{border-color:#fbbf242c;background:#fbbf2410;color:#f2d27e}
+.notification-empty{display:grid;gap:5px;padding:22px 16px;text-align:left;border:1px dashed #ffffff1b;border-radius:15px;background:#ffffff03}
+.notification-empty strong{color:#e9edf0;font-size:13px}
+.notification-empty span{color:var(--muted);font-size:11px;line-height:1.45}
+@media(max-width:390px){
+  .feed-card-main{grid-template-columns:48px minmax(0,1fr);gap:9px}
+  .new-lottery-card .lottery-product-thumb.home{flex-basis:48px;width:48px;height:64px}
+  .feed-card-application{padding:8px}
+  .feed-detail-button{min-height:32px;padding:6px 8px;font-size:9px}
+  .notification-sheet{padding-right:12px;padding-left:12px}
+  .notification-sheet .modalhead{margin-right:-12px;margin-left:-12px;padding-right:12px;padding-left:12px}
+}
 </style></head><body><div class="app"><header><div><p class="eyebrow">POKECA LIFE</p><h1 id="title">ホーム</h1></div><button class="icon" id="bellButton" aria-label="お知らせを開く">🔔<span id="notificationBadge" class="hide">0</span></button></header><main>
 <section class="screen on" data-screen="home"><div class="hero home-module" data-home-section="tasks"><p class="muted">おかえりなさい</p><h2>今日やることを、すぐ確認。</h2><div id="tasks" class="tasks"></div></div>
 <div class="section home-module today-deadline-section" data-home-section="deadlines">
@@ -978,16 +1085,22 @@ main{padding:14px 14px calc(108px + env(safe-area-inset-bottom))}
     <span id="syncStatus" class="sync-status">未同期</span>
     <span id="lastSyncText" class="sync-time">最終更新：未実行</span>
   </div>
-  <div id="collectorSummary" class="collector-summary">
-    <span><b id="collectorSourceCount">0</b> 巡回対象</span>
-    <span><b id="collectorSuccessCount">0/0</b> Web成功</span>
-    <span><b id="collectorXCount">待機</b> 告知解析</span>
-    <span><b id="collectorReviewCount">0</b> 要確認</span>
-  </div>
-  <div id="feedConnectionNotice" class="feed-connection-notice local">
-    <span class="sync-dot"></span>
-    <span id="feedConnectionText">同梱フィードで動作中</span>
-  </div>
+  <details class="feed-diagnostics">
+    <summary><span>収集状況</span><small>巡回先・接続情報</small></summary>
+    <div class="feed-diagnostics-content">
+      <div id="collectorSummary" class="collector-summary">
+        <span><b id="collectorSourceCount">0</b> 巡回対象</span>
+        <span><b id="collectorSuccessCount">0/0</b> Web成功</span>
+        <span><b id="collectorXCount">待機</b> 告知解析</span>
+        <span><b id="collectorReviewCount">0</b> 要確認</span>
+      </div>
+      <div id="feedConnectionNotice" class="feed-connection-notice local">
+        <span class="sync-dot"></span>
+        <span id="feedConnectionText">同梱フィードで動作中</span>
+      </div>
+    </div>
+  </details>
+  <div id="newLotteryCounts" class="feed-count-row" aria-live="polite"></div>
   <div id="newLotteryList" class="stack"></div>
   <button id="markAllNewRead" class="secondary sync-read-all hide" type="button">すべて確認済みにする</button>
   <details class="history-panel" id="historyPanel">
@@ -1340,13 +1453,13 @@ main{padding:14px 14px calc(108px + env(safe-area-inset-bottom))}
 
 
 <div id="notificationBackdrop" class="backdrop hide">
-  <div class="sheet detailmodal">
+  <div class="sheet detailmodal notification-sheet">
     <div class="modalhead">
       <div>
         <p class="eyebrow">NOTIFICATIONS</p>
         <h2>お知らせ</h2>
       </div>
-      <button id="notificationClose" class="icon">✕</button>
+      <button id="notificationClose" class="icon" type="button" aria-label="お知らせを閉じる">✕</button>
     </div>
     <div id="notificationBody"></div>
   </div>
@@ -2546,7 +2659,7 @@ function collectNotifications(){
       alerts.push({item,label,value,time,kind,hours,days});
     }
 
-    if(!item.url&&['open','applied'].includes(item.status)){
+    if(!destinationPrimaryUrl(item)&&['open','applied'].includes(item.status)){
       alerts.push({item,label:'応募URL未登録',value:'',time:'',kind:'missing-url',hours:9999,days:99});
     }
   }
@@ -2555,21 +2668,19 @@ function collectNotifications(){
 }
 
 function notificationTitle(n){
-  if(n.kind==='missing-url')return 'URLを登録してください';
-  if(n.hours<=3)return `まもなく：${n.label}`;
-  if(n.hours<=24)return `今日：${n.label}`;
-  if(n.hours<=48)return `明日：${n.label}`;
-  return `あと${Math.ceil(n.hours/24)}日：${n.label}`;
+  if(n.kind==='missing-url')return '応募先を確認';
+  return n.label;
 }
 
 function notificationClass(n){
-  if(n.kind==='missing-url'||n.hours<=24)return 'urgent';
+  if(n.kind==='missing-url')return 'review';
+  if(n.hours<=24)return 'urgent';
   if(n.hours<=72)return 'soon';
   return '';
 }
 
 function notificationCountLabel(n){
-  if(n.kind==='missing-url')return 'URL';
+  if(n.kind==='missing-url')return '確認';
   if(n.hours<=3)return `${Math.max(1,Math.ceil(n.hours))}h`;
   if(n.hours<=24)return '今日';
   return `${Math.ceil(n.hours/24)}日`;
@@ -2577,10 +2688,11 @@ function notificationCountLabel(n){
 
 function notificationItemHTML(n){
   return `<button class="notification-item ${notificationClass(n)}" data-notification-lottery="${n.item.id}">
-    <div>
+    <div class="notification-copy">
+      <span class="notification-category">${n.kind==='missing-url'?'情報確認':'期限'}</span>
       <strong>${esc(notificationTitle(n))}</strong>
-      <small>${esc(n.item.shop)}｜${esc(n.item.product)}</small>
-      ${n.value?`<small>${shortDateTime(n.value,n.time)}</small>`:''}
+      <small class="notification-product">${esc(n.item.shop)}｜${esc(lotteryDisplayProduct(n.item))}</small>
+      ${n.kind==='missing-url'?'<small class="notification-note">応募ページの情報がありません</small>':`<small class="notification-date">${shortDateTime(n.value,n.time)}</small>`}
     </div>
     <span class="notification-days">${notificationCountLabel(n)}</span>
   </button>`;
@@ -2602,14 +2714,14 @@ function openNotifications(){
   const missing=alerts.filter(x=>x.kind==='missing-url');
 
   const sections=[];
-  if(today.length)sections.push(`<section class="notification-section"><h3>今日</h3><div class="notification-list">${today.map(notificationItemHTML).join('')}</div></section>`);
-  if(soon.length)sections.push(`<section class="notification-section"><h3>3日以内</h3><div class="notification-list">${soon.map(notificationItemHTML).join('')}</div></section>`);
-  if(later.length)sections.push(`<section class="notification-section"><h3>7日以内</h3><div class="notification-list">${later.map(notificationItemHTML).join('')}</div></section>`);
-  if(missing.length)sections.push(`<section class="notification-section"><h3>要確認</h3><div class="notification-list">${missing.map(notificationItemHTML).join('')}</div></section>`);
+  if(today.length)sections.push(`<section class="notification-section"><h3>今日の予定 <span>${today.length}</span></h3><div class="notification-list">${today.map(notificationItemHTML).join('')}</div></section>`);
+  if(soon.length)sections.push(`<section class="notification-section"><h3>3日以内 <span>${soon.length}</span></h3><div class="notification-list">${soon.map(notificationItemHTML).join('')}</div></section>`);
+  if(later.length)sections.push(`<section class="notification-section"><h3>7日以内 <span>${later.length}</span></h3><div class="notification-list">${later.map(notificationItemHTML).join('')}</div></section>`);
+  if(missing.length)sections.push(`<section class="notification-section notification-review-section"><h3>情報確認中 <span>${missing.length}</span></h3><p>応募ページが確認できていない抽選です。</p><div class="notification-list">${missing.map(notificationItemHTML).join('')}</div></section>`);
 
   $('#notificationBody').innerHTML=sections.length
     ? sections.join('')
-    : '<div class="notification-empty">現在、確認が必要なお知らせはありません。</div>';
+    : '<div class="notification-empty"><strong>確認するお知らせはありません</strong><span>応募期限が近づくと、ここに表示します。</span></div>';
 
   $('#notificationBackdrop').classList.remove('hide');
 }
@@ -2875,22 +2987,37 @@ function unreadRemoteLotteries(){
 }
 function newLotteryCardHTML(item){
   const p=lotteryPeriodData(item);
-  return `<article class="item new-lottery-card" data-new-lottery="${item.id}">
-    <span class="new-badge">NEW</span>
-    <div class="row">
-      <div>
-        <h3>${esc(item.shop||'店舗未指定')}</h3>
-        <p>${esc(lotteryDisplayProduct(item))}</p>
+  const hasSchedule=Boolean(p.apply.startDate||p.apply.endDate);
+  const hasUrl=Boolean(destinationPrimaryUrl(item));
+  const review=!hasSchedule||!hasUrl;
+  const state=!hasUrl?'応募先未確認':!hasSchedule?'日程未掲載':isLotteryUpcoming(item)?'応募開始前':'応募情報あり';
+  const stateClass=!hasUrl||!hasSchedule?'review':isLotteryUpcoming(item)?'upcoming':'ready';
+  const period=hasSchedule
+    ?periodText(p.apply.startDate,p.apply.startTime,p.apply.endDate,p.apply.endTime,p.apply.note||'')
+    :'応募期間の掲載待ち';
+  const remaining=p.apply.endDate?remainingText(p.apply.endDate,p.apply.endTime):'';
+  const confirmed=item.qualityVersion>=2||item.verified;
+  return `<article class="item new-lottery-card feed-card ${review?'feed-card-review':'feed-card-ready'}">
+    <div class="feed-card-main">
+      ${productThumbnailHTML(item,'home')}
+      <div class="feed-card-copy">
+        <div class="feed-card-topline">
+          <span class="feed-shop">${esc(item.shop||'店舗未指定')}</span>
+          <span class="new-badge">新着</span>
+        </div>
+        <h3>${esc(lotteryDisplayProduct(item))}</h3>
+        <div class="feed-card-meta"><span>${esc(item.type||'種別未設定')}</span><span>${esc(item.area||'地域未設定')}</span></div>
       </div>
     </div>
-    <div class="remote-meta">
-      <span class="remote-tag">${esc(item.type||'通販')}</span>
-      <span class="remote-tag">${esc(item.area||'全国')}</span>
-      ${item.origin==='remote'?'<span class="remote-tag auto-collected">自動収集</span>':''}
-      ${item.qualityVersion>=2?'<span class="data-quality-mark">✓ 内容確認済み</span>':item.verified?'<span class="remote-tag">確認済み</span>':''}
+    <div class="feed-card-application">
+      <span class="feed-state ${stateClass}"><i></i>${state}</span>
+      <div class="feed-period"><small>応募期間</small><strong>${esc(period)}</strong></div>
+      ${remaining?`<span class="feed-remaining">${esc(remaining)}</span>`:''}
     </div>
-    ${periodBlockHTML('応募期間',p.apply,true)}
-    <button class="secondary" type="button" data-new-lottery="${item.id}">詳細を見る</button>
+    <div class="feed-card-footer">
+      ${confirmed?'<span class="feed-confirmed">✓ 内容確認済み</span>':''}
+    <button class="feed-detail-button" type="button" data-new-lottery="${item.id}">${review?'情報を確認':'応募情報を見る'} <span aria-hidden="true">›</span></button>
+    </div>
   </article>`;
 }
 
@@ -2963,11 +3090,29 @@ function renderNewLotteries(){
   const markAll=$('#markAllNewRead');
   if(!list)return;
   const unread=unreadRemoteLotteries().filter(lotteryVisibleOnHome);
+  const ready=unread.filter(item=>{
+    const p=lotteryPeriodData(item);
+    return Boolean(destinationPrimaryUrl(item)&&(p.apply.startDate||p.apply.endDate));
+  });
+  const review=unread.filter(item=>!ready.includes(item));
+  const counts=$('#newLotteryCounts');
+  if(counts){
+    counts.innerHTML=unread.length
+      ?`<span><b>${ready.length}</b> 応募先・日程あり</span><span><b>${review.length}</b> 情報確認中</span>`
+      :'';
+    counts.classList.toggle('hide',unread.length===0);
+  }
   if(unread.length){
-    list.innerHTML=unread.slice(0,8).map(newLotteryCardHTML).join('');
+    const readyHTML=ready.length
+      ?`<section class="feed-group"><div class="feed-group-head"><h3>応募先・日程あり</h3><span>${ready.length}件</span></div><div class="feed-group-list">${ready.map(newLotteryCardHTML).join('')}</div></section>`
+      :`<div class="feed-empty-ready"><strong>応募先と日程がそろった新着はありません</strong><span>新しい情報が見つかると、ここに表示します。</span></div>`;
+    const reviewHTML=review.length
+      ?`<details class="feed-review-group"><summary><span><strong>情報確認中</strong><small>日程または応募先が未掲載</small></span><b>${review.length}件</b></summary><div class="feed-group-list">${review.map(newLotteryCardHTML).join('')}</div></details>`
+      :'';
+    list.innerHTML=`${readyHTML}${reviewHTML}`;
     if(markAll)markAll.classList.remove('hide');
   }else{
-    list.innerHTML='<div class="empty">新しい抽選はありません。アプリ起動時に自動確認します。</div>';
+    list.innerHTML='<div class="feed-empty-ready"><strong>新しい抽選はありません</strong><span>アプリ起動時に最新情報を確認します。</span></div>';
     if(markAll)markAll.classList.add('hide');
   }
   setSyncStatus(
