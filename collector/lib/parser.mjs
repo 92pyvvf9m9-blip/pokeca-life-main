@@ -75,6 +75,24 @@ function labelText(lines, labels) {
   return output.join(" ");
 }
 
+function labeledPeriodText(text, labels) {
+  const value = String(text || "").normalize("NFKC")
+    .replace(/([0-9])\s+(?=[年月日時分])/g, "$1")
+    .replace(/([年月日時:])\s+(?=\d)/g, "$1");
+  for (const label of labels) {
+    const index = value.indexOf(label);
+    if (index < 0) continue;
+    let section = value.slice(index + label.length).replace(/^[\s:：]+/, "");
+    const stop = [...STOP_LABELS, "販売受付期間", "結果発表予定日", "当選者購入期間", "ご注文期限", "対象商品", "応募方法", "抽選お申し込み条件", "抽選の対象", "抽選お申し込み概要", "抽選結果発表"]
+      .map((next) => section.indexOf(next))
+      .filter((position) => position >= 0);
+    if (stop.length) section = section.slice(0, Math.min(...stop));
+    section = section.split("\n").filter((line) => line.trim()).slice(0, 5).join(" ").trim();
+    if (/\d{1,2}(?:月|\/|-)\s*\d{1,2}/.test(section)) return `${label} ${section}`;
+  }
+  return "";
+}
+
 function bestActionUrl(html, sourceUrl) {
   const links = extractLinks(html, sourceUrl);
   const preferred = links.find((link) => /応募|抽選へ進む|抽選販売専用サイト|抽選販売サイト|応募ページ|申込受付|エントリー|申し込/.test(link.text));
@@ -82,9 +100,10 @@ function bestActionUrl(html, sourceUrl) {
 }
 
 function buildRecord({ source, product, applyText, resultText, purchaseText, html, collectedAt, actionUrlOverride = "", shopOverride = "", typeOverride = "", areaOverride = "" }) {
-  const apply = parseDateRange(applyText);
-  const result = parseDateRange(resultText);
-  const purchase = parseDateRange(purchaseText);
+  const base = new Date(collectedAt);
+  const apply = parseDateRange(applyText, base);
+  const result = parseDateRange(resultText, base);
+  const purchase = parseDateRange(purchaseText, base);
   const actionUrl = actionUrlOverride || bestActionUrl(html, source.url);
   const externalId = hash([
     source.id,
@@ -190,6 +209,7 @@ function repairPublishedYear(record) {
 function normalizePokemonProductName(value = "") {
   return cleanProduct(String(value)
     .normalize("NFKC")
+    .replace(/30(?:th|周年)\s*セレブレーション/ig, "30th CELEBRATION")
     .replace(/[「」『』]/g, "")
     .replace(/\s*（再販）\s*|\s*\(再販\)\s*/g, "")
     .replace(/\s+/g, " "));
@@ -277,14 +297,19 @@ function cleanLivePocketProduct(value = "") {
     .replace(/&/g, "＆")
     .replace(/\s*(?:抽選販売|抽選受付|抽選予約販売|購入権応募受付|抽選販売のお知らせ).*$/i, "")
     .replace(/^\s*[【\[][^】\]]*(?:店|センター)[】\]]\s*/, "")
+    .replace(/\s*(?:購入券|購入整理券|のチケット情報|\d{1,2}月入荷分).*$/i, "")
     .trim();
 }
 
 function livePocketProduct(lines, html) {
+  // The current site truncates og:title, but its h1 contains the full title.
+  const heading = String(html).match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || "";
+  const headingProduct = cleanLivePocketProduct(htmlToText(heading));
+  if (isPokemonCard(headingProduct) && !/\.\.\.|…/.test(headingProduct) && headingProduct.length <= 180) return headingProduct;
   const title = livePocketTitle(html);
   const titleCandidates = [title, ...lines.slice(0, 50)]
     .map(cleanLivePocketProduct)
-    .filter((value) => isPokemonCard(value) && value.length >= 4 && value.length <= 180);
+    .filter((value) => isPokemonCard(value) && !/\.\.\.|…/.test(value) && value.length >= 4 && value.length <= 180);
   return titleCandidates.sort((a, b) => {
     const score = (value) =>
       (/拡張パック|強化拡張パック|ハイクラスパック|スターターセット|スタートデッキ|スペシャルセット/i.test(value) ? 20 : 0)
@@ -393,7 +418,8 @@ function parseGoogleForm(source, html, collectedAt) {
 }
 
 function parseLivePocket(source, html, collectedAt) {
-  const text = htmlToText(html);
+  // Related events must never supply this event's product, shop, or dates.
+  const text = htmlToText(html).split(/同じ販売元のイベント|同じ会場のイベント/)[0];
   if (!/ポケモンカード|ポケカ|拡張パック|ハイクラスパック|スタートデッキ|スターターセット|MEGA/i.test(text)) return [];
   if (!/抽選|応募|申込|受付/.test(text)) return [];
 
@@ -401,11 +427,14 @@ function parseLivePocket(source, html, collectedAt) {
   const product = livePocketProduct(lines, html);
   if (!product) return [];
 
-  const applyText = labelText(lines, ["受付日時", "受付期間", "申込期間", "応募期間", "抽選受付期間", "販売期間", "受付終了", "申込締切"])
+  const applyText = labeledPeriodText(text, ["販売受付期間", "受付日時", "抽選エントリー期間", "抽選受付期間", "申込期間", "応募期間", "受付期間", "販売期間"])
+    || labelText(lines, ["受付日時", "受付期間", "申込期間", "応募期間", "抽選受付期間", "販売期間", "受付終了", "申込締切"])
     || lines.find((line) => /受付.*(?:まで|終了|締切)|申込.*(?:まで|終了|締切)|応募.*(?:まで|終了|締切)/.test(line))
     || "";
-  const resultText = labelText(lines, ["結果発表予定日", "抽選結果発表日時", "抽選結果", "当選発表", "結果発表", "当選通知"]);
-  const purchaseText = labelText(lines, ["購入期間", "購入期限", "支払期限", "入金期限", "受取期間", "受取期限", "引取期間", "引取期限"]);
+  const resultText = labeledPeriodText(text, ["結果発表予定日", "抽選結果発表日時", "当選発表", "結果発表", "当選通知"])
+    || labelText(lines, ["結果発表予定日", "抽選結果発表日時", "抽選結果", "当選発表", "結果発表", "当選通知"]);
+  const purchaseText = labeledPeriodText(text, ["当選者購入期間", "購入期間", "購入期限", "受取期間", "受取期限", "引取期間", "引取期限"])
+    || labelText(lines, ["購入期間", "購入期限", "支払期限", "入金期限", "受取期間", "受取期限", "引取期間", "引取期限"]);
 
   const title = livePocketTitle(html);
   const fallbackShop = source.shop || (source.name === "LivePocket公開抽選" ? "" : source.name);
@@ -433,6 +462,22 @@ function parseLivePocket(source, html, collectedAt) {
     record.memo = "購入期限は営業時間終了までです。店舗の営業時間を応募ページで確認してください。";
   }
   return [record];
+}
+
+function parseYodobashi(source, html, collectedAt) {
+  const text = htmlToText(html);
+  if (!/ポケモンカード/.test(text) || !/抽選/.test(text)) return [];
+  const lines = normalizeLines(text);
+  const products = productLinesAfterLabel(lines, /^対象商品/);
+  const applyText = labeledPeriodText(text, ["抽選お申し込み期間", "受付期間"]);
+  const resultText = labeledPeriodText(text, ["抽選結果発表", "当選発表"]);
+  const purchaseText = labeledPeriodText(text, ["ご注文期限"]);
+  return products.map((product) => {
+    const record = buildRecord({ source, product, applyText, resultText, purchaseText, html, collectedAt, typeOverride: "通販", areaOverride: "全国" });
+    record.instructions = "ヨドバシ・ドット・コム会員向け。ブラウザから応募してください。購入履歴などの応募条件を応募ページで確認してください。当選後は配送または店舗受け取りを選べます。";
+    record.collectionMode = "official-yodobashi";
+    return record;
+  });
 }
 
 function parseLivePocketSearch() {
@@ -999,6 +1044,7 @@ export function parseSourceDocument(source, html, collectedAt = new Date().toISO
   else if (source.parser === "amiami") records = parseAmiAmi(source, html, collectedAt);
   else if (source.parser === "rakuten-books") records = parseRakutenBooks(source, html, collectedAt);
   else if (source.parser === "hobby-search") records = parseHobbySearch(source, html, collectedAt);
+  else if (source.parser === "yodobashi") records = parseYodobashi(source, html, collectedAt);
   else if (source.parser === "listing-intelligence-v1") records = parseListingIntelligence(source, html, collectedAt);
   else if (source.parser === "geo-lottery") records = parseGeoLottery(source, html, collectedAt);
   else if (source.parser === "hobby-station-news") records = parseHobbyStationNews(source, html, collectedAt);

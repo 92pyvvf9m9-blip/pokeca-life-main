@@ -6,6 +6,10 @@ on:
       - main
     paths:
       - manual-lotteries.json
+      - collector/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/collect-lotteries.yml
   workflow_dispatch:
   schedule:
     - cron: "*/15 * * * *"

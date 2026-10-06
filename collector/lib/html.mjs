@@ -20,9 +20,12 @@ export function htmlToText(html = "") {
       .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "\n")
       .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "\n")
       .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, "\n")
+      .replace(/<!--[\s\S]*?-->/g, "\n")
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/(?:p|div|li|section|article|h[1-6]|tr)>/gi, "\n")
-      .replace(/<[^>]+>/g, " ")
+      // A quoted attribute may contain > (e.g. Stimulus click->controller).
+      // Do not leak that attribute into product names or date sections.
+      .replace(/<(?:"[^"]*"|'[^']*'|[^'">])*>/g, " ")
   )
     .replace(/\r/g, "")
     .replace(/[ \t]+/g, " ")
@@ -33,12 +36,12 @@ export function htmlToText(html = "") {
 
 export function extractLinks(html = "", baseUrl = "") {
   const output = [];
-  const regex = /<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  const regex = /<a\b(?:"[^"]*"|'[^']*'|[^'">])*?\bhref\s*=\s*(["'])([^"'#]+)\1(?:"[^"]*"|'[^']*'|[^'">])*?>([\s\S]*?)<\/a>/gi;
   let match;
   while ((match = regex.exec(String(html)))) {
     try {
-      const url = new URL(decodeHtmlEntities(match[1]), baseUrl).href;
-      const text = htmlToText(match[2]);
+      const url = new URL(decodeHtmlEntities(match[2]), baseUrl).href;
+      const text = htmlToText(match[3]);
       output.push({ url, text });
     } catch {
       // Ignore invalid URLs.

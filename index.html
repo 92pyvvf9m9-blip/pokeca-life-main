@@ -1891,6 +1891,8 @@ function isNationwideShipping(item){
 function lotteryMatchesAreas(item,areas){
   const area=normalizedLotteryArea(item.area);
   if(!areas.length)return true;
+  const declared=[...(Array.isArray(item.coverage)?item.coverage:[]),...PREFECTURES.filter(pref=>pref!=='全国'&&String(item.area||'').includes(pref))];
+  if(declared.some(pref=>areas.includes(normalizedLotteryArea(pref))))return true;
   if(area==='全国'){
     if(isNationwideShipping(item))return true;
     const physicalPref=lotteryPhysicalPrefecture(item);
@@ -2564,18 +2566,7 @@ function openLotteryDestination(item){
 
 
 function lotteryLifecycleEnd(item){
-  const candidates=[
-    [item.applyEndDate||item.deadline,item.applyEndTime],
-    [item.resultEndDate,item.resultEndTime],
-    [item.resultStartDate||item.resultDate,item.resultStartTime],
-    [item.purchaseEndDate||item.purchaseDeadline,item.purchaseEndTime]
-  ];
-  for(const [d,t] of candidates){
-    if(!d)continue;
-    const parsed=parseLocalDateTime(d,t,true);
-    if(parsed)return parsed;
-  }
-  return null;
+  return window.PokecaLotteryLifecycleCore?.lifecycleEnd(item||{})||null;
 }
 function isLotteryHistory(item){
   const end=lotteryLifecycleEnd(item);
@@ -2586,7 +2577,8 @@ function lotteryApplicationState(item){
 }
 function isLotteryUpcoming(item){return !isLotteryHistory(item)&&lotteryApplicationState(item)==='upcoming'}
 function isLotteryAnnounced(item){return !isLotteryHistory(item)&&lotteryApplicationState(item)==='announced'}
-function isLotteryActive(item){return !isLotteryHistory(item)&&!isLotteryUpcoming(item)&&!isLotteryAnnounced(item)}
+function isLotteryActive(item){return !isLotteryHistory(item)&&lotteryApplicationState(item)==='active'}
+function isLotteryOngoing(item){return !isLotteryHistory(item)&&!isLotteryUpcoming(item)&&!isLotteryAnnounced(item)}
 function isLotteryRecentHistory(item){
   const end=lotteryLifecycleEnd(item);
   return Boolean(end&&end.getTime()<Date.now()&&end.getTime()>=Date.now()-35*86400000);
@@ -2635,10 +2627,11 @@ function lotteryHTML(x,mode='list'){
   const history=isLotteryHistory(x);
   const upcoming=isLotteryUpcoming(x);
   const announced=isLotteryAnnounced(x);
-  const progress=!history&&!upcoming&&!announced
+  const closed=lotteryApplicationState(x)==='closed';
+  const progress=!history&&!upcoming&&!announced&&!closed
       ?rangeProgress(p.apply.startDate,p.apply.startTime,p.apply.endDate,p.apply.endTime)
       :null;
-  const statusText=history?'終了':announced?'日程待ち':upcoming?'受付前':st(x.status);
+  const statusText=history?'終了':announced?'日程待ち':upcoming?'受付前':closed&&x.status==='open'?'受付終了':st(x.status);
   const statusClass=history?'ended':announced?'announced':upcoming?'upcoming':cls(x.status);
   const announcementUrl=String(x.announcementUrl||'').trim();
   const applyUrl=destinationPrimaryUrl(x);
@@ -2683,7 +2676,7 @@ function lotteryHTML(x,mode='list'){
       ${announced&&announcementUrl
         ?`<a class="lottery-apply-button" href="${esc(announcementUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">公式の予定を見る</a>`
         :applyUrl
-          ?`<a class="lottery-apply-button" href="${esc(applyUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(destinationLabel(x))}</a>`
+          ?`<a class="lottery-apply-button" href="${esc(applyUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${closed?'結果・購入を確認':esc(destinationLabel(x))}</a>`
           :`<span class="lottery-url-missing">${isLotteryHistory(x)?'受付終了':announced?'応募先は未公開':'URL未登録'}</span>`}
       <span class="lottery-card-chevron" aria-hidden="true">›</span>
     </div>
@@ -2706,8 +2699,8 @@ function todayEventCandidates(item){
   const p=lotteryPeriodData(item);
   return [
     {label:'応募締切',kind:'deadline',date:p.apply.endDate,time:p.apply.endTime,relevant:['open','applied'].includes(item.status)&&isLotteryActive(item)},
-    {label:'結果発表',kind:'result',date:p.result.startDate,time:p.result.startTime,relevant:['open','applied','waiting'].includes(item.status)&&isLotteryActive(item)},
-    {label:'購入期限',kind:'purchase',date:p.purchase.endDate,time:p.purchase.endTime,relevant:item.status==='won'&&isLotteryActive(item)}
+    {label:'結果発表',kind:'result',date:p.result.startDate,time:p.result.startTime,relevant:['open','applied','waiting'].includes(item.status)&&isLotteryOngoing(item)},
+    {label:'購入期限',kind:'purchase',date:p.purchase.endDate,time:p.purchase.endTime,relevant:item.status==='won'&&isLotteryOngoing(item)}
   ];
 }
 function collectTodayDeadlineEvents(items=D.lotteries){
@@ -2918,7 +2911,7 @@ function openDetail(item){
     </div>
     <div class="detailactions">
       ${(item.destinationType==='app'||destinationPrimaryUrl(item))
-        ? `<button class="primary" data-open-destination="${item.id}">${esc(destinationLabel(item))} ↗</button>`
+        ? `<button class="primary" data-open-destination="${item.id}">${lotteryApplicationState(item)==='closed'?'結果・購入を確認':esc(destinationLabel(item))} ↗</button>`
         : item.origin==='remote'
           ? '<button class="secondary" disabled>応募先を確認中</button>'
           : `<button class="secondary" data-detail-edit="${item.id}">応募先を追加</button>`}
@@ -3122,7 +3115,7 @@ function setSyncStatus(message,type=''){
 function unreadRemoteLotteries(){
   const unread=new Set(syncState.unreadRemoteIds);
   return D.lotteries
-    .filter(x=>x.origin==='remote'&&unread.has(remoteIdentity(x))&&!isLotteryHistory(x))
+    .filter(x=>x.origin==='remote'&&unread.has(remoteIdentity(x))&&!isLotteryHistory(x)&&lotteryApplicationState(x)!=='closed')
     .sort((a,b)=>(b.collectedAt||b.createdAt||'').localeCompare(a.collectedAt||a.createdAt||''));
 }
 function newLotteryCardHTML(item){
@@ -3545,13 +3538,13 @@ function renderHome(){
   renderProfileUI();
   const visible=D.lotteries.filter(lotteryVisibleOnHome);
   const open=visible.filter(x=>x.status==='open'&&isLotteryActive(x)).length;
-  const wait=visible.filter(x=>['applied','waiting'].includes(x.status)&&isLotteryActive(x)).length;
-  const won=visible.filter(x=>x.status==='won'&&isLotteryActive(x)).length;
+  const wait=visible.filter(x=>['applied','waiting'].includes(x.status)&&isLotteryOngoing(x)).length;
+  const won=visible.filter(x=>x.status==='won'&&isLotteryOngoing(x)).length;
   const totals=recordAssetSnapshot(),now=totals.value,buy=totals.buy;
   $('#availableLotteryCount').textContent=open;$('#overviewWaiting').textContent=wait;$('#overviewWon').textContent=won;$('#sOpen').textContent=open;$('#sWait').textContent=wait;$('#sWon').textContent=won;$('#sAsset').textContent=yen(now);$('#assetNow').textContent=yen(now);$('#assetBuy').textContent=yen(buy);$('#assetProfit').textContent=(now-buy>=0?'+':'')+yen(now-buy);
   renderAssetOverview();
   renderTodayDeadlines();
-  const tasks=visible.filter(x=>['open','applied','waiting','won'].includes(x.status)&&isLotteryActive(x)).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
+  const tasks=visible.filter(x=>(x.status==='open'&&isLotteryActive(x))||(['applied','waiting','won'].includes(x.status)&&isLotteryOngoing(x))).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
   $('#tasks').innerHTML=tasks.length?tasks.map(x=>`<div class="task"><div><strong>${esc(x.shop)}｜${esc(lotteryDisplayProduct(x))}</strong><small>${st(x.status)}・${esc(periodText(x.applyStartDate,x.applyStartTime,x.applyEndDate||x.deadline,x.applyEndTime))}</small></div><button class="secondary" data-lottery-detail="${x.id}">確認</button></div>`).join(''):'<div class="empty">ホーム地域の今日のタスクはありません。</div>';
   const recent=visible.filter(x=>x.status==='open'&&isLotteryActive(x)).sort((a,b)=>(a.applyEndDate||a.deadline||'9999').localeCompare(b.applyEndDate||b.deadline||'9999')).slice(0,3);
   $('#recent').innerHTML=recent.length?recent.map(item=>{try{return lotteryHTML(item,'home')}catch(err){console.error(err);return''}}).join(''):'<div class="empty">受付中・未応募の抽選はありません。抽選一覧では応募済みの抽選や他の地域も確認できます。</div>';
@@ -3769,7 +3762,7 @@ function catalogProductStats(product,lotteries=currentLotteryBaseItems()){
   const open=items.filter(item=>item.status==='open'&&isLotteryActive(item));
   const upcoming=items.filter(isLotteryUpcoming);
   const announced=items.filter(isLotteryAnnounced);
-  const waiting=items.filter(item=>['applied','waiting','won'].includes(item.status)&&isLotteryActive(item));
+  const waiting=items.filter(item=>['applied','waiting','won'].includes(item.status)&&isLotteryOngoing(item));
   const history=items.filter(isLotteryHistory);
   const today=collectTodayDeadlineEvents(items);
   const shops=new Set(items.map(item=>item.shop).filter(Boolean));
@@ -3902,7 +3895,7 @@ function openProductGroupDetail(id){
   const upcomingItems=stats.upcoming.sort((a,b)=>(a.applyStartDate||'9999').localeCompare(b.applyStartDate||'9999'));
   const announcedItems=stats.announced;
   const waitingItems=stats.items
-    .filter(item=>['applied','waiting','won'].includes(item.status)&&isLotteryActive(item))
+    .filter(item=>['applied','waiting','won'].includes(item.status)&&isLotteryOngoing(item))
     .sort((a,b)=>(a.resultStartDate||a.resultDate||'9999').localeCompare(b.resultStartDate||b.resultDate||'9999'));
   const historyItems=stats.items
     .filter(isLotteryHistory)
@@ -3987,9 +3980,9 @@ function renderLotteryTracker(){
     ['open','未応募',item=>item.status==='open'&&isLotteryActive(item)],
     ['upcoming','受付前',isLotteryUpcoming],
     ['announced','日程待ち',isLotteryAnnounced],
-    ['applied','応募済',item=>item.status==='applied'&&isLotteryActive(item)],
-    ['waiting','結果待ち',item=>item.status==='waiting'&&isLotteryActive(item)],
-    ['won','当選',item=>item.status==='won'&&isLotteryActive(item)]
+    ['applied','応募済',item=>item.status==='applied'&&isLotteryOngoing(item)],
+    ['waiting','結果待ち',item=>item.status==='waiting'&&isLotteryOngoing(item)],
+    ['won','当選',item=>item.status==='won'&&isLotteryOngoing(item)]
   ];
   container.innerHTML=config.map(([status,label,matches])=>{
     const count=items.filter(matches).length;
@@ -4046,7 +4039,7 @@ function renderLottery(){
     if(isLotteryHistory(item))return false;
     if(lf==='all')return true;
     if(lf==='open')return item.status==='open'&&isLotteryActive(item);
-    return item.status===lf&&isLotteryActive(item);
+    return item.status===lf&&isLotteryOngoing(item);
   });
 
   if(lotterySort==='deadline'){

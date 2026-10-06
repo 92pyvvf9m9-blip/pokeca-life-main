@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import { parseSourceDocument } from "./lib/parser.mjs";
 import { canonicalApplicationUrl, dedupeItems, keepRelevant, sanitizeForPublic } from "./lib/dedupe.mjs";
 import { validateWithAI } from "./lib/ai-router.mjs";
-import { discoverCandidateLinksDetailed, pageLooksRelevant } from "./lib/discovery.mjs";
+import { discoverCandidateLinksDetailed, discoverSearchPagination, pageLooksRelevant } from "./lib/discovery.mjs";
+import { withMaintainedSources } from "./lib/maintained-sources.mjs";
 import { collectXLotteryCandidates } from "./lib/x-collector.mjs";
 import { loadProductCatalog, evaluateCandidate } from "./lib/quality-gate.mjs";
 import { verifyDestination } from "./lib/destination-verifier.mjs";
@@ -279,6 +280,8 @@ function applyCatalogPurchaseStart(candidate, catalogProduct) {
 function canonicalScopeUrl(value = "") {
   try {
     const url = new URL(String(value || ""));
+    const livePocketSlug = url.pathname.match(/^\/e\/([A-Za-z0-9_-]+)$/)?.[1];
+    if (livePocketSlug && /(^|\.)livepocket\.jp$/i.test(url.hostname)) return `https://livepocket.jp/e/${livePocketSlug}`;
     url.hash = "";
     for (const key of [...url.searchParams.keys()]) {
       if (/^(?:utm_|fbclid|gclid|yclid|_ga|ref$)/i.test(key)) url.searchParams.delete(key);
@@ -305,7 +308,7 @@ function replacementScopeKey(item = {}) {
 async function run() {
   const startedAt = new Date(process.env.POKECA_NOW || Date.now()).toISOString();
   const rawRegistry = await readJson(SOURCES_PATH, { sources: [] });
-  const registry = normalizeSourceRegistry(rawRegistry);
+  const registry = normalizeSourceRegistry(process.env.POKECA_SOURCES_PATH ? rawRegistry : withMaintainedSources(rawRegistry));
   const sourceDatabase = summarizeSourceRegistry(registry);
   if (registry.errors.length) {
     throw new Error(`Source registry validation failed: ${registry.errors.join(" / ")}`);
@@ -372,6 +375,19 @@ async function run() {
       const rootObservation = discoveryTracker.observeRoot(source, rootDocument.html);
       const documents = [{ source, html: rootDocument.html, kind: "root", ocr: rootOcr }];
       const discoveryResult = discoverCandidateLinksDetailed(source, rootDocument.html);
+      for (const url of discoverSearchPagination(source, rootDocument.html)) {
+        try {
+          const page = await fetchDocument({ ...source, url });
+          const next = discoverCandidateLinksDetailed({ ...source, url }, page.html);
+          discoveryResult.candidates.push(...next.candidates);
+          discoveryResult.stats.totalLinks += next.stats.totalLinks;
+          discoveryResult.stats.acceptedBeforeDedupe += next.stats.acceptedBeforeDedupe;
+          discoveryResult.stats.searchPagesFetched = (discoveryResult.stats.searchPagesFetched || 0) + 1;
+        } catch (error) {
+          discoveryResult.stats.searchPageFailureCount = (discoveryResult.stats.searchPageFailureCount || 0) + 1;
+        }
+        if (!FIXTURE_PATH) await new Promise((resolve) => setTimeout(resolve, 800));
+      }
       const revisitCandidates = buildOfficialRevisitCandidates(
         source,
         trustedPrevious,
@@ -387,7 +403,9 @@ async function run() {
           ? { ...previous, ...candidate, text: `${previous.text || ""} ${candidate.text || ""}`.trim() }
           : candidate);
       }
-      const candidateList = [...candidateMap.values()];
+      const candidateLimit = source.parser === "livepocket-search" ? Number(source.discovery?.maxPages || 20) : Infinity;
+      const candidateList = [...candidateMap.values()].slice(0, candidateLimit);
+      discoveryResult.stats.returnedCount = candidateList.length;
       let crossSourceDuplicateCount = 0;
       let candidateFetchSuccessCount = 0;
       let candidateFetchFailureCount = 0;
@@ -401,11 +419,12 @@ async function run() {
       let officialRevisitItemCount = 0;
 
       for (const candidate of candidateList) {
-        if (seenDocumentUrls.has(candidate.url)) {
+        const documentKey = canonicalScopeUrl(candidate.url);
+        if (seenDocumentUrls.has(documentKey)) {
           crossSourceDuplicateCount += 1;
           continue;
         }
-        seenDocumentUrls.add(candidate.url);
+        seenDocumentUrls.add(documentKey);
         const childSource = {
           ...source,
           url: candidate.url,

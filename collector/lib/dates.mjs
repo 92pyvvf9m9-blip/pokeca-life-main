@@ -65,18 +65,26 @@ export function parseDateRange(text, base = new Date()) {
   const value = String(text || "")
     .normalize("NFKC")
     .replace(/[（(][月火水木金土日祝曜\s]*[)）]/g, "")
+    .replace(/([0-9])\s+(?=[年月日時分])/g, "$1")
+    .replace(/([年月日時:])\s+(?=\d)/g, "$1")
+    .replace(/午前\s*(\d{1,2})時/g, (_, h) => `${Number(h) % 12}時`)
+    .replace(/午後\s*(\d{1,2})時/g, (_, h) => `${Number(h) % 12 + 12}時`)
     .replace(/午前/g, "")
-    .replace(/午後\s*(\d{1,2})時/g, (_, h) => `${Number(h) + 12}時`)
+    .replace(/頃|ごろ/g, "")
     .replace(/[\u00a0\t]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
   const datePattern = "(?:(?:\\d{4})年\\s*)?\\d{1,2}月\\s*\\d{1,2}日(?:\\s*\\d{1,2}(?:時|:)\\d{0,2}分?)?|(?:(?:\\d{4})[\\/.-])?\\d{1,2}[\\/.-]\\d{1,2}(?:\\s+\\d{1,2}:\\d{2})?";
-  const range = value.match(new RegExp(`(${datePattern})\\s*(?:～|〜|~|－|–|—|-|から)\\s*(${datePattern})`));
+  const shortDayPattern = "\\d{1,2}日(?:\\s*\\d{1,2}(?:時|:)\\d{0,2}分?)?";
+  const range = value.match(new RegExp(`(${datePattern})\\s*(?:～|〜|~|－|–|—|-|から)\\s*(${datePattern}|${shortDayPattern})`));
 
   if (range) {
     const start = parseJapaneseDateToken(range[1], base);
-    const end = parseJapaneseDateToken(range[2], base, {
+    const endToken = /^\d{1,2}日/.test(range[2]) && start
+      ? `${Number(start.date.slice(5, 7))}月${range[2]}`
+      : range[2];
+    const end = parseJapaneseDateToken(endToken, base, {
       preferredYear: start ? Number(start.date.slice(0, 4)) : 0,
       afterDate: start,
     });

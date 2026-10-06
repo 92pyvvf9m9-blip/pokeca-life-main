@@ -8,6 +8,7 @@ const KNOWN_PARSERS = new Set([
   "amiami",
   "rakuten-books",
   "hobby-search",
+  "yodobashi",
   "listing-intelligence-v1",
   "geo-news",
   "geo-lottery",

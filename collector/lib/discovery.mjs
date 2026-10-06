@@ -31,6 +31,35 @@ function canonicalCandidateUrl(value) {
   return url.href;
 }
 
+function candidateIdentity(value) {
+  const url = new URL(value);
+  const slug = url.pathname.match(/^\/e\/([a-z0-9_-]+)$/i)?.[1];
+  return slug && /(^|\.)livepocket\.jp$/i.test(url.hostname) ? `livepocket:${slug}` : url.href;
+}
+
+export function discoverSearchPagination(source, html) {
+  if (source.parser !== "livepocket-search") return [];
+  const base = new URL(source.url);
+  const max = Math.min(4, Math.max(1, Number(source.discovery?.maxSearchPages || 1)));
+  const seen = new Set();
+  return extractLinks(html, source.url).map((link) => {
+    try {
+      const url = new URL(link.url);
+      const page = Number(url.searchParams.get("page"));
+      if (url.origin !== base.origin || url.pathname !== base.pathname || !Number.isInteger(page) || page < 2 || page > max) return "";
+      for (const key of ["word", "pref", "sort", "timespec", "date_after"]) {
+        if ((url.searchParams.get(key) || "") !== (base.searchParams.get(key) || "")) return "";
+      }
+      url.hash = "";
+      return url.href;
+    } catch { return ""; }
+  }).filter((url) => {
+    if (!url || seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  }).slice(0, max - 1);
+}
+
 function decodeHtmlEntities(value = "") {
   return String(value || "")
     .replace(/&amp;/gi, "&")
@@ -206,8 +235,9 @@ export function discoverCandidateLinksDetailed(source, html) {
   stats.embeddedEventLinks = embeddedLinks.length;
   const mergedLinks = new Map();
   for (const link of [...normalLinks, ...embeddedLinks]) {
-    const key = String(link.url || "");
+    let key = String(link.url || "");
     if (!key) continue;
+    try { key = candidateIdentity(key); } catch {}
     const previous = mergedLinks.get(key);
     if (!previous) {
       mergedLinks.set(key, link);
@@ -261,6 +291,10 @@ export function discoverCandidateLinksDetailed(source, html) {
     }
 
     const haystack = `${link.text} ${link.url}`;
+    if (source.parser === "livepocket-search" && /販売終了|受付終了|抽選終了/.test(link.text)) {
+      stats.rejected.excludePattern += 1;
+      continue;
+    }
     const trustedContextualFuruichi = Boolean(link.contextualFuruichi);
     const trustedContextualHobbyStation = Boolean(link.contextualHobbyStation);
     const trustedContextual = trustedContextualFuruichi || trustedContextualHobbyStation;
@@ -308,11 +342,12 @@ export function discoverCandidateLinksDetailed(source, html) {
   const seen = new Set();
   const maxPages = Number(source.discovery.maxPages || 8);
   for (const item of accepted) {
-    if (seen.has(item.url)) {
+    const identity = candidateIdentity(item.url);
+    if (seen.has(identity)) {
       stats.duplicateRejected += 1;
       continue;
     }
-    seen.add(item.url);
+    seen.add(identity);
     if (unique.length >= maxPages) {
       stats.truncatedCount += 1;
       continue;
