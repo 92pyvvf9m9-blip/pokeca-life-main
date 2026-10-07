@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-06T09:59:07.432Z",
+  "updatedAt": "2026-10-07T10:03:33.345Z",
   "summary": {
     "totalProducts": 80,
     "verifiedImages": 80,
@@ -18,7 +18,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-052",
@@ -28,7 +28,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-22b4036410c8",
@@ -38,7 +38,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-9e10fea11569",
@@ -48,7 +48,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-e4038b3d7233",
@@ -58,7 +58,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-cdd2b83a66e5",
@@ -68,7 +68,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-c7c7b122cb22",
@@ -78,7 +78,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-ed0ae007ed8e",
@@ -88,7 +88,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-96730e438199",
@@ -98,7 +98,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-b028a10fa4fc",
@@ -108,7 +108,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-10-16-428a6182cbcf",
@@ -118,7 +118,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-20-751ab22b928e",
@@ -128,7 +128,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2025-12-19-013",
@@ -138,7 +138,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-03-08-047",
@@ -148,7 +148,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-20-13149739b789",
@@ -158,7 +158,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-01-23-011",
@@ -168,7 +168,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-002",
@@ -178,7 +178,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-003",
@@ -188,7 +188,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-abf859fe1dc4",
@@ -198,7 +198,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-001",
@@ -208,7 +208,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-8d40ada1e4c8",
@@ -218,7 +218,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-09-16-d5d636da4fa8",
@@ -228,7 +228,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-08-27-1f406cd8052f",
@@ -238,7 +238,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-03-13-c5662a9d8878",
@@ -248,7 +248,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-starter-ex-group",
@@ -258,7 +258,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-005",
@@ -268,7 +268,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-aab3b219b66a",
@@ -278,7 +278,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-d29229162c0c",
@@ -288,7 +288,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-006",
@@ -298,7 +298,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-28bfe2e47f6c",
@@ -308,7 +308,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-a8c1bc06e0b0",
@@ -318,7 +318,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-007",
@@ -328,7 +328,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-a9d0ba28bba0",
@@ -338,7 +338,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-d17f5a1294d2",
@@ -348,7 +348,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-abf0604024de",
@@ -358,7 +358,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-004",
@@ -368,7 +368,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-d7b6bc47815b",
@@ -378,7 +378,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-07-31-218b0e1ceadd",
@@ -388,7 +388,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-05-22-008",
@@ -398,7 +398,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": false,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2026-01-23-012",
@@ -728,7 +728,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-03-08-7a2ba3dde2eb",
@@ -738,7 +738,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-03-08-b5d1f2ddab37",
@@ -748,7 +748,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-03-08-66604a67203f",
@@ -758,7 +758,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-03-08-20788959e3f2",
@@ -768,7 +768,7 @@
       "verified": true,
       "status": "official-verified",
       "autoManaged": true,
-      "lastSeenAt": "2026-10-06T09:59:07.432Z"
+      "lastSeenAt": "2026-10-07T10:03:33.345Z"
     },
     {
       "id": "pcg-2024-01-26-050",
