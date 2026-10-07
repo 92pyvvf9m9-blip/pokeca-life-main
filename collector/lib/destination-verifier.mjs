@@ -24,7 +24,7 @@ export async function verifyDestination(candidate, fetchHtml, options = {}) {
   const blockedDestination = [...blockedDestinationDomains].some(
     (domain) => host === domain || host.endsWith(`.${domain}`)
   );
-  if (!host || isDiscoveryPage || blockedDestination || /x\.com$|twitter\.com$/.test(host)) {
+  if (!host || isDiscoveryPage || blockedDestination || /(^|\.)(x|twitter)\.com$/.test(host)) {
     return { ok: false, host, reason: "直接応募先ではありません" };
   }
 

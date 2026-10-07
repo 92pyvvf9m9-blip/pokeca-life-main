@@ -3,8 +3,9 @@ function pad(value) {
 }
 
 function inferYear(month, base = new Date()) {
-  const year = base.getFullYear();
-  const currentMonth = base.getMonth() + 1;
+  const japanDate = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const year = japanDate.getUTCFullYear();
+  const currentMonth = japanDate.getUTCMonth() + 1;
   if (currentMonth >= 10 && month <= 3) return year + 1;
   if (currentMonth <= 3 && month >= 10) return year - 1;
   return year;
@@ -16,11 +17,11 @@ function normalizeTime(hour, minute = "00") {
 }
 
 function validDateParts(year, month, day) {
-  const date = new Date(`${year}-${pad(month)}-${pad(day)}T12:00:00+09:00`);
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   return !Number.isNaN(date.getTime())
-    && date.getFullYear() === Number(year)
-    && date.getMonth() + 1 === Number(month)
-    && date.getDate() === Number(day);
+    && date.getUTCFullYear() === Number(year)
+    && date.getUTCMonth() + 1 === Number(month)
+    && date.getUTCDate() === Number(day);
 }
 
 export function parseJapaneseDateToken(token, base = new Date(), options = {}) {

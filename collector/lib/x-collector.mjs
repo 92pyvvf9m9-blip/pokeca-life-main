@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import { parseXPost } from "./x-parser.mjs";
+import { withMaintainedXAccounts } from "./maintained-sources.mjs";
 
 const API_BASE = "https://api.x.com/2/tweets/search/recent";
 
@@ -16,7 +17,7 @@ function accountQueries(accounts = []) {
   for (let i = 0; i < accounts.length; i += 6) {
     const group = accounts.slice(i, i + 6);
     const fromClause = group.map((account) => `from:${account.username}`).join(" OR ");
-    batches.push(`(${fromClause}) (ポケカ OR ポケモンカード) (抽選 OR 招待リクエスト OR 応募 OR 予約) -is:retweet lang:ja`);
+    batches.push(`(${fromClause}) (ポケカ OR ポケモンカード OR "30th CELEBRATION" OR ストームエメラルダ) (抽選 OR 招待リクエスト OR 応募 OR 予約) -is:retweet lang:ja`);
   }
   return batches;
 }
@@ -50,8 +51,9 @@ async function searchRecentPosts(query, bearerToken) {
   }
 }
 
-export async function collectXLotteryCandidates({ configPath, bearerToken, privateAccountsJson = "" }) {
-  const config = await readJson(configPath, { queries: [], accounts: [], officialAccounts: [] });
+export async function collectXLotteryCandidates({ configPath, bearerToken, privateAccountsJson = "", includeMaintainedAccounts = false }) {
+  const configured = await readJson(configPath, { queries: [], accounts: [], officialAccounts: [] });
+  const config = includeMaintainedAccounts ? withMaintainedXAccounts(configured) : configured;
   let privateAccounts = [];
   try { const parsed = JSON.parse(privateAccountsJson || "[]"); if (Array.isArray(parsed)) privateAccounts = parsed; } catch {}
   const officialAccounts = (config.officialAccounts || []).map((account) =>

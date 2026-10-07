@@ -137,13 +137,14 @@ function officialInstructions(text, shop) {
 
 export function parseXPost(post, user = {}, knownAccounts = new Set(), accountMetadata = new Map()) {
   const text = String(post?.text || "");
-  if (!/(ポケカ|ポケモンカード)/i.test(text)) return null;
   if (!/(抽選|招待リクエスト|応募|予約|当選発表|受付開始|購入権)/i.test(text)) return null;
 
   const username = user.username || "";
   const authorName = user.name || username;
   const accountMeta = normalizedAccountMeta(accountMetadata, username);
   const officialAccount = Boolean(accountMeta?.official);
+  if (!/(ポケカ|ポケモンカード)/i.test(text)
+      && !(officialAccount && /30th\s+CELEBRATION|ストームエメラルダ/i.test(text))) return null;
   const postUrl = username && post.id ? `https://x.com/${username}/status/${post.id}` : "https://x.com/";
   const foundActionUrl = directLink(post);
   const storeNotice = storeOnlyNotice(text);

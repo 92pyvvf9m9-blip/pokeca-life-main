@@ -90,6 +90,7 @@
   }
   function hasAppIntent(item={}){
     if(item.destinationType==='app'||item.appName||item.appUrl||item.iosAppStoreUrl||item.androidAppStoreUrl)return true;
+    if(item.applicationMethod==='web')return false;
     const text=textFor(item);
     return APP_INTENT_PATTERNS.some(pattern=>pattern.test(text));
   }

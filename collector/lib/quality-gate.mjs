@@ -31,9 +31,9 @@ function weekdayFromText(text = "") {
 function weekdayMatches(text, dateText) {
   const token = weekdayFromText(text);
   if (!token || !validDate(dateText)) return true;
-  const date = new Date(`${dateText}T12:00:00+09:00`);
+  const date = new Date(`${dateText}T12:00:00Z`);
   const labels = ["日", "月", "火", "水", "木", "金", "土"];
-  return token.month === date.getMonth() + 1 && token.day === date.getDate() && labels[date.getDay()] === token.weekday;
+  return token.month === date.getUTCMonth() + 1 && token.day === date.getUTCDate() && labels[date.getUTCDay()] === token.weekday;
 }
 
 function directHost(candidate) {
@@ -125,7 +125,7 @@ export function evaluateCandidate(candidate, products = [], now = new Date(), op
   try { discoveryHost = new URL(candidate.sourceUrl || "").hostname.replace(/^www\./, ""); } catch {}
   const aggregated = candidate.sourceKind === "aggregated" || candidate.sourceKind === "intelligence";
   const isDiscoveryPage = Boolean(aggregated && discoveryHost && host === discoveryHost);
-  if (!officialNotice && (isDiscoveryPage || blockedDestination || /x\.com$|twitter\.com$/.test(host))) {
+  if (!officialNotice && (isDiscoveryPage || blockedDestination || /(^|\.)(x|twitter)\.com$/.test(host))) {
     reasons.push("発見元ではなく直接応募先の確認が必要です");
   }
 
@@ -143,7 +143,7 @@ export function evaluateCandidate(candidate, products = [], now = new Date(), op
     checks: {
       productMatched: Boolean(catalogProduct),
       deadlineConfirmed: Boolean(candidate.applyEndDate && validDate(candidate.applyEndDate)),
-      directDestination: Boolean(host && !isDiscoveryPage && !blockedDestination && !/x\.com$|twitter\.com$/.test(host)),
+      directDestination: Boolean(host && !isDiscoveryPage && !blockedDestination && !/(^|\.)(x|twitter)\.com$/.test(host)),
       officialNotice,
       destinationVerified: officialNotice ? true : (aggregated ? Boolean(candidate.destinationVerified) : candidate.destinationVerified !== false),
     },

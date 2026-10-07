@@ -46,6 +46,9 @@ test("collector prunes expired and deleted manual lotteries but keeps valid list
     lotteries: [
       { id: "expired", shop: "古い店舗", product: "30th CELEBRATION カードセット", applyEndDate: "2026-07-01", resultStartDate: "2026-07-03", purchaseEndDate: "2026-07-06" },
       { id: "current", shop: "ホビーステーション広島店", product: "拡張パック 30th CELEBRATION", applyEndDate: "2026-10-04", purchaseEndDate: "2026-10-18", url: "https://livepocket.jp/e/7r2ey" },
+      { id: "open-ended", shop: "ノジマオンライン", product: "ポケモンカード関連（シークレット販売会）", verified: true, openEndedApplication: true, applicationConfirmedAt: now, applyStartDate: "2026-10-02", url: "https://example.com/entry" },
+      { id: "expired-open-ended", shop: "過去の募集", product: "ポケモンカード関連（シークレット販売会）", verified: true, openEndedApplication: true, applicationConfirmedAt: "2026-09-01T00:00:00Z", applyStartDate: "2026-09-01", url: "https://example.com/expired-entry" },
+      { id: "unscheduled", shop: "未確認の募集", product: "ポケモンカード関連", url: "https://example.com/no-schedule" },
       { id: "announced", shop: "ポケモンセンターオンライン", product: "拡張パック 30th CELEBRATION BOX", announcedUpcoming: true, announcementOnly: true, announcementUrl: "https://www.pokemoncenter-online.com/news/?id=20260929" },
       { id: "history", shop: "ポケモンセンターオンライン", product: "30th CELEBRATION カードセット（9種セット・第3回）", historyOnly: true, applyEndDate: "2026-09-16", purchaseEndDate: "2026-10-06" },
     ],
@@ -72,12 +75,14 @@ test("collector prunes expired and deleted manual lotteries but keeps valid list
 
     assert.equal(result.code, 0, result.stderr || result.stdout || result.signal);
     const manual = JSON.parse(await fs.readFile(files.manual, "utf8"));
-    assert.deepEqual(manual.lotteries.map(item => item.id), ["current", "announced", "history"]);
+    assert.deepEqual(manual.lotteries.map(item => item.id), ["current", "open-ended", "expired-open-ended", "unscheduled", "announced", "history"]);
     assert.equal(manual.updatedAt, now);
     const status = JSON.parse(await fs.readFile(files.status, "utf8"));
     assert.equal(status.expiredManualPrunedCount, 1);
     const feed = JSON.parse(await fs.readFile(files.feed, "utf8"));
     assert.ok(feed.lotteries.some(item => item.id === "current"), "a direct application listing does not require a result date");
+    assert.ok(feed.lotteries.some(item => item.id === "open-ended"), "a recently verified undated draw remains visible");
+    assert.ok(!feed.lotteries.some(item => ['expired-open-ended','unscheduled'].includes(item.id)), "stale or unverified undated applications are not published as active draws");
     assert.ok(feed.lotteries.some(item => item.id === "announced"), "an official schedule notice remains visible without dates");
     assert.ok(feed.lotteries.some(item => item.id === "history"), "recent closed history remains available");
     assert.ok(!feed.lotteries.some(item => item.externalId === deletedUrl), "a deleted manual item is not resurrected from the previous feed");

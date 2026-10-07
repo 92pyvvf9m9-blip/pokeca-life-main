@@ -104,3 +104,19 @@ test("Yodobashi official product and separate date labels form a nationwide ship
   assert.equal(item.purchaseEndTime, "23:59");
   assert.deepEqual(parseSourceDocument(MAINTAINED_SOURCES[3], "抽選結果は順次発表します", "2026-10-06T05:30:00Z"), []);
 });
+
+test("remote imports retain regional coverage and explicitly confirmed application facts", () => {
+  const html=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+  const match=html.match(/function normalizeRemoteLottery\(item\)\{[\s\S]*?\n\}/);
+  assert.ok(match);
+  const context=vm.createContext({PREFECTURES:['全国','広島県'],uid:()=> 'id',canonicalLotteryStateUrl:value=>value,
+    normalizeUrl:value=>value,normalizeLaunchUrl:value=>value,cleanImportedDisplayText:value=>value,
+    enrichedAppDestination:item=>item,lotteryIdentity:()=> 'identity'});
+  vm.runInContext(match[0],context);
+  const item=context.normalizeRemoteLottery({coverage:['全国','広島県','unknown'],openEndedApplication:true,
+    applicationConfirmedAt:'2026-10-07T10:00:00Z',applicationMethod:'web'});
+  assert.deepEqual(Array.from(item.coverage),['広島県']);
+  assert.equal(item.openEndedApplication,true);
+  assert.equal(item.applicationConfirmedAt,'2026-10-07T10:00:00Z');
+  assert.equal(item.applicationMethod,'web');
+});

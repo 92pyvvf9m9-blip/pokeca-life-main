@@ -30,6 +30,22 @@ export const MAINTAINED_SOURCES = [
   },
 ];
 
+export const MAINTAINED_X_ACCOUNTS = [
+  { username: "YS_INFO", label: "イエローサブマリン", area: "全国", official: true },
+  { username: "YS_HIROSHIMAGS", label: "イエローサブマリン広島店", area: "広島県", official: true },
+  { username: "hiroshimalabo", label: "カードラボ広島店", area: "広島県", official: true },
+  { username: "hobibi_net", label: "ホビビ通販部", area: "全国", official: true },
+  { username: "torepla_ec", label: "トレカプラザ55通販店", area: "全国", official: true },
+  { username: "MS_GANGI", label: "GANGI HOBBYSHOP", area: "全国", official: true },
+];
+
+export function withMaintainedXAccounts(config = {}) {
+  const configured = [...(config.accounts || []), ...(config.officialAccounts || [])];
+  const names = new Set(configured.map(account => String(account.username || account).toLowerCase()));
+  return { ...config, officialAccounts: [...(config.officialAccounts || []),
+    ...MAINTAINED_X_ACCOUNTS.filter(account => !names.has(account.username.toLowerCase())).map(account => ({ ...account }))] };
+}
+
 function registryUrl(value) {
   try {
     const url = new URL(value);

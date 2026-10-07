@@ -19,7 +19,7 @@ function canonicalShop(value = "") {
 }
 function actionHost(item) {
   for (const value of [item.url, item.sourceUrl]) {
-    try { const host = new URL(value).hostname.replace(/^www\./, ""); if (!/x\.com$|twitter\.com$/.test(host)) return host; } catch {}
+    try { const host = new URL(value).hostname.replace(/^www\./, ""); if (!/(^|\.)(x|twitter)\.com$/.test(host)) return host; } catch {}
   }
   return "";
 }
@@ -119,7 +119,7 @@ export function sanitizeForPublic(item) {
 
   try {
     const host = output.url ? new URL(output.url).hostname : "";
-    if (/x\.com$|twitter\.com$/.test(host) && !output.noticeOnly) output.url = "";
+    if (/(^|\.)(x|twitter)\.com$/.test(host) && !output.noticeOnly) output.url = "";
   } catch {
     output.url = "";
   }

@@ -36,3 +36,14 @@ test("official store-only X post becomes a publishable notice without inventing 
   assert.equal(gate.accepted, true, gate.reasons.join(" / "));
   assert.equal(gate.checks.officialNotice, true);
 });
+
+test("a recognized official account may use a specific pack name instead of the word Pokeca", () => {
+  const post={id:'1234',created_at:'2026-10-03T00:00:00Z',text:'ストームエメラルダ購入権抽選。応募期間10月4日～10月7日20:00。店頭掲示ポスターから応募。',entities:{urls:[]}};
+  const user={username:'YS_INFO',name:'イエローサブマリン'};
+  const metadata=new Map([['ys_info',{username:'YS_INFO',official:true}]]);
+  const item=parseXPost(post,user,new Set(['ys_info']),metadata);
+  assert.ok(item);
+  assert.equal(item.noticeOnly,true);
+  assert.equal(item.destinationType,'store');
+  assert.equal(parseXPost(post,user),null,'unrecognized accounts must still identify the card game');
+});

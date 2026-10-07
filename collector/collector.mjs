@@ -6,6 +6,7 @@ import { canonicalApplicationUrl, dedupeItems, keepRelevant, sanitizeForPublic }
 import { validateWithAI } from "./lib/ai-router.mjs";
 import { discoverCandidateLinksDetailed, discoverSearchPagination, pageLooksRelevant } from "./lib/discovery.mjs";
 import { withMaintainedSources } from "./lib/maintained-sources.mjs";
+import { recoverLivePocketSearch, LIVEPOCKET_USER_AGENT } from "./lib/livepocket-transport.mjs";
 import { collectXLotteryCandidates } from "./lib/x-collector.mjs";
 import { loadProductCatalog, evaluateCandidate } from "./lib/quality-gate.mjs";
 import { verifyDestination } from "./lib/destination-verifier.mjs";
@@ -16,6 +17,7 @@ import { expandCatalogGroupCandidates } from "./lib/product-group-expander.mjs";
 import { buildOfficialRevisitCandidates } from "./lib/official-revisit.mjs";
 import { validatePublishedLotteries } from "./lib/published-feed-validator.mjs";
 import { normalizeAppDestinationFields } from "./lib/app-destination.mjs";
+import "../lottery-lifecycle-core.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -120,7 +122,7 @@ async function fetchDocument(source) {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": `Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/${APP_VERSION}; +https://github.com/)`,
+        "User-Agent": /(^|\.)livepocket\.jp$/i.test(new URL(source.url).hostname) ? LIVEPOCKET_USER_AGENT : `Mozilla/5.0 (compatible; Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 PokecaLife/${APP_VERSION}; +https://github.com/)`,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.6,en;q=0.4",
         "Cache-Control": "no-cache",
@@ -129,7 +131,11 @@ async function fetchDocument(source) {
       },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const html = await response.text();
+    const recovered = await recoverLivePocketSearch(source, await response.text());
+    const html = recovered.html;
+    if (source.parser === "livepocket-search") {
+      console.log(JSON.stringify({ searchFetch: { responseClass: recovered.responseClass, responseBytes: Buffer.byteLength(html), fallbackUsed: recovered.fallbackUsed } }));
+    }
     let originalHost = "";
     let finalHost = "";
     try { originalHost = new URL(source.url).hostname.toLowerCase(); } catch {}
@@ -580,6 +586,7 @@ async function run() {
         configPath: X_SOURCES_PATH,
         bearerToken: process.env.X_API_BEARER_TOKEN || "",
         privateAccountsJson: process.env.X_MONITOR_ACCOUNTS_JSON || "",
+        includeMaintainedAccounts: !process.env.POKECA_X_SOURCES_PATH,
       });
   const xEnrichment = FIXTURE_PATH
     ? { items: xResult.items, enrichedCount: 0, livePocketEnrichedCount: 0, googleFormEnrichedCount: 0 }
@@ -635,13 +642,14 @@ async function run() {
       );
       const applicationDestination = Boolean(candidate.url || candidate.appUrl || candidate.fallbackUrl);
       const hasScheduledApplication = Boolean((candidate.applyEndDate || candidate.deadline) && applicationDestination);
+      const hasOpenEndedApplication = globalThis.PokecaLotteryLifecycleCore.hasConfirmedOpenEndedApplication(candidate, new Date(startedAt));
       const hasHistoricalRecord = Boolean(
         candidate.historyOnly === true
         && candidate.applyEndDate
         && new Date(`${candidate.applyEndDate}T23:59:59+09:00`).getTime() < new Date(startedAt).getTime()
       );
       const hasMinimum = Boolean(candidate.shop && candidate.product && (
-        hasScheduledApplication || announcedWithoutSchedule || hasHistoricalRecord
+        hasScheduledApplication || hasOpenEndedApplication || announcedWithoutSchedule || hasHistoricalRecord
       ));
       if (hasMinimum) {
         published.push(sanitizeForPublic({

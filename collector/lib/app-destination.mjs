@@ -61,6 +61,7 @@ export function normalizeAppDestinationFields(item = {}) {
 
 function hasAppIntent(item = {}, evidence = "") {
   if (item.destinationType === "app" || item.appName || item.appUrl) return true;
+  if (item.applicationMethod === "web") return false;
   return APP_INTENT_PATTERNS.some((pattern) => pattern.test(normalize(intentText(item, evidence))));
 }
 

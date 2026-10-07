@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { collectXLotteryCandidates } from "../lib/x-collector.mjs";
+import { withMaintainedXAccounts } from "../lib/maintained-sources.mjs";
 
 test("X collector includes officialAccounts in queries and marks official store notices", async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "pokeca-x-"));
@@ -37,6 +38,7 @@ test("X collector includes officialAccounts in queries and marks official store 
   try {
     const result = await collectXLotteryCandidates({ configPath, bearerToken: "test" });
     assert.match(requestedQuery, /from:bic_test/);
+    assert.match(requestedQuery, /30th CELEBRATION/);
     assert.equal(result.meta.accountCount, 1);
     assert.equal(result.items.length, 1);
     assert.equal(result.items[0].officialAccount, true);
@@ -45,4 +47,12 @@ test("X collector includes officialAccounts in queries and marks official store 
     globalThis.fetch = originalFetch;
     await fs.rm(dir, { recursive: true, force: true });
   }
+});
+
+test("maintained official accounts fill gaps while preserving configured labels", () => {
+  const config=withMaintainedXAccounts({officialAccounts:[{username:'ys_info',label:'設定済み'}]});
+  assert.equal(config.officialAccounts.filter(account=>account.username.toLowerCase()==='ys_info').length,1);
+  assert.equal(config.officialAccounts[0].label,'設定済み');
+  assert.ok(config.officialAccounts.some(account=>account.username==='YS_HIROSHIMAGS'));
+  assert.ok(config.officialAccounts.some(account=>account.username==='hobibi_net'));
 });

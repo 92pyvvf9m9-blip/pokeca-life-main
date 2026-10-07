@@ -2072,7 +2072,8 @@ function lotteryPeriodData(x){
       startDate:x.applyStartDate||'',
       startTime:x.applyStartTime||'',
       endDate:x.applyEndDate||x.deadline||'',
-      endTime:x.applyEndTime||''
+      endTime:x.applyEndTime||'',
+      note:x.openEndedApplication?(lotteryApplicationState(x)==='unconfirmed'?'受付状況の再確認が必要':'締切未公表（受付確認済み）'):''
     },
     result:{
       label:'結果発表',
@@ -2622,7 +2623,7 @@ function compactPeriodRowHTML(label,data){
 }
 function lotteryHTML(x,mode='list'){
   const p=lotteryPeriodData(x);
-  const d=deadlineInfo(p.apply.endDate,p.apply.endTime);
+  const d=x.openEndedApplication?{text:'締切未公表',cls:''}:deadlineInfo(p.apply.endDate,p.apply.endTime);
   const isHome=mode==='home';
   const history=isLotteryHistory(x);
   const upcoming=isLotteryUpcoming(x);
@@ -2631,7 +2632,7 @@ function lotteryHTML(x,mode='list'){
   const progress=!history&&!upcoming&&!announced&&!closed
       ?rangeProgress(p.apply.startDate,p.apply.startTime,p.apply.endDate,p.apply.endTime)
       :null;
-  const statusText=history?'終了':announced?'日程待ち':upcoming?'受付前':closed&&x.status==='open'?'受付終了':st(x.status);
+  const statusText=history?'終了':announced?'日程待ち':upcoming?'受付前':lotteryApplicationState(x)==='unconfirmed'?'要再確認':closed&&x.status==='open'?'受付終了':st(x.status);
   const statusClass=history?'ended':announced?'announced':upcoming?'upcoming':cls(x.status);
   const announcementUrl=String(x.announcementUrl||'').trim();
   const applyUrl=destinationPrimaryUrl(x);
@@ -3008,6 +3009,8 @@ function normalizeRemoteLottery(item){
     confidence:Number(item.confidence||0),
     productCatalogId:item.productCatalogId||'',
     announcedUpcoming:item.announcedUpcoming===true,
+    openEndedApplication:item.openEndedApplication===true,
+    applicationConfirmedAt:item.applicationConfirmedAt||'',
     announcementUrl:normalizeUrl(item.announcementUrl||''),
     noticeOnly:item.noticeOnly===true,
     collectedAt:item.collectedAt||item.discoveredAt||now,
@@ -3015,9 +3018,11 @@ function normalizeRemoteLottery(item){
     createdAt:item.createdAt||item.collectedAt||now,
     shop:String(item.shop||'').replace(/^name\s*[:：]\s*/i,'').replace(/^店舗名\s*[:：]\s*/i,'').trim(),
     product:cleanImportedDisplayText(item.product||'商品名未設定'),
+    displayProduct:cleanImportedDisplayText(item.displayProduct||''),
     status:item.status||'open',
     type:item.type||'通販',
     area:item.area||'全国',
+    coverage:Array.isArray(item.coverage)?item.coverage.filter(area=>PREFECTURES.includes(area)&&area!=='全国'):[],
     url:canonicalUrl||normalizeUrl(item.url||''),
     applyStartDate:item.applyStartDate||'',
     applyStartTime:item.applyStartTime||'',
@@ -3036,6 +3041,7 @@ function normalizeRemoteLottery(item){
     resultDate:item.resultStartDate||item.resultDate||'',
     purchaseDeadline:item.purchaseEndDate||item.purchaseDeadline||'',
     destinationType:item.destinationType||'direct',
+    applicationMethod:item.applicationMethod==='web'?'web':'',
     appId:item.appId||'',
     appName:item.appName||'',
     appUrl:normalizeLaunchUrl(item.appUrl||''),
@@ -3120,7 +3126,7 @@ function unreadRemoteLotteries(){
 }
 function newLotteryCardHTML(item){
   const p=lotteryPeriodData(item);
-  const hasSchedule=Boolean(p.apply.startDate||p.apply.endDate);
+  const hasSchedule=Boolean(p.apply.startDate||p.apply.endDate)&&lotteryApplicationState(item)!=='unconfirmed';
   const hasUrl=Boolean(destinationPrimaryUrl(item));
   const review=!hasSchedule||!hasUrl;
   const state=!hasUrl?'応募先未確認':!hasSchedule?'日程未掲載':isLotteryUpcoming(item)?'応募開始前':'応募情報あり';
@@ -3225,7 +3231,7 @@ function renderNewLotteries(){
   const unread=unreadRemoteLotteries().filter(lotteryVisibleOnHome);
   const ready=unread.filter(item=>{
     const p=lotteryPeriodData(item);
-    return Boolean(destinationPrimaryUrl(item)&&(p.apply.startDate||p.apply.endDate));
+    return Boolean(destinationPrimaryUrl(item)&&(p.apply.startDate||p.apply.endDate)&&lotteryApplicationState(item)!=='unconfirmed');
   });
   const review=unread.filter(item=>!ready.includes(item));
   const counts=$('#newLotteryCounts');
