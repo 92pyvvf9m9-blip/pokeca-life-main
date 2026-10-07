@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.10",
-  "lastRunAt": "2026-10-07T16:24:15.787Z",
+  "lastRunAt": "2026-10-07T19:32:14.227Z",
   "status": "degraded",
   "reviewCount": 7,
   "publishedCount": 27,
@@ -16,7 +16,7 @@
     "failedCount": 2,
     "withItemsCount": 2,
     "zeroItemsCount": 11,
-    "discoveredPageCount": 6
+    "discoveredPageCount": 7
   },
   "autoCollectedCount": 8,
   "multiProductExpandedCount": 1,
@@ -26,13 +26,13 @@
   "ocrImageCount": 0,
   "quality": {
     "qualityVersion": 2,
-    "candidateCount": 39,
+    "candidateCount": 45,
     "publishedCount": 27,
-    "postCanonicalDuplicateCount": 5,
+    "postCanonicalDuplicateCount": 11,
     "reviewCount": 7,
     "rejectedCount": 0,
     "directVerifiedCount": 8,
-    "catalogMatchedCount": 37,
+    "catalogMatchedCount": 43,
     "autoCollectedCount": 8,
     "multiProductExpandedCount": 1,
     "catalogGroupExpandedCount": 0,
