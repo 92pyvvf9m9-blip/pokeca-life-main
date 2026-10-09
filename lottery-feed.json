@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-09T02:33:51.956Z",
+  "updatedAt": "2026-10-09T09:37:02.546Z",
   "meta": {
     "collectorVersion": "1.24.10",
-    "lastRunAt": "2026-10-09T02:33:51.956Z",
+    "lastRunAt": "2026-10-09T09:37:02.546Z",
     "status": "degraded",
     "reviewCount": 7,
     "publishedCount": 27,
@@ -11,14 +11,14 @@
     "manualEntryCount": 26,
     "expiredManualPrunedCount": 0,
     "checkedSourceCount": 15,
-    "successfulSourceCount": 13,
-    "failedSourceCount": 2,
+    "successfulSourceCount": 10,
+    "failedSourceCount": 5,
     "sourceHealth": {
       "checkedCount": 15,
-      "successfulCount": 13,
-      "failedCount": 2,
+      "successfulCount": 10,
+      "failedCount": 5,
       "withItemsCount": 2,
-      "zeroItemsCount": 11,
+      "zeroItemsCount": 8,
       "discoveredPageCount": 7
     },
     "autoCollectedCount": 8,
@@ -76,7 +76,7 @@
       "noticeOnly": true,
       "instructions": "カードラボ広島店の公式Xをフォローし、この応募用投稿をリポストしてください。当選連絡を受け取れるようDMを開放してください。",
       "memo": "20パック7,200円。バラパックでのお渡し。購入は広島店の店頭のみで、顔写真付き本人確認書類と当選DMが必要です。告知に締切時刻の記載はありません。",
-      "collectedAt": "2026-10-09T02:33:51.956Z",
+      "collectedAt": "2026-10-09T09:37:02.546Z",
       "qualityVersion": 2
     },
     {
@@ -102,8 +102,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-10-09T02:33:51.956Z",
-      "updatedAt": "2026-10-09T02:33:51.956Z",
+      "collectedAt": "2026-10-09T09:37:02.546Z",
+      "updatedAt": "2026-10-09T09:37:02.546Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
@@ -130,8 +130,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-10-09T02:33:51.956Z",
-      "updatedAt": "2026-10-09T02:33:51.956Z",
+      "collectedAt": "2026-10-09T09:37:02.546Z",
+      "updatedAt": "2026-10-09T09:37:02.546Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
@@ -145,8 +145,8 @@
       "url": "https://draw.geo-online.co.jp/lottery/",
       "verified": true,
       "confidence": 0.95,
-      "collectedAt": "2026-10-09T02:33:51.956Z",
-      "updatedAt": "2026-10-09T02:33:51.956Z",
+      "collectedAt": "2026-10-09T09:37:02.546Z",
+      "updatedAt": "2026-10-09T09:37:02.546Z",
       "applyStartDate": "2026-09-28",
       "applyStartTime": "11:00",
       "applyEndDate": "2026-10-01",
