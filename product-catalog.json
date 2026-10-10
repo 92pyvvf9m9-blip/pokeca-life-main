@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-10-09T10:18:00.087Z",
+  "updatedAt": "2026-10-10T09:37:57.608Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -1347,6 +1347,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-10-09T10:18:00.087Z"
+    "lastRunAt": "2026-10-10T09:37:57.608Z"
   }
 }
