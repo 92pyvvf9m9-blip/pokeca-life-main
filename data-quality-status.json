@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-10-14T06:07:33.070Z",
+  "updatedAt": "2026-10-14T11:46:05.588Z",
   "qualityVersion": 2,
   "candidateCount": 38,
-  "publishedCount": 27,
+  "publishedCount": 26,
   "postCanonicalDuplicateCount": 11,
-  "reviewCount": 0,
+  "reviewCount": 1,
   "rejectedCount": 0,
   "directVerifiedCount": 1,
   "catalogMatchedCount": 37,
