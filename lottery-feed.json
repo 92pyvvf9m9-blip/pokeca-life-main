@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-20T23:33:04.766Z",
+  "updatedAt": "2026-10-21T02:00:32.935Z",
   "meta": {
     "collectorVersion": "1.24.10",
-    "lastRunAt": "2026-10-20T23:33:04.766Z",
+    "lastRunAt": "2026-10-21T02:00:32.935Z",
     "status": "degraded",
     "reviewCount": 1,
     "publishedCount": 26,
@@ -11,14 +11,14 @@
     "manualEntryCount": 26,
     "expiredManualPrunedCount": 0,
     "checkedSourceCount": 15,
-    "successfulSourceCount": 10,
-    "failedSourceCount": 5,
+    "successfulSourceCount": 9,
+    "failedSourceCount": 6,
     "sourceHealth": {
       "checkedCount": 15,
-      "successfulCount": 10,
-      "failedCount": 5,
+      "successfulCount": 9,
+      "failedCount": 6,
       "withItemsCount": 0,
-      "zeroItemsCount": 10,
+      "zeroItemsCount": 9,
       "discoveredPageCount": 0
     },
     "autoCollectedCount": 0,
@@ -76,7 +76,7 @@
       "noticeOnly": true,
       "instructions": "カードラボ広島店の公式Xをフォローし、この応募用投稿をリポストしてください。当選連絡を受け取れるようDMを開放してください。",
       "memo": "20パック7,200円。バラパックでのお渡し。購入は広島店の店頭のみで、顔写真付き本人確認書類と当選DMが必要です。告知に締切時刻の記載はありません。",
-      "collectedAt": "2026-10-20T23:33:04.766Z",
+      "collectedAt": "2026-10-21T02:00:32.935Z",
       "qualityVersion": 2
     },
     {
@@ -102,8 +102,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-10-20T23:33:04.766Z",
-      "updatedAt": "2026-10-20T23:33:04.766Z",
+      "collectedAt": "2026-10-21T02:00:32.935Z",
+      "updatedAt": "2026-10-21T02:00:32.935Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
@@ -130,8 +130,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-10-20T23:33:04.766Z",
-      "updatedAt": "2026-10-20T23:33:04.766Z",
+      "collectedAt": "2026-10-21T02:00:32.935Z",
+      "updatedAt": "2026-10-21T02:00:32.935Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
