@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-10-22T08:27:29.000Z",
+  "updatedAt": "2026-10-23T08:23:27.994Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -18,6 +18,74 @@
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
+    },
+    {
+      "id": "pcg-2026-11-27-601c1622d949",
+      "year": 2026,
+      "releaseDate": "2026-11-27",
+      "name": "拡張パック ハドウシーカー",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカー",
+        "ハドウシーカー"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/ex/m7/",
+      "imagePath": "./assets/product-images/auto-2026-11-27-f44b422351b9.jpg",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-10-23T08:23:27.994Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-27-b0b59252cec0",
+      "year": 2026,
+      "releaseDate": "2026-11-27",
+      "name": "拡張パック ハドウシーカーには基本エネルギーのカード、 グロウ草エネルギー 活力の森は収録されません",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカーには基本エネルギーのカード、 グロウ草エネルギー 活力の森は収録されません",
+        "ハドウシーカーには基本エネルギーのカード、 グロウ草エネルギー 活力の森は収録されません"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/ex/m7/",
+      "imagePath": "./assets/product-images/auto-2026-11-27-0d8e52e7d749.webp",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-10-23T08:23:27.994Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-27-014278a8c492",
+      "year": 2026,
+      "releaseDate": "2026-11-27",
+      "name": "拡張パック ハドウシーカーには基本エネルギーのカード、 ボスの指令 ミツルの思いやりは収録されません",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカーには基本エネルギーのカード、 ボスの指令 ミツルの思いやりは収録されません",
+        "ハドウシーカーには基本エネルギーのカード、 ボスの指令 ミツルの思いやりは収録されません"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/ex/m7/",
+      "imagePath": "./assets/product-images/auto-2026-11-27-0d8e52e7d749.webp",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-10-23T08:23:27.994Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-27-2609cee35120",
+      "year": 2026,
+      "releaseDate": "2026-11-27",
+      "name": "拡張パック ハドウシーカーに基本エネルギーのカードは収録されません",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカーに基本エネルギーのカードは収録されません",
+        "ハドウシーカーに基本エネルギーのカードは収録されません"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/ex/m7/",
+      "imagePath": "./assets/product-images/auto-2026-11-27-0d8e52e7d749.webp",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-10-23T08:23:27.994Z",
+      "autoManaged": true
     },
     {
       "id": "pcg-2026-09-20-751ab22b928e",
@@ -1336,8 +1404,8 @@
     }
   ],
   "imageCoverage": {
-    "totalProducts": 80,
-    "verifiedImages": 80,
+    "totalProducts": 84,
+    "verifiedImages": 84,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
@@ -1347,6 +1415,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-10-22T08:27:29.000Z"
+    "lastRunAt": "2026-10-23T08:23:27.994Z"
   }
 }
