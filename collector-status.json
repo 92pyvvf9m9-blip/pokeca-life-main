@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.10",
-  "lastRunAt": "2026-10-30T15:00:55.977Z",
+  "lastRunAt": "2026-10-30T19:55:16.953Z",
   "status": "degraded",
   "reviewCount": 1,
   "publishedCount": 26,
@@ -8,14 +8,14 @@
   "manualEntryCount": 26,
   "expiredManualPrunedCount": 0,
   "checkedSourceCount": 15,
-  "successfulSourceCount": 8,
-  "failedSourceCount": 7,
+  "successfulSourceCount": 6,
+  "failedSourceCount": 9,
   "sourceHealth": {
     "checkedCount": 15,
-    "successfulCount": 8,
-    "failedCount": 7,
+    "successfulCount": 6,
+    "failedCount": 9,
     "withItemsCount": 0,
-    "zeroItemsCount": 8,
+    "zeroItemsCount": 6,
     "discoveredPageCount": 1
   },
   "autoCollectedCount": 0,
