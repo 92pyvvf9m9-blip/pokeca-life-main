@@ -1,6 +1,6 @@
 {
   "collectorVersion": "1.24.10",
-  "lastRunAt": "2026-11-01T07:29:22.487Z",
+  "lastRunAt": "2026-11-01T14:26:01.678Z",
   "status": "degraded",
   "reviewCount": 1,
   "publishedCount": 26,
@@ -16,7 +16,7 @@
     "failedCount": 7,
     "withItemsCount": 0,
     "zeroItemsCount": 8,
-    "discoveredPageCount": 1
+    "discoveredPageCount": 0
   },
   "autoCollectedCount": 0,
   "multiProductExpandedCount": 0,
