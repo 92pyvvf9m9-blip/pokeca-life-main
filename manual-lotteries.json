@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-10-07T10:06:26.318Z",
+  "updatedAt": "2026-11-05T17:39:31.732Z",
   "lotteries": [
     {
       "status": "open",
@@ -542,29 +542,6 @@
       "purchaseEndTime": "16:59",
       "destinationType": "none",
       "instructions": "受付終了。第3回は9月16日に応募受付を終了しました。"
-    },
-    {
-      "id": "geo-30th-cardset-2026-09",
-      "externalId": "geo-30th-cardset-2026-09",
-      "shop": "ゲオ",
-      "product": "30th CELEBRATION カードセット（全9種）",
-      "displayProduct": "30th CELEBRATION カードセット（9種セット）",
-      "productCatalogId": "pcg-2026-10-16-052",
-      "type": "店舗",
-      "area": "全国",
-      "status": "open",
-      "historyOnly": true,
-      "applyStartDate": "2026-09-28",
-      "applyStartTime": "11:00",
-      "applyEndDate": "2026-10-01",
-      "applyEndTime": "17:59",
-      "destinationType": "none",
-      "instructions": "受付終了。ゲオアプリ連携済みPonta会員向けの抽選でした。",
-      "memo": "9種セット。応募期間は9月28日11:00〜10月1日17:59。",
-      "manualEntry": true,
-      "adminPublished": true,
-      "verified": true,
-      "confidence": 0.99
     },
     {
       "id": "pokemoncenter-30th-box-december-2026",
