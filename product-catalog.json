@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-11-05T10:37:27.256Z",
+  "updatedAt": "2026-11-06T10:38:23.630Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -20,6 +20,75 @@
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
     },
     {
+      "id": "pcg-2026-11-30-8e7b0fae8505",
+      "year": 2026,
+      "releaseDate": "2026-11-30",
+      "name": "ハイクラスパック テラスタルフェス ex 収録）",
+      "category": "拡張パック",
+      "aliases": [
+        "ハイクラスパック テラスタルフェス ex 収録）",
+        "テラスタルフェス ex 収録）"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/005726.html",
+      "imagePath": "./assets/product-images/auto-2026-11-30-f718ba67248e.png",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-11-06T10:38:23.630Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2024-12-06-034",
+      "year": 2026,
+      "releaseDate": "2026-11-30",
+      "name": "ハイクラスパック テラスタルフェスex",
+      "category": "拡張パック",
+      "aliases": [
+        "テラスタルフェスex",
+        "テラフェス",
+        "ハイクラスパック テラスタルフェス ex",
+        "テラスタルフェス ex"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/005726.html",
+      "imagePath": "./assets/product-images/terastal-festival-ex-official.webp",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
+    },
+    {
+      "id": "pcg-2026-11-30-dbeb5de98649",
+      "year": 2026,
+      "releaseDate": "2026-11-30",
+      "name": "拡張パック ハドウシーカーに、原哲夫先生がイラストを描き下ろした マキシの熱血のSAR（スペシャルアートレア）が登場します",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカーに、原哲夫先生がイラストを描き下ろした マキシの熱血のSAR（スペシャルアートレア）が登場します",
+        "ハドウシーカーに、原哲夫先生がイラストを描き下ろした マキシの熱血のSAR（スペシャルアートレア）が登場します"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/005726.html",
+      "imagePath": "./assets/product-images/auto-2026-11-30-9a52a886c086.jpg",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-11-06T10:38:23.630Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-30-e0dde9758eb1",
+      "year": 2026,
+      "releaseDate": "2026-11-30",
+      "name": "拡張パック ハドウシーカー収録）",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカー収録）",
+        "ハドウシーカー収録）"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/005726.html",
+      "imagePath": "./assets/product-images/auto-2026-11-30-f718ba67248e.png",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-11-06T10:38:23.630Z",
+      "autoManaged": true
+    },
+    {
       "id": "pcg-2026-11-27-601c1622d949",
       "year": 2026,
       "releaseDate": "2026-11-27",
@@ -29,7 +98,7 @@
         "拡張パック ハドウシーカー",
         "ハドウシーカー"
       ],
-      "officialUrl": "https://www.pokemon-card.com/ex/m7/",
+      "officialUrl": "https://www.pokemon-card.com/info/005726.html",
       "imagePath": "./assets/product-images/auto-2026-11-27-f44b422351b9.jpg",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -133,7 +202,7 @@
         "バトルアカデミー",
         "バトルアカデミー（"
       ],
-      "officialUrl": "https://www.pokemon-card.com/info/004983.html",
+      "officialUrl": "https://www.pokemon-card.com/info/#newsTab_pro",
       "imagePath": "./assets/product-images/battle-academy-official.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -521,7 +590,7 @@
         "新スターターセットex 3種",
         "3種"
       ],
-      "officialUrl": "https://www.pokemon-card.com/ex/me/",
+      "officialUrl": "https://www.pokemon-card.com/info/#newsTab_pro",
       "imagePath": "./assets/product-images/auto-2026-07-31-e12ae115043b.jpg",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -1066,22 +1135,6 @@
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
     },
     {
-      "id": "pcg-2024-12-06-034",
-      "year": 2024,
-      "releaseDate": "2024-12-06",
-      "name": "ハイクラスパック テラスタルフェスex",
-      "category": "拡張パック",
-      "aliases": [
-        "テラスタルフェスex",
-        "テラフェス"
-      ],
-      "officialUrl": "https://www.pokemon-card.com/ex/sv8a/index.html",
-      "imagePath": "./assets/product-images/terastal-festival-ex-official.webp",
-      "imageVerified": true,
-      "imageStatus": "official-verified",
-      "imageVerifiedAt": "2026-07-12T17:45:00+09:00"
-    },
-    {
       "id": "pcg-2024-11-22-035",
       "year": 2024,
       "releaseDate": "2024-11-22",
@@ -1404,8 +1457,8 @@
     }
   ],
   "imageCoverage": {
-    "totalProducts": 84,
-    "verifiedImages": 84,
+    "totalProducts": 87,
+    "verifiedImages": 87,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
@@ -1415,6 +1468,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-11-05T10:37:27.256Z"
+    "lastRunAt": "2026-11-06T10:38:23.630Z"
   }
 }
