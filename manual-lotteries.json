@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-05T17:39:31.732Z",
+  "updatedAt": "2026-11-10T19:07:46.434Z",
   "lotteries": [
     {
       "status": "open",
@@ -519,29 +519,6 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99
-    },
-    {
-      "id": "pokemoncenter-30th-cardset-round3-2026-09",
-      "externalId": "pokemoncenter-30th-cardset-round3-2026-09",
-      "shop": "ポケモンセンターオンライン",
-      "product": "30th CELEBRATION カードセット（全9種）",
-      "displayProduct": "30th CELEBRATION カードセット（9種セット・第3回）",
-      "type": "通販",
-      "area": "全国",
-      "status": "open",
-      "historyOnly": true,
-      "applyStartDate": "2026-09-11",
-      "applyStartTime": "16:00",
-      "applyEndDate": "2026-09-16",
-      "applyEndTime": "16:59",
-      "resultStartDate": "2026-09-30",
-      "resultStartTime": "15:00",
-      "purchaseStartDate": "2026-09-30",
-      "purchaseStartTime": "15:00",
-      "purchaseEndDate": "2026-10-06",
-      "purchaseEndTime": "16:59",
-      "destinationType": "none",
-      "instructions": "受付終了。第3回は9月16日に応募受付を終了しました。"
     },
     {
       "id": "pokemoncenter-30th-box-december-2026",
