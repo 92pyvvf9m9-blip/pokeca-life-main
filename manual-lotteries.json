@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-10T19:07:46.434Z",
+  "updatedAt": "2026-11-11T21:24:44.346Z",
   "lotteries": [
     {
       "status": "open",
@@ -162,30 +162,6 @@
       "destinationType": "direct",
       "instructions": "晴れる屋2のLINE会員とLivePocketアカウントが必要です。応募ページの案内を確認して1人1回応募してください。当選後は案内の専用URLから期限内に注文してください。",
       "memo": "9種セット10,800円＋送料。個別の商品だけでは購入できません。10/16発売後に発送する通販枠です。店頭受取枠とは別募集。"
-    },
-    {
-      "status": "open",
-      "manualEntry": true,
-      "adminPublished": true,
-      "verified": true,
-      "confidence": 0.99,
-      "updatedAt": "2026-10-07T10:06:26.318Z",
-      "id": "gangi-paojian-deck-2026-10",
-      "displayProduct": "バトルマスターデッキ パオジアンex",
-      "externalId": "https://www.gangi.co.jp/blog/drawsale-701",
-      "shop": "GANGI HOBBYSHOP",
-      "product": "バトルマスターデッキ パオジアンex",
-      "productCatalogId": "pcg-2024-05-17-043",
-      "type": "通販",
-      "area": "全国",
-      "url": "https://www.gangi.co.jp/blog/drawsale-701",
-      "applyStartDate": "2026-10-01",
-      "applyEndDate": "2026-10-07",
-      "applyEndTime": "23:59",
-      "resultNote": "締切後、当選者のみメールで専用販売ページを案内。発表日・購入期限は未公表。",
-      "destinationType": "direct",
-      "instructions": "GANGI会員登録後、公式X（@MS_GANGI）をフォローして告知ページ内の対象投稿をリポストし、同ページ下部のエントリーフォームを送信してください。",
-      "memo": "1人1BOX、3,000円＋配送の送料。当選メールの専用URLから期日内に注文してください。購入期限は当選メールを確認してください。"
     },
     {
       "status": "open",
