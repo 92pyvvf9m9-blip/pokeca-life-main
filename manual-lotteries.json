@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-11T21:24:44.346Z",
+  "updatedAt": "2026-11-12T18:01:33.254Z",
   "lotteries": [
     {
       "status": "open",
@@ -327,31 +327,6 @@
       "destinationType": "direct",
       "instructions": "LivePocketに会員登録し、広島店または広島2号店のどちらか1店舗を選んで応募してください。複数店舗への応募は無効です。",
       "memo": "1BOX6,000円、当選者は2BOXまで。選んだ店舗で本人が購入してください。購入時はLivePocketの当選用2次元バーコードと公的な本人確認書類が必要です。郵送・代理購入は不可。"
-    },
-    {
-      "status": "open",
-      "manualEntry": true,
-      "adminPublished": true,
-      "verified": true,
-      "confidence": 0.99,
-      "updatedAt": "2026-10-06T12:19:19.221Z",
-      "id": "aeonstyle-online-storm-entry-2026-09-28",
-      "externalId": "aeonstyle-online-storm-entry-2026-09-28",
-      "shop": "イオンスタイルオンライン",
-      "product": "拡張パック ストームエメラルダ",
-      "displayProduct": "ストームエメラルダ（30パックセット）",
-      "productCatalogId": "pcg-2026-07-31-004",
-      "type": "通販",
-      "area": "全国",
-      "url": "https://aeonretail.com/Page/k-entry_01.aspx",
-      "applyStartDate": "2026-09-28",
-      "applyStartTime": "11:00",
-      "applyEndDate": "2026-10-08",
-      "applyEndTime": "23:59",
-      "resultNote": "当選者のみメールで通知。発表日と購入期限は当選メールで案内。",
-      "destinationType": "direct",
-      "instructions": "イオンスタイルオンラインにログインし、規約を確認して対象商品「ストームエメラルダ」のエントリーボタンから応募してください。",
-      "memo": "30パックセット5,973円、1世帯1回・1点まで。応募者・注文者と同一名義のイオンマークのクレジットカード決済限定。日本国内への配送のみで、店舗受取は不可。余剰が出た場合は未当選者を対象に追加抽選。"
     },
     {
       "externalId": "https://edion-cp.com/poke101601",
