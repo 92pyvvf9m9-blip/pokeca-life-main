@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-11-19T11:22:07.332Z",
+  "updatedAt": "2026-11-20T11:11:23.012Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -86,6 +86,24 @@
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-11-06T10:38:23.630Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-27-8df841f69d56",
+      "year": 2026,
+      "releaseDate": "2026-11-27",
+      "name": "拡張パック 30th CELEBRATIONに収録されたピカチュウのカードから12種+シークレット1種の計13枚を立体化",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック 30th CELEBRATIONに収録されたピカチュウのカードから12種+シークレット1種の計13枚を立体化",
+        "30th CELEBRATIONに収録されたピカチュウのカードから12種+シークレット1種の計13枚を立体化"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/005764.html",
+      "priceYen": 1800,
+      "imagePath": "./assets/product-images/auto-2026-11-27-f718ba67248e.png",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-11-20T11:11:23.012Z",
       "autoManaged": true
     },
     {
@@ -223,6 +241,23 @@
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-10-03T09:00:26.515Z",
+      "autoManaged": true
+    },
+    {
+      "id": "pcg-2026-11-22-4ac1081dfd3d",
+      "year": 2026,
+      "releaseDate": "2026-11-22",
+      "name": "拡張パック ハドウシーカーの",
+      "category": "拡張パック",
+      "aliases": [
+        "拡張パック ハドウシーカーの",
+        "ハドウシーカーの"
+      ],
+      "officialUrl": "https://www.pokemon-card.com/info/#newsTab_pro",
+      "imagePath": "./assets/product-images/auto-2026-11-22-2265b7317308.jpg",
+      "imageVerified": true,
+      "imageStatus": "official-verified",
+      "imageVerifiedAt": "2026-11-20T11:11:23.012Z",
       "autoManaged": true
     },
     {
@@ -503,7 +538,7 @@
       "imageVerified": true,
       "imageStatus": "official-verified",
       "imageVerifiedAt": "2026-07-12T17:45:00+09:00",
-      "priceYen": 360
+      "priceYen": 1800
     },
     {
       "id": "pcg-2026-09-16-8d40ada1e4c8",
@@ -1457,8 +1492,8 @@
     }
   ],
   "imageCoverage": {
-    "totalProducts": 87,
-    "verifiedImages": 87,
+    "totalProducts": 89,
+    "verifiedImages": 89,
     "missingImages": 0,
     "placeholderImages": 0,
     "coveragePercent": 100,
@@ -1468,6 +1503,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-11-19T11:22:07.332Z"
+    "lastRunAt": "2026-11-20T11:11:23.012Z"
   }
 }
