@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-18T17:41:45.009Z",
+  "updatedAt": "2026-11-20T18:55:25.819Z",
   "lotteries": [
     {
       "status": "open",
@@ -92,37 +92,6 @@
       "destinationType": "direct",
       "instructions": "ノジマオンラインの会員ID（0から始まる16桁）を確認してフォームに入力し、希望商品の「1-1◆ポケモンカードゲーム 関連」を選んで送信してください。10/4 18:00より前の応募は無効で、再応募が必要です。",
       "memo": "通販のシークレット販売会。具体的な対象商品は購入案内で確認してください。店頭の会員番号は使用不可。購入履歴は必須ではありません。案内を受けた当選者内で先着販売のため、案内メールが届いても在庫確保は保証されません。応募締切は不定期のため未公表です。"
-    },
-    {
-      "status": "open",
-      "manualEntry": true,
-      "adminPublished": true,
-      "verified": true,
-      "confidence": 0.99,
-      "updatedAt": "2026-10-06T12:19:19.221Z",
-      "id": "cardlabo-hiroshima-30th-restock-2026-10",
-      "externalId": "https://x.com/hiroshimalabo/status/2107304833434931606",
-      "shop": "カードラボ広島店",
-      "product": "拡張パック 30th CELEBRATION",
-      "displayProduct": "30th CELEBRATION（20パック）",
-      "productCatalogId": "pcg-2026-09-16-001",
-      "type": "店舗",
-      "area": "広島県",
-      "url": "https://x.com/hiroshimalabo/status/2107304833434931606",
-      "fallbackUrl": "https://x.com/hiroshimalabo/status/2107304833434931606",
-      "sourceUrl": "https://www.c-labo.jp/blog/619460/",
-      "applyStartDate": "2026-10-06",
-      "applyEndDate": "2026-10-07",
-      "resultStartDate": "2026-10-08",
-      "resultEndDate": "2026-10-09",
-      "resultNote": "当選者へXのDMで通知",
-      "purchaseStartDate": "2026-10-10",
-      "purchaseEndDate": "2026-10-16",
-      "destinationType": "x",
-      "noticeOnly": true,
-      "officialNotice": true,
-      "instructions": "カードラボ広島店の公式Xをフォローし、この応募用投稿をリポストしてください。当選連絡を受け取れるようDMを開放してください。",
-      "memo": "20パック7,200円。バラパックでのお渡し。購入は広島店の店頭のみで、顔写真付き本人確認書類と当選DMが必要です。告知に締切時刻の記載はありません。"
     },
     {
       "status": "open",
