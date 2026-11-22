@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-22T01:13:43.368Z",
+  "updatedAt": "2026-11-22T07:59:36.064Z",
   "meta": {
     "collectorVersion": "1.24.10",
-    "lastRunAt": "2026-11-22T01:13:43.368Z",
+    "lastRunAt": "2026-11-22T07:59:36.064Z",
     "status": "degraded",
     "reviewCount": 11,
     "publishedCount": 49,
@@ -71,8 +71,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-11-22T01:13:43.368Z",
-      "updatedAt": "2026-11-22T01:13:43.368Z",
+      "collectedAt": "2026-11-22T07:59:36.064Z",
+      "updatedAt": "2026-11-22T07:59:36.064Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
@@ -99,8 +99,8 @@
       "adminPublished": true,
       "verified": true,
       "confidence": 0.99,
-      "collectedAt": "2026-11-22T01:13:43.368Z",
-      "updatedAt": "2026-11-22T01:13:43.368Z",
+      "collectedAt": "2026-11-22T07:59:36.064Z",
+      "updatedAt": "2026-11-22T07:59:36.064Z",
       "productCatalogId": "pcg-2026-10-16-052",
       "qualityVersion": 2
     },
