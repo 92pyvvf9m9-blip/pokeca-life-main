@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-11-26T12:06:50.352Z",
+  "updatedAt": "2026-11-27T11:56:26.865Z",
   "scope": "直近3年の主要カード商品。公式情報・発売日・実商品画像が揃った商品だけを自動公開。",
   "products": [
     {
@@ -79,7 +79,9 @@
       "category": "拡張パック",
       "aliases": [
         "拡張パック ハドウシーカー収録）",
-        "ハドウシーカー収録）"
+        "ハドウシーカー収録）",
+        "拡張パック ハドウシーカー 収録",
+        "ハドウシーカー 収録"
       ],
       "officialUrl": "https://www.pokemon-card.com/info/005726.html",
       "imagePath": "./assets/product-images/auto-2026-11-30-f718ba67248e.png",
@@ -203,7 +205,7 @@
         "バトルコレクション",
         "スタートデッキ100 バトルコレクション"
       ],
-      "officialUrl": "https://www.pokemon-card.com/info/#newsTab_pro",
+      "officialUrl": "https://www.pokemon-card.com/ex/mc/",
       "imagePath": "./assets/product-images/start-deck-100.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -271,7 +273,7 @@
         "ムニキス",
         "拡張パック ムニキスゼロ"
       ],
-      "officialUrl": "https://www.pokemon-card.com/ex/m3/",
+      "officialUrl": "https://www.pokemon-card.com/info/005783.html",
       "imagePath": "./assets/product-images/munikis-zero.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -823,7 +825,7 @@
         "ストエメ",
         "拡張パック ストームエメラルダ"
       ],
-      "officialUrl": "https://www.pokemon-card.com/ex/m6/",
+      "officialUrl": "https://www.pokemon-card.com/info/#newsTab_pro",
       "imagePath": "./assets/product-images/storm-emerald.webp",
       "imageVerified": true,
       "imageStatus": "official-verified",
@@ -1503,6 +1505,6 @@
     "enabled": true,
     "schedule": "every-6-hours",
     "publishRule": "name+releaseDate+officialPage+verifiedOfficialImage",
-    "lastRunAt": "2026-11-26T12:06:50.352Z"
+    "lastRunAt": "2026-11-27T11:56:26.865Z"
   }
 }
